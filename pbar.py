@@ -717,30 +717,38 @@ if __name__ == "__main__":
 	from time import sleep
 
 	mybar = PBar(
-		range=(0, 25),
+		range=(0, 68),
 		text="Loading...",
 		charset="normal",
 		length=50,
-		position=("center", "center")
+		position=("center", "center"),
+		format={
+			"inside": "<text> (<percentage>)"
+		}
 	)
 
 	print("BEFORE")
 
-	while mybar.percentage < 100:
-		sleep(0.1)
-		mybar.colorset = {
-			"full":		(0, mybar.percentage * 2, 0),
-			"empty":	(255 - mybar.percentage * 2, 0, 0)
-		}
-		mybar.step()
-	else:
-		mybar.text = "Done!"
-		mybar.colorset |= {
-			"text": {"outside":		(0, 255, 0)}
-		}
-		mybar.step()
+	try:
+		while mybar.percentage < 100:
+			sleep(0.1)
+			mybar.colorset = {
+				"full":		(0, mybar.percentage * 2, 0),
+				"empty":	(255 - mybar.percentage * 2, 0, 0)
+			}
+			mybar.step()
+		else:
+			mybar.text = "Done!"
+			mybar.colorset |= {
+				"text": {"outside":		(0, 255, 0)}
+			}
+			mybar.draw()
 
-		sleep(1)
-		mybar.clear()
+			sleep(1)
+	except KeyboardInterrupt:
+		pass
+
+
+	mybar.clear()
 
 	print("AFTER")
