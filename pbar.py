@@ -2,13 +2,16 @@
 
 from collections.abc import Sequence
 from typing import Any, Optional, SupportsInt, TypeVar, Union, cast
-from os import get_terminal_size as _get_terminal_size
+from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.1"
+__version__ = "0.2"
+
+
+_runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
 
 
 CharSetEntry = Union[str, dict[str, str]]
