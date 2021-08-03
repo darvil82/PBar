@@ -42,3 +42,7 @@ print("AFTER")
 ### will generate something like this:
 
 ![test](resources/example1.gif)
+
+
+## Requirements
+Python 3.9
