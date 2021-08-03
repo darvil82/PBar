@@ -46,3 +46,9 @@ print("AFTER")
 
 ## Requirements
 Python 3.9
+
+
+## Additional Credits
+| User       | Task          |
+|------------|---------------|
+| DrMeepster | Type Checking |
