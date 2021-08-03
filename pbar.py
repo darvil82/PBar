@@ -1,9 +1,13 @@
 #!/bin/python3.9
 
-from collections.abc import Sequence
-from typing import Any, Optional, SupportsInt, TypeVar, Union, cast
-from os import get_terminal_size as _get_terminal_size, system as _runsys
+"""
+PBar module for displaying custom progress bars.
 
+GitHub Repository:		https://github.com/DarviL82/PBar
+"""
+
+from typing import Any, Optional, SupportsInt, TypeVar, Union, cast, Sequence
+from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 
 __all__ = ["PBar"]
