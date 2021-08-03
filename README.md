@@ -2,7 +2,7 @@
 PBar is a python module to display highly customizable progress bars on the terminal.
 
 ## Example
-This code here...
+### This code here...
 ```py
 from time import sleep
 
@@ -39,4 +39,6 @@ else:
 
 print("AFTER")
 ```
-will generate something like this:
+### will generate something like this:
+
+![test](resources/example1.gif)
