@@ -173,6 +173,10 @@ class VT100():
 
 	@staticmethod
 	def pos(pos: Optional[Sequence[Any]], offset: tuple[int, int] = (0, 0)):
+		"""Position of the cursor on the terminal.
+		@pos: This tuple can contain either ints, or strings with the value `center` to specify the center of the terminal.
+		@offset: Offset applied to `pos`. (Can be negative)
+		"""
 		if pos and len(pos) == 2:
 			position = list(pos)
 			for index, value in enumerate(position):
@@ -195,6 +199,7 @@ class VT100():
 
 	@staticmethod
 	def color(RGB: Optional[Sequence[int]]):
+		"""Color of the cursor. Tuple with three values from 0 to 255. (RED GREEN BLUE)"""
 		if RGB and len(RGB) == 3:
 			RGB = [_capValue(value, 255, 0) for value in RGB]
 			return f"\x1b[38;2;{RGB[0]};{RGB[1]};{RGB[2]}m"
@@ -203,6 +208,7 @@ class VT100():
 
 	@staticmethod
 	def moveHoriz(pos: SupportsInt):
+		"""Move the cursor horizontally `pos` characters (supports negative numbers)."""
 		pos = int(pos)
 		if pos < 0:
 			return f"\x1b[{abs(pos)}D"
@@ -211,6 +217,7 @@ class VT100():
 
 	@staticmethod
 	def moveVert(pos: SupportsInt):
+		"""Move the cursor vertically `pos` lines (supports negative numbers)."""
 		pos = int(pos)
 		if pos < 0:
 			return f"\x1b[{abs(pos)}A"
@@ -228,6 +235,8 @@ class VT100():
 	cursorHide = "\x1b[?25l"
 	cursorSave = "\x1b7"
 	cursorLoad = "\x1b8"
+	bufferNew = "\x1b[?1049h"
+	bufferOld = "\x1b[?1049l"
 
 
 
@@ -280,27 +289,23 @@ class PBar():
 			format: Union[None, str, dict[str, str]] = None
 		) -> None:
 		"""
-		>>> range: tuple[int, int]:
+		### Detailed descriptions:
+		@range: This tuple will specify the range of two values to display in the progress bar.
 
-		- This tuple will specify the range of two values to display in the progress bar.
 		---
 
-		>>> text: str:
+		@text: String to show in the progress bar.
 
-		- String to show in the progress bar.
 		---
 
-		>>> length: int:
+		@length: Intenger that specifies how long the bar will be.
 
-		- Intenger that specifies how long the bar will be.
 		---
 
-		>>> charset: Union[None, str, dict[str, str]]:
-
-		- Set of characters to use when drawing the progress bar. This value can either be a
-		string which will specify a default character set to use, or a dictionary, which should specify the custom characters:
-			- Available default character sets: `empty`, `normal`, `basic`, `basic2`, `slim`, `circles` and `full`.
-			- Custom character set dictionary:
+		@charset: Set of characters to use when drawing the progress bar.
+		This value can either be a string which will specify a default character set to use, or a dictionary, which should specify the custom characters:
+		- Available default character sets: `empty`, `normal`, `basic`, `basic2`, `slim`, `circles` and `full`.
+		- Custom character set dictionary:
 
 				![image](https://user-images.githubusercontent.com/48654552/127887419-acee1b4f-de1b-4cc7-a1a6-1be75c7f97c9.png)
 
@@ -308,12 +313,10 @@ class PBar():
 
 		---
 
-		>>> colorset: Union[None, str, dict[str, tuple[int, int, int]]]:
-
-		- Set of colors to use when drawing the progress bar. This value can either be a
-		string which will specify a default character set to use, or a dictionary, which should specify the custom characters:
-			- Available default color sets: `empty`, `green-red` and `darvil`.
-			- Custom color set dictionary:
+		@colorset: Set of colors to use when drawing the progress bar.
+		This value can either be a string which will specify a default character set to use, or a dictionary, which should specify the custom characters:
+		- Available default color sets: `empty`, `green-red` and `darvil`.
+		- Custom color set dictionary:
 
 				![image](https://user-images.githubusercontent.com/48654552/127904550-15001058-cbf2-4ebf-a543-8d6566e9ef36.png)
 
@@ -321,18 +324,15 @@ class PBar():
 
 		---
 
-		>>> position: Optional[tuple[int, int]]:
-
-		- Tuple containing the position (X and Y axles of the center) of the progress bar on the terminal.
+		@position: Tuple containing the position (X and Y axles of the center) of the progress bar on the terminal.
 		If a value is `center`, the bar will be positioned at the center of the terminal on that axis.
+
 		---
 
-		>>> format: Union[None, str, dict[str, str]]:
-
-		- Formatting used when displaying the values inside and outside the bar. This value can either be a
-		string which will specify a default formatting set to use, or a dictionary, which should specify the custom formats:
-			- Available default formatting sets: `empty`, `default`, `all-out` and `all-in`.
-			- Custom color set dictionary:
+		@format: Formatting used when displaying the values inside and outside the bar.
+		This value can either be a string which will specify a default formatting set to use, or a dictionary, which should specify the custom formats:
+		- Available default formatting sets: `empty`, `default`, `all-out` and `all-in`.
+		- Custom color set dictionary:
 
 				![image](https://user-images.githubusercontent.com/48654552/127889950-9b31d7eb-9a52-442b-be7f-8b9df23b15ae.png)
 
@@ -726,30 +726,38 @@ if __name__ == "__main__":
 	from time import sleep
 
 	mybar = PBar(
-		range=(0, 25),
+		range=(0, 68),
 		text="Loading...",
 		charset="normal",
 		length=50,
-		position=("center", "center")
+		position=("center", "center"),
+		format={
+			"inside": "<text> (<percentage>)"
+		}
 	)
 
 	print("BEFORE")
 
-	while mybar.percentage < 100:
-		sleep(0.1)
-		mybar.colorset = {
-			"full":		(0, mybar.percentage * 2, 0),
-			"empty":	(255 - mybar.percentage * 2, 0, 0)
-		}
-		mybar.step()
-	else:
-		mybar.text = "Done!"
-		mybar.colorset |= {
-			"text": {"outside":		(0, 255, 0)}
-		}
-		mybar.step()
+	try:
+		while mybar.percentage < 100:
+			sleep(0.1)
+			mybar.colorset = {
+				"full":		(0, mybar.percentage * 2, 0),
+				"empty":	(255 - mybar.percentage * 2, 0, 0)
+			}
+			mybar.step()
+		else:
+			mybar.text = "Done!"
+			mybar.colorset |= {
+				"text": {"outside":		(0, 255, 0)}
+			}
+			mybar.draw()
 
-		sleep(1)
-		mybar.clear()
+			sleep(1)
+	except KeyboardInterrupt:
+		pass
+
+
+	mybar.clear()
 
 	print("AFTER")
