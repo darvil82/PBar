@@ -512,7 +512,7 @@ class PBar():
 				colorset = _DEFAULT_COLORSETS.get(colorset, _DEFAULT_COLORSETS["empty"])
 			elif isinstance(colorset, dict):
 				if "corner" in colorset.keys():
-					if isinstance(colorset["corner"], list):
+					if isinstance(colorset["corner"], (tuple, list)):
 						colorset["corner"] = {
 							"tleft": 	colorset["corner"],
 							"tright": 	colorset["corner"],
@@ -521,14 +521,20 @@ class PBar():
 						}
 					elif isinstance(colorset["corner"], dict):
 						colorset["corner"] = _DEFAULT_COLORSETS["empty"]["corner"] = colorset["corner"]
+					else:
+						raise ValueError(f"Invalid type ({type(colorset['corner'])}) for colorset")
+
 				if "text" in colorset.keys():
-					if isinstance(colorset["text"], list):
+					if isinstance(colorset["text"], (tuple, list)):
 						colorset["text"] = {
 							"inside":	colorset["text"],
 							"outside":	colorset["text"]
 						}
 					elif isinstance(colorset["text"], dict):
 						colorset["text"] = _DEFAULT_COLORSETS["empty"]["text"] | colorset["text"]
+					else:
+						raise ValueError(f"Invalid type ({type(colorset['text'])}) for colorset")
+
 			else:
 				raise ValueError(f"Invalid type ({type(colorset)}) for colorset")
 
@@ -559,7 +565,10 @@ class PBar():
 		if formatset:
 			if isinstance(formatset, str):
 				formatset = _DEFAULT_FORMATTING.get(formatset, _DEFAULT_FORMATTING["empty"])
-
+			elif isinstance(formatset, dict):
+				pass
+			else:
+				raise ValueError(f"Invalid type ({type(formatset)}) for formatset")
 			set: FormatSet = _DEFAULT_FORMATTING["empty"] | formatset
 		else:
 			set = _DEFAULT_FORMATTING["default"]
