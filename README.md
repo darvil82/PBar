@@ -4,6 +4,7 @@ PBar is a work in progress python module to display highly customizable progress
 ## Example
 ### This code here...
 ```py
+from pbar import PBar
 from time import sleep
 
 
