@@ -184,18 +184,11 @@ class VT100():
 		if pos and len(pos) == 2:
 			position = list(pos)
 			for index, value in enumerate(position):
-				if isinstance(value, str):
-					if value == "center":
-						position[index] = int(_get_terminal_size()[index] / 2)
-					else:
-						return ""
-				elif isinstance(value, int):
+				if isinstance(value, int):
 					value = int(value)
-				else:
-					raise TypeError("Invalid type for position value")
-
-				if isinstance(position[index], int):
 					position[index] += offset[index]
+				else:
+					raise TypeError(f"Invalid type {type(value)} for position value")
 
 			return f"\x1b[{position[1]};{position[0]}f"
 		else:
@@ -289,7 +282,7 @@ class PBar():
 			length: int = 20,
 			charset: Union[None, str, dict[str, str]] = None,
 			colorset: Union[None, str, dict[str, tuple[int, int, int]]] = None,
-			position: Optional[tuple[int, int]] = None,
+			position: Union[None, str, tuple[int, int]] = None,
 			format: Union[None, str, dict[str, str]] = None
 		) -> None:
 		"""
@@ -344,17 +337,17 @@ class PBar():
 
 		- Available formatting keys: `<percentage>`, `<range>` and `<text>`.
 		"""
+		self._requiresClear = False
+		self._oldPos = None
 
 		self._range = list(range)
 		self._text = str(text)
 		self._length = _capValue(length, 255, 5)
 		self._charset = self._getCharset(charset)
 		self._colorset = self._getColorset(colorset)
-		self._pos = position
+		self._pos = self._getPos(position)
 		self._format = self._getFormat(format)
 
-		self._drawtimes = 0
-		self._requiresClear = False
 		# self._draw()
 
 
@@ -446,6 +439,16 @@ class PBar():
 			# since the bar is gonna be smaller, we need to redraw it while clearing everything at the sides.
 			self._requiresClear = True
 		self._length = newlen
+
+
+	@property
+	def position(self):
+		"""Position of the progress bar"""
+		return self._pos
+	@position.setter
+	def position(self, position: Union[None, str, tuple[int, int]]):
+		self._oldPos = self._pos
+		self._pos = self._getPos(position)
 
 	# --------- ///////////////////////////////////////// ----------
 
@@ -580,6 +583,21 @@ class PBar():
 		return set
 
 
+	def _getPos(self, position: Sequence[Any]) -> tuple[int, int]:
+		newpos = []
+		if not isinstance(position, (tuple, list)):
+			raise ValueError("Position must be a Sequence")
+		for index, value in enumerate(position):
+			if isinstance(value, str) and value == "center":
+				value = int(_get_terminal_size()[index] / 2)
+			elif isinstance(value, (int, float)):
+				value = int(value)
+			else:
+				raise Exception(f"Invalid position value type ({type(value)})")
+			newpos.append(value)
+		return newpos
+
+
 
 
 
@@ -588,19 +606,48 @@ class PBar():
 
 	def _draw(self, clearAll: bool = False):
 		"""Draw the progress bar. clearAll will clear the lines used by the bar."""
+
+		if self._pos != self._oldPos:
+			# If the bar position changed, clear it, and redraw on the new place (ugly)
+			currentPos = self._pos
+			self._pos = self._oldPos
+			self.clear()
+			self._pos = self._oldPos = currentPos
+			self.draw()
+
+
 		centerOffset = int((self._length + 2) / -2)		# Number of characters from the end of the bar to the center
 		segments = int((_capValue(self._range[0], self._range[1], 0) / _capValue(self._range[1], min=1)) * self._length)	# Number of character for the full part of the bar
 
 
-		def parseFormat(type: str) -> str:
+		def _parseFormat(string: str) -> str:
 			"""Parse a string that may contain formatting keys"""
-			string = self._format[type]
-			foundOpen = False	# Did we find a '<'?
-			tempStr = ""		# String that contains the current value inside < >
-			endStr = ""			# Final string that will be returned
+			foundOpen = False		# Did we find a '<'?
+			foundBackslash = False	# Did we find a '\'?
+			ignoreChars = "\x1b"	# Ignore this characters entirely
+			tempStr = ""			# String that contains the current value inside < >
+			endStr = ""				# Final string that will be returned
 
 			for char in string:
-				if foundOpen:
+				if char in ignoreChars:
+					continue
+				elif char == "\t":
+					# Convert tabs to spaces because otherwise we can't
+					# tell the length of the string properly
+					endStr += "    "
+					continue
+
+				if foundBackslash:
+					# Also skip the character next to the slash
+					endStr += char
+					foundBackslash = False
+					continue
+				elif char == "\\":
+					# Found backslash, skip it
+					foundBackslash = True
+					continue
+
+				elif foundOpen:
 					# Found '<'. Now we add every char to tempStr until we find a '>'.
 					if char == ">":
 						# Found '>'. Now just add the formatting keys.
@@ -610,7 +657,9 @@ class PBar():
 							endStr += f"{self._range[0]}/{self._range[1]}"
 						elif tempStr == "text":
 							if self._text:
-								endStr += self._text
+								endStr += _parseFormat(self._text)	# We want to parse the text too, because it can also have keys or other characters
+						else:
+							raise ValueError(f"Unknown formatting key '{tempStr}'")
 
 						foundOpen = False
 						tempStr = ""
@@ -636,7 +685,7 @@ class PBar():
 			rtnExtra = ""
 			if clearAll: rtnExtra = VT100.clearLine
 
-			return rtnExtra + VT100.pos(self._pos, (centerOffset, 0)) + left + middle + right
+			return VT100.pos(self._pos, (centerOffset, 0)) + rtnExtra + left + middle + right
 
 
 
@@ -648,12 +697,14 @@ class PBar():
 			middle = VT100.color(self._color("full")) + self._char("full") * segmentsFull + VT100.reset + VT100.color(self._color("empty")) + self._char("empty") * segmentsEmpty + VT100.reset
 
 			# ---------- Build the content outside the bar ----------
-			extra = parseFormat("outside")
+			extra = _parseFormat(self._format["outside"])
 			extraFormatted = VT100.clearRight + VT100.color(self._colorsetText["outside"]) + extra + VT100.reset
 
 
 			# ---------- Build the content inside the bar ----------
-			info = parseFormat("inside")
+			info = _parseFormat(self._format["inside"])
+			if len(info) > self._length:
+				raise Exception("Text length cannnot be longer than the bar")
 			infoFormatted = VT100.color(self._colorsetText["inside"])
 
 			if self.percentage < 50:
@@ -665,7 +716,7 @@ class PBar():
 					infoFormatted += VT100.invert
 				infoFormatted += VT100.color(self._color("full"))
 
-			infoFormatted += parseFormat("inside") + VT100.reset
+			infoFormatted += info + VT100.reset
 			# ---------- //////////////////////////////// ----------
 
 			rtnExtra = ""
@@ -701,7 +752,6 @@ class PBar():
 
 		print(VT100.cursorLoad, end="")
 
-		self._drawtimes += 1
 		self._requiresClear = False
 
 
@@ -733,11 +783,8 @@ if __name__ == "__main__":
 		range=(0, 68),
 		text="Loading...",
 		charset="normal",
-		length=50,
+		length=100,
 		position=("center", "center"),
-		format={
-			"inside": "<text> (<percentage>)"
-		}
 	)
 
 	print("BEFORE")
@@ -749,7 +796,10 @@ if __name__ == "__main__":
 				"full":		(0, mybar.percentage * 2, 0),
 				"empty":	(255 - mybar.percentage * 2, 0, 0)
 			}
+			mybar.position = ("center", "center")
+			mybar.length = 100 - mybar.percentage
 			mybar.step()
+
 		else:
 			mybar.text = "Done!"
 			mybar.colorset |= {
