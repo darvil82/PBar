@@ -586,6 +586,7 @@ class PBar():
 
 
 	def _getPos(self, position: Optional[Sequence[Any]]) -> tuple[int, int]:
+		"""Get and process new position requested"""
 		if position and len(position) == 2:
 			newpos = []
 			tSize: tuple[int, int] = _get_terminal_size()
@@ -613,6 +614,7 @@ class PBar():
 
 
 	def _getLength(self, length: int):
+		"""Get and process new length requested"""
 		tSize: tuple[int, int] = _get_terminal_size()
 		return _capValue(length, tSize[0] - 20, 5)
 
