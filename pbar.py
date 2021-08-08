@@ -340,11 +340,11 @@ class PBar():
 
 		self._range = list(range)
 		self._text = str(text)
+		self._format = self._getFormat(format)
 		self._length = self._getLength(length)
 		self._charset = self._getCharset(charset)
 		self._colorset = self._getColorset(colorset)
 		self._pos = self._getPos(position)
-		self._format = self._getFormat(format)
 
 		self._oldValues = [self._pos, self._length]
 		# self._draw()
@@ -383,7 +383,8 @@ class PBar():
 		return self._text
 	@text.setter
 	def text(self, text: str):
-		self._text = str(text)
+		self._text = self._parseFormat(text)
+		self._requiresClear = True
 
 
 	@property
@@ -597,7 +598,7 @@ class PBar():
 						value = int(tSize[index] / 2)
 					elif isinstance(value, (int, float)):
 						if index == 0:
-							value = _capValue(value, tSize[0] - self._length / 2 - len(self._parseFormat(self._format["outside"])) - 4, self._length / 2 + 2)
+							value = _capValue(value, tSize[0] - self._length / 2 + 2, self._length / 2 + 2)
 						else:
 							value = _capValue(value, tSize[1] - 3, 1)
 
@@ -616,7 +617,7 @@ class PBar():
 	def _getLength(self, length: int):
 		"""Get and process new length requested"""
 		tSize: tuple[int, int] = _get_terminal_size()
-		return _capValue(length, tSize[0] - 20, 5)
+		return _capValue(length, tSize[0] - 5, 5)
 
 
 
@@ -629,7 +630,7 @@ class PBar():
 		tempStr = ""			# String that contains the current value inside < >
 		endStr = ""				# Final string that will be returned
 
-		for char in string:
+		for char in str(string):
 			if char in ignoreChars:
 				continue
 			elif char == "\t":
@@ -734,7 +735,7 @@ class PBar():
 
 			# ---------- Build the content inside the bar ----------
 			info = self._parseFormat(self._format["inside"])
-			if len(info) > self._length:
+			if len(info) > self._length - 3:
 				# if the text is bigger than the size of the bar, we just cut it and add '...' at the end
 				info = info[:self._length - 5] + "... "
 			infoFormatted = VT100.color(self._colorsetText["inside"])
@@ -809,7 +810,8 @@ if __name__ == "__main__":
 		text="Loading... <text>",
 		charset="normal",
 		colorset="darvil",
-		format={"inside": "Peter Löwenbräu Griffin is a fictional character and the protagonist of the American animated sitcom Family Guy.", "outside": "<percentage> <text>"}
+		length=100,
+		format={"inside": "dwa.", "outside": "<percentage> <text>"}
 	)
 
 	print("Drawing bar...", end="")
@@ -817,14 +819,14 @@ if __name__ == "__main__":
 	try:
 		pos = 1
 		while mybar.percentage < 100:
-			pos += 0.25
+			pos += 1.5
 			sleep(0.1)
 			mybar.colorset |= {
 				"full":		(0, mybar.percentage * 2, 100),
 				"empty":	(0, 100, 255 - mybar.percentage * 2)
 			}
-			mybar.length = 120 - mybar.percentage
-			mybar.position = (pos + 100, pos)
+			# mybar.length = 120 - mybar.percentage
+			mybar.position = (pos + 20, pos / 2)
 			mybar.step()
 
 		else:
