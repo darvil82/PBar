@@ -12,7 +12,7 @@ from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -449,7 +449,12 @@ class PBar():
 
 			Note: It is not needed to specify all the keys and values.
 
-		- Available formatting keys: `<percentage>`, `<range>` and `<text>`.
+		- Available formatting keys:
+			- `<percentage>`
+			- `<range>`
+				- `<range1>`
+				- `<range2>`
+			- `<text>`
 		"""
 		self._requiresClear = False
 		self._enabled = True
@@ -674,9 +679,14 @@ class PBar():
 				if char == ">":
 					# Found '>'. Now just add the formatting keys.
 					if tempStr == "percentage":
-						endStr += f"{str(self.percentage)}%"
+						endStr += f"{self.percentage}%"
 					elif tempStr == "range":
 						endStr += f"{self._range[0]}/{self._range[1]}"
+					elif tempStr == "range1":
+						endStr += str(self._range[0])
+					elif tempStr == "range2":
+						endStr += str(self._range[1])
+
 					elif tempStr == "text":
 						if self._text:
 							if self._text is string:
@@ -836,7 +846,7 @@ if __name__ == "__main__":
 		charset="normal",
 		colorset="darvil",
 		length=25,
-		format={"inside": "Doing stuff...", "outside": "<percentage> <text>"}
+		format={"inside": "<text>", "outside": "<range1> of <range2>"}
 	)
 
 	print("Drawing bar...", end="")
