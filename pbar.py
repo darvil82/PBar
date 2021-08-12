@@ -12,7 +12,7 @@ from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.3"
+__version__ = "0.4"
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -274,6 +274,7 @@ class PBar():
 	- mybar.charset
 	- mybar.colorset
 	- mybar.format
+	- mybar.enabled
 	"""
 	def __init__(self,
 			range: tuple[int, int] = (0, 1),
@@ -337,6 +338,7 @@ class PBar():
 		- Available formatting keys: `<percentage>`, `<range>` and `<text>`.
 		"""
 		self._requiresClear = False
+		self._enabled = True
 
 		self._range = list(range)
 		self._text = str(text)
@@ -448,6 +450,15 @@ class PBar():
 			self._oldValues[0] = self._pos
 			self._requiresClear = True		# Position has been changed, we need to clear the bar at the old position
 			self._pos = self._getPos(position)
+
+
+	@property
+	def enabled(self):
+		"""Is the bar enabled?"""
+		return self._enabled
+	@enabled.setter
+	def enabled(self, state: bool):
+		self._enabled = state
 
 	# --------- ///////////////////////////////////////// ----------
 
@@ -685,6 +696,9 @@ class PBar():
 
 	def _clear(self, values: tuple[Sequence[int], int]):
 		"""Clears the progress bars at the position and length specified"""
+
+		if not self._enabled: return
+
 		pos = values[0]
 		length = values[1]
 		centerOffset = int((length + 2) / -2)		# Number of characters from the end of the bar to the center
@@ -700,6 +714,8 @@ class PBar():
 
 	def _draw(self):
 		"""Draw the progress bar. clearAll will clear the lines used by the bar."""
+
+		if not self._enabled: return
 
 		if self._requiresClear:
 			# Clear the bar at the old position and length
@@ -768,6 +784,7 @@ class PBar():
 
 
 		# Draw the bar
+		# TODO:	We really need to find a way to fix the bar drawing incorrectly if no position is specified and it is at the bottom.
 		print(
 			VT100.cursorSave, buildTop(),
 			buildMid(),
@@ -806,11 +823,11 @@ if __name__ == "__main__":
 	from time import sleep
 
 	mybar = PBar(
-		range=(0, 100),
+		range=(0, 25),
 		text="Loading... <text>",
 		charset="normal",
 		colorset="darvil",
-		length=100,
+		length=50,
 		format={"inside": "dwa.", "outside": "<percentage> <text>"}
 	)
 
@@ -826,7 +843,7 @@ if __name__ == "__main__":
 				"empty":	(0, 100, 255 - mybar.percentage * 2)
 			}
 			# mybar.length = 120 - mybar.percentage
-			mybar.position = (pos + 20, pos / 2)
+			# mybar.position = (pos + 20, pos / 2)
 			mybar.step()
 
 		else:
