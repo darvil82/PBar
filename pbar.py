@@ -12,7 +12,7 @@ from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.4"
+__version__ = "0.4.1"
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -282,7 +282,7 @@ class PBar():
 			length: int = 20,
 			charset: Union[None, str, dict[str, str]] = None,
 			colorset: Union[None, str, dict[str, tuple[int, int, int]]] = None,
-			position: Union[None, str, tuple[int, int]] = None,
+			position: Union[None, str, tuple[int, int]] = ("center", "center"),
 			format: Union[None, str, dict[str, str]] = None
 		) -> None:
 		"""
@@ -617,10 +617,9 @@ class PBar():
 					else:
 						raise Exception(f"Invalid position value type ({type(value)})")
 					newpos.append(value)
-			else:
-				raise ValueError("Position must be a Sequence")
-
-			return newpos
+				return newpos
+		else:
+			raise ValueError("Position must be a Sequence")
 
 
 
@@ -707,7 +706,7 @@ class PBar():
 		middle = VT100.pos(pos, (centerOffset, 1)) + " " * (length + 5 + len(self._parseFormat(self._format["outside"])))
 		bottom = VT100.pos(pos, (centerOffset, 2)) + " " * (length + 4)
 
-		print(VT100.cursorSave, top, middle, bottom, VT100.cursorLoad, sep="\n", end="")
+		print(VT100.cursorSave + top, middle, bottom, VT100.cursorLoad, sep="\n", end="")
 
 
 
@@ -784,9 +783,8 @@ class PBar():
 
 
 		# Draw the bar
-		# TODO:	We really need to find a way to fix the bar drawing incorrectly if no position is specified and it is at the bottom.
 		print(
-			VT100.cursorSave, buildTop(),
+			VT100.cursorSave + buildTop(),
 			buildMid(),
 			buildBottom(),
 			VT100.cursorLoad,
@@ -827,7 +825,7 @@ if __name__ == "__main__":
 		text="Loading... <text>",
 		charset="normal",
 		colorset="darvil",
-		length=50,
+		length=25,
 		format={"inside": "dwa.", "outside": "<percentage> <text>"}
 	)
 
