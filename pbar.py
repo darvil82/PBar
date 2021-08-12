@@ -836,7 +836,7 @@ if __name__ == "__main__":
 		charset="normal",
 		colorset="darvil",
 		length=25,
-		format={"inside": "dwa.", "outside": "<percentage> <text>"}
+		format={"inside": "Doing stuff...", "outside": "<percentage> <text>"}
 	)
 
 	print("Drawing bar...", end="")
