@@ -12,7 +12,7 @@ from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -242,6 +242,120 @@ class VT100():
 
 
 
+def _getCharset(charset: Any) -> CharSet:
+		"""Return a full valid character set"""
+
+		def stripCharset(charset: CharSet) -> CharSet:
+			"""Converts empty values to spaces, and makes sure there's only one character"""
+			newset = dict({})
+			for key in charset.keys():
+				value = charset[key]
+
+				if isinstance(value, dict):
+					value = stripCharset(value)
+				elif len(value) > 1:
+					value = value[0]
+				elif len(value) == 0:
+					value = " "
+
+				newset[key] = value
+			return newset
+
+
+		if charset:
+			if isinstance(charset, str):
+				# it is a string, so we just get the default character set with that name
+				charset = _DEFAULT_CHARSETS.get(charset, _DEFAULT_CHARSETS["normal"])
+			elif isinstance(charset, dict):
+				# it is a dict
+				charset = stripCharset(charset)
+
+				if "corner" in charset.keys():
+					if isinstance(charset["corner"], str):	# this is only a str, so we just make all corners the value of this str
+						charset["corner"] = {
+							"tleft":	charset["corner"],
+							"tright":	charset["corner"],
+							"bleft":	charset["corner"],
+							"bright":	charset["corner"]
+						}
+					elif isinstance(charset["corner"], dict):
+						charset["corner"] = _DEFAULT_CHARSETS["empty"]["corner"] | charset["corner"]	# Merge corners into default dict
+			else:
+				raise ValueError(f"Invalid type ({type(charset)}) for charset")
+
+			set: CharSet = _DEFAULT_CHARSETS["empty"] | charset		# merge charset into default dict
+		else:
+			set = _DEFAULT_CHARSETS["normal"]
+
+		return set
+
+
+
+
+def _getColorset(colorset: Any) -> ColorSet:
+		"""Return a full valid color set"""
+		if colorset:
+			if isinstance(colorset, str):
+				colorset = _DEFAULT_COLORSETS.get(colorset, _DEFAULT_COLORSETS["empty"])
+			elif isinstance(colorset, dict):
+				if "corner" in colorset.keys():
+					if isinstance(colorset["corner"], (tuple, list)):
+						colorset["corner"] = {
+							"tleft": 	colorset["corner"],
+							"tright": 	colorset["corner"],
+							"bleft": 	colorset["corner"],
+							"bright": 	colorset["corner"]
+						}
+					elif isinstance(colorset["corner"], dict):
+						colorset["corner"] = _DEFAULT_COLORSETS["empty"]["corner"] = colorset["corner"]
+					else:
+						raise ValueError(f"Invalid type ({type(colorset['corner'])}) for colorset")
+
+				if "text" in colorset.keys():
+					if isinstance(colorset["text"], (tuple, list)):
+						colorset["text"] = {
+							"inside":	colorset["text"],
+							"outside":	colorset["text"]
+						}
+					elif isinstance(colorset["text"], dict):
+						colorset["text"] = _DEFAULT_COLORSETS["empty"]["text"] | colorset["text"]
+					else:
+						raise ValueError(f"Invalid type ({type(colorset['text'])}) for colorset")
+
+			else:
+				raise ValueError(f"Invalid type ({type(colorset)}) for colorset")
+
+			set: ColorSet = _DEFAULT_COLORSETS["empty"] | colorset
+		else:
+			set = _DEFAULT_COLORSETS["empty"]
+
+		return set
+
+
+
+
+def _getFormat(formatset: Any) -> FormatSet:
+		"""Return a full valid formatting set"""
+		if formatset:
+			if isinstance(formatset, str):
+				formatset = _DEFAULT_FORMATTING.get(formatset, _DEFAULT_FORMATTING["empty"])
+			elif isinstance(formatset, dict):
+				pass
+			else:
+				raise ValueError(f"Invalid type ({type(formatset)}) for formatset")
+			set: FormatSet = _DEFAULT_FORMATTING["empty"] | formatset
+		else:
+			set = _DEFAULT_FORMATTING["default"]
+
+		return set
+
+
+
+
+
+
+
+
 class PBar():
 	"""
 	# pBar - Progress bar
@@ -342,10 +456,10 @@ class PBar():
 
 		self._range = list(range)
 		self._text = str(text)
-		self._format = self._getFormat(format)
+		self._format = _getFormat(format)
 		self._length = self._getLength(length)
-		self._charset = self._getCharset(charset)
-		self._colorset = self._getColorset(colorset)
+		self._charset = _getCharset(charset)
+		self._colorset = _getColorset(colorset)
 		self._pos = self._getPos(position)
 
 		self._oldValues = [self._pos, self._length]
@@ -404,7 +518,7 @@ class PBar():
 		return self._charset
 	@charset.setter
 	def charset(self, charset: Any):
-		self._charset = self._getCharset(charset)
+		self._charset = _getCharset(charset)
 
 
 	@property
@@ -413,7 +527,7 @@ class PBar():
 		return self._colorset
 	@colorset.setter
 	def colorset(self, colorset: Any):
-		self._colorset = self._getColorset(colorset)
+		self._colorset = _getColorset(colorset)
 
 
 	@property
@@ -422,7 +536,7 @@ class PBar():
 		return self._format
 	@format.setter
 	def format(self, format: Any):
-		self._format = self._getFormat(format)
+		self._format = _getFormat(format)
 
 
 	@property
@@ -463,54 +577,6 @@ class PBar():
 	# --------- ///////////////////////////////////////// ----------
 
 
-
-	def _getCharset(self, charset: Any) -> CharSet:
-		"""Return a full valid character set"""
-
-		def stripCharset(charset: CharSet) -> CharSet:
-			"""Converts empty values to spaces, and makes sure there's only one character"""
-			newset = dict({})
-			for key in charset.keys():
-				value = charset[key]
-
-				if isinstance(value, dict):
-					value = stripCharset(value)
-				elif len(value) > 1:
-					value = value[0]
-				elif len(value) == 0:
-					value = " "
-
-				newset[key] = value
-			return newset
-
-
-		if charset:
-			if isinstance(charset, str):
-				# it is a string, so we just get the default character set with that name
-				charset = _DEFAULT_CHARSETS.get(charset, _DEFAULT_CHARSETS["normal"])
-			elif isinstance(charset, dict):
-				# it is a dict
-				charset = stripCharset(charset)
-
-				if "corner" in charset.keys():
-					if isinstance(charset["corner"], str):	# this is only a str, so we just make all corners the value of this str
-						charset["corner"] = {
-							"tleft":	charset["corner"],
-							"tright":	charset["corner"],
-							"bleft":	charset["corner"],
-							"bright":	charset["corner"]
-						}
-					elif isinstance(charset["corner"], dict):
-						charset["corner"] = _DEFAULT_CHARSETS["empty"]["corner"] | charset["corner"]	# Merge corners into default dict
-			else:
-				raise ValueError(f"Invalid type ({type(charset)}) for charset")
-
-			set: CharSet = _DEFAULT_CHARSETS["empty"] | charset		# merge charset into default dict
-		else:
-			set = _DEFAULT_CHARSETS["normal"]
-
-		return set
-
 	@property
 	def _charsetCorner(self) -> dict[str, str]:
 		"""type checker does not understand that CharSet["corner"] is always dict[str, str]"""
@@ -521,45 +587,6 @@ class PBar():
 
 		return cast(str, self._charset[key])
 
-
-	def _getColorset(self, colorset: Any) -> ColorSet:
-		"""Return a full valid color set"""
-		if colorset:
-			if isinstance(colorset, str):
-				colorset = _DEFAULT_COLORSETS.get(colorset, _DEFAULT_COLORSETS["empty"])
-			elif isinstance(colorset, dict):
-				if "corner" in colorset.keys():
-					if isinstance(colorset["corner"], (tuple, list)):
-						colorset["corner"] = {
-							"tleft": 	colorset["corner"],
-							"tright": 	colorset["corner"],
-							"bleft": 	colorset["corner"],
-							"bright": 	colorset["corner"]
-						}
-					elif isinstance(colorset["corner"], dict):
-						colorset["corner"] = _DEFAULT_COLORSETS["empty"]["corner"] = colorset["corner"]
-					else:
-						raise ValueError(f"Invalid type ({type(colorset['corner'])}) for colorset")
-
-				if "text" in colorset.keys():
-					if isinstance(colorset["text"], (tuple, list)):
-						colorset["text"] = {
-							"inside":	colorset["text"],
-							"outside":	colorset["text"]
-						}
-					elif isinstance(colorset["text"], dict):
-						colorset["text"] = _DEFAULT_COLORSETS["empty"]["text"] | colorset["text"]
-					else:
-						raise ValueError(f"Invalid type ({type(colorset['text'])}) for colorset")
-
-			else:
-				raise ValueError(f"Invalid type ({type(colorset)}) for colorset")
-
-			set: ColorSet = _DEFAULT_COLORSETS["empty"] | colorset
-		else:
-			set = _DEFAULT_COLORSETS["empty"]
-
-		return set
 
 	@property
 	def _colorsetCorner(self) -> dict[str, Color]:
@@ -576,23 +603,6 @@ class PBar():
 
 		return cast(Color, self._colorset[key])
 
-
-
-
-	def _getFormat(self, formatset: Any) -> FormatSet:
-		"""Return a full valid formatting set"""
-		if formatset:
-			if isinstance(formatset, str):
-				formatset = _DEFAULT_FORMATTING.get(formatset, _DEFAULT_FORMATTING["empty"])
-			elif isinstance(formatset, dict):
-				pass
-			else:
-				raise ValueError(f"Invalid type ({type(formatset)}) for formatset")
-			set: FormatSet = _DEFAULT_FORMATTING["empty"] | formatset
-		else:
-			set = _DEFAULT_FORMATTING["default"]
-
-		return set
 
 
 
