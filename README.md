@@ -1,5 +1,5 @@
 # PBar
-PBar is a work in progress python module to display highly customizable progress bars on the terminal. Contributions are welcome!
+PBar is a small work in progress python module to display highly customizable progress bars on the terminal. Contributions are welcome!
 
 ## Example
 ### This code here...
