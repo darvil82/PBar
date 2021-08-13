@@ -12,7 +12,7 @@ from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.4.3"
+__version__ = "0.4.4"
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -195,11 +195,17 @@ class VT100():
 			return ""
 
 	@staticmethod
-	def color(RGB: Optional[Sequence[int]]):
-		"""Color of the cursor. Tuple with three values from 0 to 255. (RED GREEN BLUE)"""
-		if RGB and len(RGB) == 3:
-			RGB = [_capValue(value, 255, 0) for value in RGB]
-			return f"\x1b[38;2;{RGB[0]};{RGB[1]};{RGB[2]}m"
+	def color(rgb: Optional[Sequence[int]], bg: bool = False):
+		"""Color of the cursor.
+		@rgb:	Tuple with three values from 0 to 255. (RED GREEN BLUE)
+		@bg:	This color will be displayed on the background"""
+		if rgb and len(rgb) == 3:
+			rgb = [_capValue(value, 255, 0) for value in rgb]
+			if bg:
+				return f"\x1b[48;2;{rgb[0]};{rgb[1]};{rgb[2]}m"
+			else:
+				return f"\x1b[38;2;{rgb[0]};{rgb[1]};{rgb[2]}m"
+
 		else:
 			return ""
 
@@ -221,19 +227,22 @@ class VT100():
 		else:
 			return f"\x1b[{pos}B"
 
-
+	# simple sequences that dont require parsing
 	reset = "\x1b[0m"
 	invert = "\x1b[7m"
-	revert = "\x1b[27m"
+	noInvert = "\x1b[27m"
 	clearLine = "\x1b[2K"
 	clearRight = "\x1b[0K"
 	clearLeft = "\x1b[1K"
+	clearDown = "\x1b[0J"
 	cursorShow = "\x1b[?25h"
 	cursorHide = "\x1b[?25l"
 	cursorSave = "\x1b7"
 	cursorLoad = "\x1b8"
 	bufferNew = "\x1b[?1049h"
 	bufferOld = "\x1b[?1049l"
+	underline = "\x1b[4m"
+	noUnderline = "\x1b[24m"
 
 
 
@@ -573,7 +582,7 @@ class PBar():
 
 	@property
 	def enabled(self):
-		"""Is the bar enabled?"""
+		"""Will the bar draw on the next `draw` calls?"""
 		return self._enabled
 	@enabled.setter
 	def enabled(self, state: bool):
