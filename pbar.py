@@ -12,7 +12,7 @@ from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.5"
+__version__ = "0.5.1"
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -158,9 +158,9 @@ Num = TypeVar("Num", int, float)
 def _capValue(value: Num, max: Optional[Num]=None, min: Optional[Num]=None) -> Num:
     """Clamp a value to a minimun and/or maximun value."""
 
-    if max and value > max:
+    if max != None and value > max:
         return max
-    elif min and value < min:
+    elif min != None and value < min:
         return min
     else:
         return value
@@ -368,7 +368,8 @@ def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, d
 
 	elif type == "HEX":
 		if isinstance(clr, (tuple, list)) and len(clr) == 3:
-			return f"#{clr[0]:02x}{clr[1]:02x}{clr[2]:02x}"
+			capped = tuple(_capValue(value, 255, 0) for value in clr)
+			return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
 		else:
 			return clr
 
