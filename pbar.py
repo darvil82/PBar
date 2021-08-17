@@ -12,7 +12,7 @@ from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.4.4"
+__version__ = "0.5"
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -307,6 +307,8 @@ def _getColorset(colorset: Any) -> ColorSet:
 			if isinstance(colorset, str):
 				colorset = _DEFAULT_COLORSETS.get(colorset, _DEFAULT_COLORSETS["empty"])
 			elif isinstance(colorset, dict):
+				colorset = _convertClrs(colorset, "RGB")
+
 				if "corner" in colorset.keys():
 					if isinstance(colorset["corner"], (tuple, list)):
 						colorset["corner"] = {
@@ -339,6 +341,36 @@ def _getColorset(colorset: Any) -> ColorSet:
 			set = _DEFAULT_COLORSETS["empty"]
 
 		return set
+
+
+
+
+def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, dict]:
+	"""Convert color values to HEX and vice-versa
+	@clr:	Color value to convert.
+	@type:	Type of conversion to do ('RGB' or 'HEX')"""
+
+	if isinstance(clr, dict):
+		endDict = dict({})
+		for key in clr.keys():
+			endDict[key] = _convertClrs(clr[key], type)
+		return endDict
+
+	if type == "RGB":
+		if isinstance(clr, str) and clr.startswith("#"):
+			clr = clr.lstrip("#")
+			try:
+				return tuple(int(clr[i:i+2], 16) for i in (0, 2, 4))
+			except ValueError:
+				return
+		else:
+			return clr
+
+	elif type == "HEX":
+		if isinstance(clr, (tuple, list)) and len(clr) == 3:
+			return f"#{clr[0]:02x}{clr[1]:02x}{clr[2]:02x}"
+		else:
+			return clr
 
 
 
@@ -398,14 +430,15 @@ class PBar():
 	- mybar.colorset
 	- mybar.format
 	- mybar.enabled
+	- mybar.config
 	"""
 	def __init__(self,
 			range: tuple[int, int] = (0, 1),
 			text: str = "",
 			length: int = 20,
+			position: Union[None, str, tuple[int, int]] = ("center", "center"),
 			charset: Union[None, str, dict[str, str]] = None,
 			colorset: Union[None, str, dict[str, tuple[int, int, int]]] = None,
-			position: Union[None, str, tuple[int, int]] = ("center", "center"),
 			format: Union[None, str, dict[str, str]] = None
 		) -> None:
 		"""
@@ -587,6 +620,27 @@ class PBar():
 	@enabled.setter
 	def enabled(self, state: bool):
 		self._enabled = state
+
+
+	@property
+	def config(self) -> dict:
+		"""All the values of the progress bar stored in a dict"""
+		return {
+			"range":	self._range,
+			"text":		self._text,
+			"length":	self._length,
+			"pos":		self._pos,
+			"charset":	self._charset,
+			"colorset":	_convertClrs(self._colorset, "HEX"),
+			"format":	self._format,
+			"enabled":	self._enabled
+		}
+	@config.setter
+	def config(self, config: dict):
+		if isinstance(config, dict):
+			for key in {"range", "text", "length", "pos", "charset", "colorset", "format", "enabled"}:
+				if key in config.keys():	setattr(self, key, config[key])
+
 
 	# --------- ///////////////////////////////////////// ----------
 
@@ -823,77 +877,3 @@ class PBar():
 		)
 
 		self._requiresClear = False
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-if __name__ == "__main__":
-	from time import sleep
-
-	mybar = PBar(
-		range=(0, 25),
-		text="Loading... <text>",
-		charset="normal",
-		colorset="darvil",
-		length=25,
-		format={"inside": "<text>", "outside": "<range1> of <range2>"}
-	)
-
-	print("Drawing bar...", end="")
-
-	try:
-		pos = 1
-		while mybar.percentage < 100:
-			pos += 1.5
-			sleep(0.1)
-			mybar.colorset |= {
-				"full":		(0, mybar.percentage * 2, 100),
-				"empty":	(0, 100, 255 - mybar.percentage * 2)
-			}
-			# mybar.length = 120 - mybar.percentage
-			# mybar.position = (pos + 20, pos / 2)
-			mybar.step()
-
-		else:
-			mybar.text = "Done!"
-			mybar.colorset |= {"text": {"outside":		(0, 200, 100)}}
-
-	except KeyboardInterrupt:
-		mybar.text = "Canceled!"
-		mybar.colorset = {
-			"empty":	(150, 0, 0),
-			"full":		(255, 100, 100),
-			"corner":	(255, 0, 0),
-			"vert":		(255, 0, 0),
-			"horiz":	(255, 0, 0),
-			"text":		(255, 200, 200)
-		}
-		mybar.format |= {"inside":	"You pressed Ctrl-C"}
-
-	try:
-		mybar.draw()
-		sleep(2)
-	except KeyboardInterrupt:
-		pass
-	mybar.clear()
-
-	print(" Finished!")
