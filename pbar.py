@@ -1,7 +1,5 @@
-#!/bin/python3.9
-
 """
-PBar module for displaying custom progress bars.
+PBar module for displaying custom progress bars for Python 3.9+
 
 GitHub Repository:		https://github.com/DarviL82/PBar
 """
@@ -228,21 +226,21 @@ class VT100():
 			return f"\x1b[{pos}B"
 
 	# simple sequences that dont require parsing
-	reset = "\x1b[0m"
-	invert = "\x1b[7m"
-	noInvert = "\x1b[27m"
-	clearLine = "\x1b[2K"
-	clearRight = "\x1b[0K"
-	clearLeft = "\x1b[1K"
-	clearDown = "\x1b[0J"
-	cursorShow = "\x1b[?25h"
-	cursorHide = "\x1b[?25l"
-	cursorSave = "\x1b7"
-	cursorLoad = "\x1b8"
-	bufferNew = "\x1b[?1049h"
-	bufferOld = "\x1b[?1049l"
-	underline = "\x1b[4m"
-	noUnderline = "\x1b[24m"
+	reset =			"\x1b[0m"
+	invert =		"\x1b[7m"
+	noInvert =		"\x1b[27m"
+	clearLine =		"\x1b[2K"
+	clearRight =	"\x1b[0K"
+	clearLeft =		"\x1b[1K"
+	clearDown =		"\x1b[0J"
+	cursorShow =	"\x1b[?25h"
+	cursorHide =	"\x1b[?25l"
+	cursorSave =	"\x1b7"
+	cursorLoad =	"\x1b8"
+	bufferNew =		"\x1b[?1049h"
+	bufferOld =		"\x1b[?1049l"
+	underline =		"\x1b[4m"
+	noUnderline =	"\x1b[24m"
 
 
 
