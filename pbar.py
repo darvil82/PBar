@@ -9,27 +9,14 @@ from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.6.2"
+__version__ = "0.6.3"
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
 
 
-def _jupyterFix():
-	"""Disables some stuff that doesn't work correctly on jupyter notebooks,
-	such as terminal size detection, or some VT100 sequences."""
-	global _get_terminal_size, VT100, _BAR_LINE_END
-
-	print(f"_jupyterFix:\tSome features will be disabled to be able to run this module in a Jupyter notebook.")
-	_get_terminal_size = lambda: (100, 20)
-	VT100.cursorSave = ""
-	VT100.cursorLoad = ""
-	_BAR_LINE_END = "\n"
-
-
-_BAR_LINE_END = ""
 _DEFAULT_RANGE = (0, 1)
-_DEFAULT_POS = lambda: _get_terminal_size()
+_DEFAULT_POS = ("center", "center")
 _DEFAULT_LEN = 20
 
 CharSetEntry = Union[str, dict[str, str]]
@@ -151,16 +138,21 @@ _DEFAULT_FORMATTING: dict[str, FormatSet] = {
 	},
 
 	"default": {
-		"inside":	"<percentage>",
+		"inside":	"<percentage>%",
 		"outside":	"<text>"
 	},
 
 	"all-out": {
-		"outside":	"<percentage>, <range>, <text>"
+		"outside":	"<percentage>%, <range1>/<range2>, <text>"
 	},
 
 	"all-in": {
-		"inside":	"<percentage>, <range>, <text>"
+		"inside":	"<percentage>%, <range1>/<range2>, <text>"
+	},
+
+	"mixed": {
+		"inside":	"<percentage>%",
+		"outside":	"<text>: (<range1>/<range2>)"
 	}
 }
 
@@ -332,7 +324,7 @@ def _getColorset(colorset: Any) -> ColorSet:
 							"bright": 	colorset["corner"]
 						}
 					elif isinstance(colorset["corner"], dict):
-						colorset["corner"] = _DEFAULT_COLORSETS["empty"]["corner"] = colorset["corner"]
+						colorset["corner"] = _DEFAULT_COLORSETS["empty"]["corner"] | colorset["corner"]
 					else:
 						raise ValueError(f"Invalid type ({type(colorset['corner'])}) for colorset")
 
@@ -523,7 +515,7 @@ class PBar():
 
 		@format: Formatting used when displaying the values inside and outside the bar.
 		This value can either be a string which will specify a default formatting set to use, or a dictionary, which should specify the custom formats:
-		- Available default formatting sets: `empty`, `default`, `all-out` and `all-in`.
+		- Available default formatting sets: `empty`, `default`, `all-out`, `all-in` and `mixed`.
 		- Custom color set dictionary:
 
 				![image](https://user-images.githubusercontent.com/48654552/127889950-9b31d7eb-9a52-442b-be7f-8b9df23b15ae.png)
@@ -532,9 +524,8 @@ class PBar():
 
 		- Available formatting keys:
 			- `<percentage>`
-			- `<range>`
-				- `<range1>`
-				- `<range2>`
+			- `<range1>`
+			- `<range2>`
 			- `<text>`
 
 		---
@@ -601,7 +592,7 @@ class PBar():
 		return self._text
 	@text.setter
 	def text(self, text: str):
-		self._text = self._parseFormat(text)
+		self._text = str(text)
 		self._requiresClear = True
 
 
@@ -733,30 +724,28 @@ class PBar():
 
 	def _getPos(self, position: Optional[Sequence[Any]]) -> tuple[int, int]:
 		"""Get and process new position requested"""
-		if position:
-			if len(position) == 2:
-				newpos = []
-				tSize: tuple[int, int] = _get_terminal_size()
+		if not position: position = _DEFAULT_POS
+		if len(position) == 2:
+			newpos = []
+			tSize: tuple[int, int] = _get_terminal_size()
 
-				if isinstance(position, (tuple, list)):
-					for index, value in enumerate(position):
-						if isinstance(value, str) and value == "center":
-							value = int(tSize[index] / 2)
-						elif isinstance(value, (int, float)):
-							if index == 0:
-								value = _capValue(value, tSize[0] - self._length / 2 + 2, self._length / 2 + 2)
-							else:
-								value = _capValue(value, tSize[1] - 3, 1)
-
-							value = int(value)
+			if isinstance(position, (tuple, list)):
+				for index, value in enumerate(position):
+					if isinstance(value, str) and value == "center":
+						value = int(tSize[index] / 2)
+					elif isinstance(value, (int, float)):
+						if index == 0:
+							value = _capValue(value, tSize[0] - self._length / 2 + 2, self._length / 2 + 2)
 						else:
-							raise Exception(f"Invalid position value type ({type(value)})")
-						newpos.append(value)
-					return newpos
-			else:
-				raise ValueError("Position must be a Sequence")
+							value = _capValue(value, tSize[1] - 3, 1)
+
+						value = int(value)
+					else:
+						raise Exception(f"Invalid position value type ({type(value)})")
+					newpos.append(value)
+				return newpos
 		else:
-			return _DEFAULT_POS()
+			raise ValueError("Position must be a Sequence")
 
 
 
@@ -804,9 +793,7 @@ class PBar():
 				if char == ">":
 					# Found '>'. Now just add the formatting keys.
 					if tempStr == "percentage":
-						endStr += f"{self.percentage}%"
-					elif tempStr == "range":
-						endStr += f"{self._range[0]}/{self._range[1]}"
+						endStr += str(self.percentage)
 					elif tempStr == "range1":
 						endStr += str(self._range[0])
 					elif tempStr == "range2":
@@ -851,7 +838,7 @@ class PBar():
 		middle = VT100.pos(pos, (centerOffset, 1)) + " " * (length + 5 + len(self._parseFormat(self._format["outside"])))
 		bottom = VT100.pos(pos, (centerOffset, 2)) + " " * (length + 4)
 
-		print(VT100.cursorSave, top, middle, bottom, VT100.cursorLoad, sep=_BAR_LINE_END, end="")
+		print(VT100.cursorSave, top, middle, bottom, VT100.cursorLoad, sep="", end="")
 
 
 
@@ -935,7 +922,7 @@ class PBar():
 			buildBottom(),
 			VT100.cursorLoad,
 
-			sep=_BAR_LINE_END,
+			sep="",
 			end=""
 		)
 
