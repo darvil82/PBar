@@ -404,7 +404,7 @@ def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, d
 	@type:	Type of conversion to do ('RGB' or 'HEX')"""
 
 	if isinstance(clr, dict):
-		endDict = dict({})
+		endDict = {}
 		for key in clr.keys():
 			endDict[key] = _convertClrs(clr[key], type)
 		return endDict
