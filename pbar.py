@@ -9,13 +9,10 @@ from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
-_BAR_LINE_END = ""
-
-
 
 
 def _jupyterFix():
@@ -30,7 +27,10 @@ def _jupyterFix():
 	_BAR_LINE_END = "\n"
 
 
-
+_BAR_LINE_END = ""
+_DEFAULT_RANGE = (0, 1)
+_DEFAULT_POS = lambda: _get_terminal_size()
+_DEFAULT_LEN = 20
 
 CharSetEntry = Union[str, dict[str, str]]
 CharSet = dict[str, Union[str, CharSetEntry]]
@@ -378,19 +378,22 @@ def _getFormat(formatset: Any) -> FormatSet:
 
 
 def _getRange(range: tuple[int, int]) -> tuple[int, int]:
-	if isinstance(range, (tuple, list)):
-		for item in range:
-			if not isinstance(item, int):
-				raise TypeError(f"Type of value '{item}' ({type(item)}) in range is not int")
+	if range:
+		if isinstance(range, (tuple, list)):
+			for item in range:
+				if not isinstance(item, int):
+					raise TypeError(f"Type of value '{item}' ({type(item)}) in range is not int")
 
-		if len(range) == 2:
-			value1 = _capValue(range[0], range[1], 0)
-			value2 = _capValue(range[1], min=1)
-			return (value1, value2)
+			if len(range) == 2:
+				value1 = _capValue(range[0], range[1], 0)
+				value2 = _capValue(range[1], min=1)
+				return (value1, value2)
+			else:
+				raise ValueError("Length of sequence is not 2")
 		else:
-			raise ValueError("Length of sequence is not 2")
+			raise TypeError(f"Type of value '{range}' ({type(range)}) is not a tuple/list")
 	else:
-		raise TypeError(f"Type of value '{range}' ({type(range)}) is not a tuple/list")
+		return _DEFAULT_RANGE
 
 
 
@@ -466,10 +469,10 @@ class PBar():
 	- mybar.config
 	"""
 	def __init__(self,
-			range: tuple[int, int] = (0, 1),
+			range: tuple[int, int] = None,
 			text: str = "",
-			length: int = 20,
-			position: Union[None, str, tuple[int, int]] = ("center", "center"),
+			length: int = None,
+			position: Union[str, tuple[int, int]] = None,
 			charset: Union[None, str, dict[str, str]] = None,
 			colorset: Union[None, str, dict[str, tuple[int, int, int]]] = None,
 			format: Union[None, str, dict[str, str]] = None,
@@ -477,7 +480,7 @@ class PBar():
 		) -> None:
 		"""
 		### Detailed descriptions:
-		@range: This tuple will specify the range of two values to display in the progress bar.
+		@range: This tuple will specify the range of two values to display in the progress bar. Default value is `(0, 1)`.
 
 		---
 
@@ -485,7 +488,7 @@ class PBar():
 
 		---
 
-		@length: Intenger that specifies how long the bar will be.
+		@length: Intenger that specifies how long the bar will be. Default value is `20`.
 
 		---
 
@@ -514,7 +517,7 @@ class PBar():
 		---
 
 		@position: Tuple containing the position (X and Y axles of the center) of the progress bar on the terminal.
-		If a value is `center`, the bar will be positioned at the center of the terminal on that axis.
+		If a value is `center`, the bar will be positioned at the center of the terminal on that axis. Default value is `("center", "center")`
 
 		---
 
@@ -730,35 +733,41 @@ class PBar():
 
 	def _getPos(self, position: Optional[Sequence[Any]]) -> tuple[int, int]:
 		"""Get and process new position requested"""
-		if position and len(position) == 2:
-			newpos = []
-			tSize: tuple[int, int] = _get_terminal_size()
+		if position:
+			if len(position) == 2:
+				newpos = []
+				tSize: tuple[int, int] = _get_terminal_size()
 
-			if isinstance(position, (tuple, list)):
-				for index, value in enumerate(position):
-					if isinstance(value, str) and value == "center":
-						value = int(tSize[index] / 2)
-					elif isinstance(value, (int, float)):
-						if index == 0:
-							value = _capValue(value, tSize[0] - self._length / 2 + 2, self._length / 2 + 2)
+				if isinstance(position, (tuple, list)):
+					for index, value in enumerate(position):
+						if isinstance(value, str) and value == "center":
+							value = int(tSize[index] / 2)
+						elif isinstance(value, (int, float)):
+							if index == 0:
+								value = _capValue(value, tSize[0] - self._length / 2 + 2, self._length / 2 + 2)
+							else:
+								value = _capValue(value, tSize[1] - 3, 1)
+
+							value = int(value)
 						else:
-							value = _capValue(value, tSize[1] - 3, 1)
-
-						value = int(value)
-					else:
-						raise Exception(f"Invalid position value type ({type(value)})")
-					newpos.append(value)
-				return newpos
+							raise Exception(f"Invalid position value type ({type(value)})")
+						newpos.append(value)
+					return newpos
+			else:
+				raise ValueError("Position must be a Sequence")
 		else:
-			raise ValueError("Position must be a Sequence")
+			return _DEFAULT_POS()
 
 
 
 
 	def _getLength(self, length: int):
 		"""Get and process new length requested"""
-		tSize: tuple[int, int] = _get_terminal_size()
-		return _capValue(length, tSize[0] - 5, 5)
+		if length != None:
+			tSize: tuple[int, int] = _get_terminal_size()
+			return _capValue(length, tSize[0] - 5, 5)
+		else:
+			return _DEFAULT_LEN
 
 
 
