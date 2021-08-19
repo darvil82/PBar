@@ -169,7 +169,7 @@ _DEFAULT_FORMATTING: dict[str, FormatSet] = {
 
 Num = TypeVar("Num", int, float)
 
-def _capValue(value: Num, max: Optional[Num]=None, min: Optional[Num]=None) -> Num:
+def _capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) -> Num:
     """Clamp a value to a minimun and/or maximun value."""
 
     if max != None and value > max:
