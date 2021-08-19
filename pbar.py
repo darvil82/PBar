@@ -9,7 +9,7 @@ from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.6"
+__version__ = "0.6.1"
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -554,6 +554,13 @@ class PBar():
 		if inherit:
 			if isinstance(inherit, PBar):
 				self.config = inherit.config	# Get config from the object to inherit from, and apply it to ours
+				if range:		self.range = range
+				if text:		self.text = text
+				if format:		self.format = format
+				if length:		self.length = length
+				if charset:		self.charset = charset
+				if colorset:	self.colorset = colorset
+				if position:	self.position = position
 			else:
 				raise TypeError(f"Type {type(inherit)} is not a PBar object")
 
@@ -681,7 +688,7 @@ class PBar():
 			"enabled":	self._enabled
 		}
 	@config.setter
-	def config(self, config: dict):
+	def config(self, config: dict[str, Any]):
 		if isinstance(config, dict):
 			for key in {"range", "text", "length", "position", "charset", "colorset", "format", "enabled"}:
 				# Move through every key in the dict and populate the config of the class with its values
@@ -758,11 +765,11 @@ class PBar():
 
 	def _parseFormat(self, string: str) -> str:
 		"""Parse a string that may contain formatting keys"""
-		foundOpen = False		# Did we find a '<'?
-		foundBackslash = False	# Did we find a '\'?
-		ignoreChars = "\x1b"	# Ignore this characters entirely
-		tempStr = ""			# String that contains the current value inside < >
-		endStr = ""				# Final string that will be returned
+		foundOpen = False					# Did we find a '<'?
+		foundBackslash = False				# Did we find a '\'?
+		ignoreChars = "\x1b\n\r\b\a\f\v"	# Ignore this characters entirely
+		tempStr = ""						# String that contains the current value inside < >
+		endStr = ""							# Final string that will be returned
 
 		for char in str(string):
 			if char in ignoreChars:
