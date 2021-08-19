@@ -501,13 +501,15 @@ class PBar():
 		---
 
 		@colorset: Set of colors to use when drawing the progress bar.
-		This value can either be a string which will specify a default character set to use, or a dictionary, which should specify the custom characters:
+		This value can either be a string which will specify a default color set to use, or a dictionary, which should specify the custom colors:
 		- Available default color sets: `empty`, `green-red` and `darvil`.
 		- Custom color set dictionary:
 
 				![image](https://user-images.githubusercontent.com/48654552/127904550-15001058-cbf2-4ebf-a543-8d6566e9ef36.png)
 
 			Note: It is not needed to specify all the keys and values.
+
+			Note: The colors can also be specified as HEX in a string.
 
 		---
 
