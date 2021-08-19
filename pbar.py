@@ -4,16 +4,32 @@ PBar module for displaying custom progress bars for Python 3.9+
 GitHub Repository:		https://github.com/DarviL82/PBar
 """
 
-from typing import Any, Optional, SupportsInt, TypeVar, Union, cast, Sequence
+from typing import Any, Optional, SupportsInt, Type, TypeVar, Union, cast, Sequence
 from os import get_terminal_size as _get_terminal_size, system as _runsys
-
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.5.1"
+__version__ = "0.6"
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
+_BAR_LINE_END = ""
+
+
+
+
+def _jupyterFix():
+	"""Disables some stuff that doesn't work correctly on jupyter notebooks,
+	such as terminal size detection, or some VT100 sequences."""
+	global _get_terminal_size, VT100, _BAR_LINE_END
+
+	print(f"_jupyterFix:\tSome features will be disabled to be able to run this module in a Jupyter notebook.")
+	_get_terminal_size = lambda: (100, 20)
+	VT100.cursorSave = ""
+	VT100.cursorLoad = ""
+	_BAR_LINE_END = "\n"
+
+
 
 
 CharSetEntry = Union[str, dict[str, str]]
@@ -343,6 +359,42 @@ def _getColorset(colorset: Any) -> ColorSet:
 
 
 
+def _getFormat(formatset: Any) -> FormatSet:
+		"""Return a full valid formatting set"""
+		if formatset:
+			if isinstance(formatset, str):
+				formatset = _DEFAULT_FORMATTING.get(formatset, _DEFAULT_FORMATTING["empty"])
+			elif isinstance(formatset, dict):
+				pass
+			else:
+				raise ValueError(f"Invalid type ({type(formatset)}) for formatset")
+			set: FormatSet = _DEFAULT_FORMATTING["empty"] | formatset
+		else:
+			set = _DEFAULT_FORMATTING["default"]
+
+		return set
+
+
+
+
+def _getRange(range: tuple[int, int]) -> tuple[int, int]:
+	if isinstance(range, (tuple, list)):
+		for item in range:
+			if not isinstance(item, int):
+				raise TypeError(f"Type of value '{item}' ({type(item)}) in range is not int")
+
+		if len(range) == 2:
+			value1 = _capValue(range[0], range[1], 0)
+			value2 = _capValue(range[1], min=1)
+			return (value1, value2)
+		else:
+			raise ValueError("Length of sequence is not 2")
+	else:
+		raise TypeError(f"Type of value '{range}' ({type(range)}) is not a tuple/list")
+
+
+
+
 def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, dict]:
 	"""Convert color values to HEX and vice-versa
 	@clr:	Color value to convert.
@@ -370,24 +422,6 @@ def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, d
 			return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
 		else:
 			return clr
-
-
-
-
-def _getFormat(formatset: Any) -> FormatSet:
-		"""Return a full valid formatting set"""
-		if formatset:
-			if isinstance(formatset, str):
-				formatset = _DEFAULT_FORMATTING.get(formatset, _DEFAULT_FORMATTING["empty"])
-			elif isinstance(formatset, dict):
-				pass
-			else:
-				raise ValueError(f"Invalid type ({type(formatset)}) for formatset")
-			set: FormatSet = _DEFAULT_FORMATTING["empty"] | formatset
-		else:
-			set = _DEFAULT_FORMATTING["default"]
-
-		return set
 
 
 
@@ -438,7 +472,8 @@ class PBar():
 			position: Union[None, str, tuple[int, int]] = ("center", "center"),
 			charset: Union[None, str, dict[str, str]] = None,
 			colorset: Union[None, str, dict[str, tuple[int, int, int]]] = None,
-			format: Union[None, str, dict[str, str]] = None
+			format: Union[None, str, dict[str, str]] = None,
+			inherit: "PBar" = None
 		) -> None:
 		"""
 		### Detailed descriptions:
@@ -496,11 +531,15 @@ class PBar():
 				- `<range1>`
 				- `<range2>`
 			- `<text>`
+
+		---
+
+		@inherit: Inherits all properties from the PBar object specified.
 		"""
 		self._requiresClear = False
 		self._enabled = True
 
-		self._range = list(range)
+		self._range = list(_getRange(range))
 		self._text = str(text)
 		self._format = _getFormat(format)
 		self._length = self._getLength(length)
@@ -509,7 +548,12 @@ class PBar():
 		self._pos = self._getPos(position)
 
 		self._oldValues = [self._pos, self._length]
-		# self._draw()
+
+		if inherit:
+			if isinstance(inherit, PBar):
+				self.config = inherit.config	# Get config from the object to inherit from, and apply it to ours
+			else:
+				raise TypeError(f"Type {type(inherit)} is not a PBar object")
 
 
 
@@ -552,10 +596,10 @@ class PBar():
 	@property
 	def range(self) -> tuple[int, int]:
 		"""Range for the bar progress"""
-		return self._range[0], self._range[1]
+		return (self._range[0], self._range[1])
 	@range.setter
 	def range(self, range: tuple[int, int]):
-		self._range = list(range)
+		self._range = list(_getRange(range))
 
 
 	@property
@@ -628,7 +672,7 @@ class PBar():
 			"range":	self._range,
 			"text":		self._text,
 			"length":	self._length,
-			"pos":		self._pos,
+			"position":	self._pos,
 			"charset":	self._charset,
 			"colorset":	_convertClrs(self._colorset, "HEX"),
 			"format":	self._format,
@@ -637,8 +681,9 @@ class PBar():
 	@config.setter
 	def config(self, config: dict):
 		if isinstance(config, dict):
-			for key in {"range", "text", "length", "pos", "charset", "colorset", "format", "enabled"}:
-				if key in config.keys():	setattr(self, key, config[key])
+			for key in {"range", "text", "length", "position", "charset", "colorset", "format", "enabled"}:
+				# Move through every key in the dict and populate the config of the class with its values
+				if key in config.keys(): setattr(self, key, config[key])
 
 
 	# --------- ///////////////////////////////////////// ----------
@@ -788,13 +833,13 @@ class PBar():
 		middle = VT100.pos(pos, (centerOffset, 1)) + " " * (length + 5 + len(self._parseFormat(self._format["outside"])))
 		bottom = VT100.pos(pos, (centerOffset, 2)) + " " * (length + 4)
 
-		print(VT100.cursorSave + top, middle, bottom, VT100.cursorLoad, sep="\n", end="")
+		print(VT100.cursorSave, top, middle, bottom, VT100.cursorLoad, sep=_BAR_LINE_END, end="")
 
 
 
 
 	def _draw(self):
-		"""Draw the progress bar. clearAll will clear the lines used by the bar."""
+		"""Draw the progress bar"""
 
 		if not self._enabled: return
 
@@ -866,12 +911,13 @@ class PBar():
 
 		# Draw the bar
 		print(
-			VT100.cursorSave + buildTop(),
+			VT100.cursorSave,
+			buildTop(),
 			buildMid(),
 			buildBottom(),
 			VT100.cursorLoad,
 
-			sep="\n",
+			sep=_BAR_LINE_END,
 			end=""
 		)
 
