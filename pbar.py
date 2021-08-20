@@ -655,7 +655,7 @@ class PBar():
 		if newpos != self._pos:
 			self._oldValues[0] = self._pos
 			self._requiresClear = True		# Position has been changed, we need to clear the bar at the old position
-			self._pos = self._getPos(position)
+			self._pos = newpos
 
 
 	@property
