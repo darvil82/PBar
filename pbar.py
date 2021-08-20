@@ -9,7 +9,7 @@ from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.6.3"
+__version__ = "0.6.4"
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -570,8 +570,7 @@ class PBar():
 
 	def step(self, steps: int = 1):
 		"""Add `steps` to the first value in range, then draw the bar"""
-		if not self._range[0] >= self._range[1]:
-			self._range[0] += _capValue(steps, self._range[1] - self._range[0])
+		self.range = (self._range[0] + steps, self._range[1])
 		self._draw()
 
 
@@ -838,7 +837,7 @@ class PBar():
 		middle = VT100.pos(pos, (centerOffset, 1)) + " " * (length + 5 + len(self._parseFormat(self._format["outside"])))
 		bottom = VT100.pos(pos, (centerOffset, 2)) + " " * (length + 4)
 
-		print(VT100.cursorSave, top, middle, bottom, VT100.cursorLoad, sep="", end="")
+		print(VT100.cursorSave, top, middle, bottom, VT100.cursorLoad, sep="", end="", flush=True)
 
 
 
@@ -922,8 +921,7 @@ class PBar():
 			buildBottom(),
 			VT100.cursorLoad,
 
-			sep="",
-			end=""
+			sep="", end="", flush=True
 		)
 
 		self._requiresClear = False
