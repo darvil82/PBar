@@ -427,15 +427,15 @@ def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, d
 
 class PBar():
 	"""
-	# pBar - Progress bar
+	# PBar - Progress bar
 
-	pBar is an object for managing progress bars in python.
+	PBar is an object for managing progress bars in python.
 
 	---
 
 	## Initialization
 
-	>>> mybar = pBar()
+	>>> mybar = PBar()
 
 	- A progress bar will be initialized with all the default values. For customization, use the arguments or the properties available.
 
