@@ -84,7 +84,7 @@ _DEFAULT_CHARSETS: dict[str, CharSet] = {
 	},
 }
 
-Color = Optional[tuple[int, int, int]]
+Color = Optional[Union[tuple[int, int, int], str]]
 ColorSet = dict[str, Union[Color, dict[str, Color]]]
 
 _DEFAULT_COLORSETS: dict[str, ColorSet] = {
