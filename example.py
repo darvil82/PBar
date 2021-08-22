@@ -1,9 +1,5 @@
-# PBar
-PBar is a small work in progress python module to display customizable progress bars on the terminal. Contributions are welcome!
+#!/bin/env python3.9
 
-## Example
-### This code here...
-```py
 from pbar import PBar
 from time import sleep
 
@@ -53,17 +49,3 @@ mybar.clear()
 
 
 print("Finished!")
-```
-### will generate something like this:
-
-https://user-images.githubusercontent.com/48654552/130366455-55ddbbeb-3225-4431-9fe0-8d6b73187357.mp4
-
-
-## Requirements
-Python 3.9
-
-
-## Additional Credits
-| User       | Task          |
-|------------|---------------|
-| DrMeepster | Type Checking |

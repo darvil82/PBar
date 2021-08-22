@@ -128,7 +128,7 @@ _DEFAULT_COLORSETS: dict[str, ColorSet] = {
 	},
 
 	"error": {
-		"empty":	(150, 0, 0),
+		"empty":	(200, 0, 0),
 		"full":		(255, 0, 0),
 		"vert":		(255, 100, 100),
 		"horiz":	(255, 100, 100),
