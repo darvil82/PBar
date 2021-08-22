@@ -788,8 +788,8 @@ class PBar():
 		for index, char in enumerate(text):
 			if foundBackslash:
 				# Also skip the character next to the slash
-				tempStr += char
 				foundBackslash = False
+				endStr += char
 				continue
 			elif char == "\\":
 				# Found backslash, skip it
