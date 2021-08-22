@@ -4,12 +4,12 @@ PBar module for displaying custom progress bars for Python 3.9+
 GitHub Repository:		https://github.com/DarviL82/PBar
 """
 
-from typing import Any, Optional, SupportsInt, TypeVar, Union, cast, Sequence
+from typing import Any, Callable, Optional, SupportsInt, TypeVar, Union, cast, Sequence
 from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.6.4"
+__version__ = "0.6.5"
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -162,7 +162,7 @@ _DEFAULT_FORMATTING: dict[str, FormatSet] = {
 Num = TypeVar("Num", int, float)
 
 def _capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) -> Num:
-    """Clamp a value to a minimun and/or maximun value."""
+    """Clamp a value to a minimum and/or maximum value."""
 
     if max != None and value > max:
         return max
@@ -170,6 +170,10 @@ def _capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) 
         return min
     else:
         return value
+
+
+
+_formatError: Callable[[str, int, int], str] = lambda string, start, end: string[:start] + VT100.underline + VT100.color((255, 0, 0)) + string[start:end] + VT100.reset + string[end:]
 
 
 
@@ -296,7 +300,7 @@ def _getCharset(charset: Any) -> CharSet:
 					elif isinstance(charset["corner"], dict):
 						charset["corner"] = _DEFAULT_CHARSETS["empty"]["corner"] | charset["corner"]	# Merge corners into default dict
 			else:
-				raise ValueError(f"Invalid type ({type(charset)}) for charset")
+				raise TypeError(f"Invalid type ({type(charset)}) for charset")
 
 			set: CharSet = _DEFAULT_CHARSETS["empty"] | charset		# merge charset into default dict
 		else:
@@ -326,7 +330,7 @@ def _getColorset(colorset: Any) -> ColorSet:
 					elif isinstance(colorset["corner"], dict):
 						colorset["corner"] = _DEFAULT_COLORSETS["empty"]["corner"] | colorset["corner"]
 					else:
-						raise ValueError(f"Invalid type ({type(colorset['corner'])}) for colorset")
+						raise TypeError(f"Invalid type ({type(colorset['corner'])}) for colorset")
 
 				if "text" in colorset.keys():
 					if isinstance(colorset["text"], (tuple, list)):
@@ -337,10 +341,10 @@ def _getColorset(colorset: Any) -> ColorSet:
 					elif isinstance(colorset["text"], dict):
 						colorset["text"] = _DEFAULT_COLORSETS["empty"]["text"] | colorset["text"]
 					else:
-						raise ValueError(f"Invalid type ({type(colorset['text'])}) for colorset")
+						raise TypeError(f"Invalid type ({type(colorset['text'])}) for colorset")
 
 			else:
-				raise ValueError(f"Invalid type ({type(colorset)}) for colorset")
+				raise TypeError(f"Invalid type ({type(colorset)}) for colorset")
 
 			set: ColorSet = _DEFAULT_COLORSETS["empty"] | colorset
 		else:
@@ -359,7 +363,7 @@ def _getFormat(formatset: Any) -> FormatSet:
 			elif isinstance(formatset, dict):
 				pass
 			else:
-				raise ValueError(f"Invalid type ({type(formatset)}) for formatset")
+				raise TypeError(f"Invalid type ({type(formatset)}) for formatset")
 			set: FormatSet = _DEFAULT_FORMATTING["empty"] | formatset
 		else:
 			set = _DEFAULT_FORMATTING["default"]
@@ -370,6 +374,7 @@ def _getFormat(formatset: Any) -> FormatSet:
 
 
 def _getRange(range: tuple[int, int]) -> tuple[int, int]:
+	"""Return a capped range"""
 	if range:
 		if isinstance(range, (tuple, list)):
 			for item in range:
@@ -740,11 +745,11 @@ class PBar():
 
 						value = int(value)
 					else:
-						raise Exception(f"Invalid position value type ({type(value)})")
+						raise TypeError(f"Type of value {value} ({type(value)}) is not valid")
 					newpos.append(value)
 				return newpos
 		else:
-			raise ValueError("Position must be a Sequence")
+			raise TypeError(f"Type of position ({type(position)}) is not Sequence")
 
 
 
@@ -762,24 +767,28 @@ class PBar():
 
 	def _parseFormat(self, string: str) -> str:
 		"""Parse a string that may contain formatting keys"""
-		foundOpen = False					# Did we find a '<'?
-		foundBackslash = False				# Did we find a '\'?
+		if not string: return ""
 		ignoreChars = "\x1b\n\r\b\a\f\v"	# Ignore this characters entirely
-		tempStr = ""						# String that contains the current value inside < >
-		endStr = ""							# Final string that will be returned
+		text = ""							# string supplied without "poison" characters
 
+		# Remove "dangerous" characters and convert some
 		for char in str(string):
-			if char in ignoreChars:
-				continue
-			elif char == "\t":
-				# Convert tabs to spaces because otherwise we can't
-				# tell the length of the string properly
-				endStr += "    "
-				continue
+			if char not in ignoreChars:
+				if char == "\t":
+					# Convert tabs to spaces because otherwise we can't tell the length of the string properly
+					char = "    "
+				text += char
 
+		foundOpen = False		# Did we find a '<'?
+		foundBackslash = False	# Did we find a '\'?
+		tempStr = ""			# String that contains the current value inside < >
+		endStr = ""				# Final string that will be returned
+
+		# Convert the keys to a final string
+		for index, char in enumerate(text):
 			if foundBackslash:
 				# Also skip the character next to the slash
-				endStr += char
+				tempStr += char
 				foundBackslash = False
 				continue
 			elif char == "\\":
@@ -806,7 +815,7 @@ class PBar():
 							else:
 								endStr += self._parseFormat(self._text)	# We want to parse the text too, because it can also have keys or other characters
 					else:
-						raise ValueError(f"Unknown formatting key '{tempStr}'")
+						raise RuntimeError(f"Unknown formatting key ('{_formatError(text, index - len(tempStr), index)}')")
 
 					foundOpen = False
 					tempStr = ""
@@ -818,6 +827,10 @@ class PBar():
 			else:
 				# It is just a normal character that doesn't belong to any formatting key, so just append it to the end string.
 				endStr += char
+
+			if index + 1 == len(text):
+				# This is the last character, so add the temp str to the final string
+				endStr += tempStr
 
 		return endStr
 
