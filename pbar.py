@@ -125,6 +125,24 @@ _DEFAULT_COLORSETS: dict[str, ColorSet] = {
 			"outside":	(247, 111, 152),
 			"inside":	None
 		}
+	},
+
+	"error": {
+		"empty":	(150, 0, 0),
+		"full":		(255, 0, 0),
+		"vert":		(255, 100, 100),
+		"horiz":	(255, 100, 100),
+		"corner": {
+			"tleft":	(255, 100, 100),
+			"tright":	(255, 100, 100),
+			"bleft":	(255, 100, 100),
+			"bright":	(255, 100, 100),
+		},
+		"text": {
+			"outside":	(255, 100, 100),
+			"inside":	None
+		}
+
 	}
 }
 
