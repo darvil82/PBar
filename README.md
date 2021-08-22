@@ -54,7 +54,7 @@ mybar.clear()
 
 print("Finished!")
 ```
-### will generate something like this:
+### ...will generate something like this:
 
 https://user-images.githubusercontent.com/48654552/130366455-55ddbbeb-3225-4431-9fe0-8d6b73187357.mp4
 
