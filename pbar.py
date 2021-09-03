@@ -133,11 +133,16 @@ class VT100:
 
 
 class BaseSet:
-	def __init__(self, newSet: "BaseSet") -> None:
+	def __init__(self, newSet: dict) -> None:
 		self._newset = self.EMPTY | newSet
 
-	def __getitem__(self, item):
+	def __getitem__(self, item) -> dict:
 		return self._newset[item]
+
+	def _populate(currentSet: dict) -> dict:
+		for key in currentSet.keys():
+			pass
+
 
 
 
@@ -209,10 +214,15 @@ class CharSet(BaseSet):
 	}
 
 
+	def __init__(self, newSet: ColorSetEntry) -> None:
+		stripped = CharSet._strip(newSet)
+		super().__init__(stripped)
+
+
 	@staticmethod
 	def _strip(setdict: dict):
 		"""Converts empty values to spaces, and makes sure there's only one character"""
-		newset = dict({})
+		newset = {}
 		for key in setdict.keys():
 			value = setdict[key]
 
@@ -225,6 +235,8 @@ class CharSet(BaseSet):
 
 			newset[key] = value
 		return newset
+
+
 
 
 
@@ -335,27 +347,6 @@ class FormatSet(BaseSet):
 
 
 
-
-
-
-def _getRange(range: tuple[int, int]) -> tuple[int, int]:
-	"""Return a capped range"""
-	if range:
-		if not isinstance(range, (tuple, list)):
-			raise TypeError(f"Type of value '{range}' ({type(range)}) is not a tuple/list")
-
-		for item in range:
-			if not isinstance(item, int):
-				raise TypeError(f"Type of value '{item}' ({type(item)}) in range is not int")
-
-		if len(range) == 2:
-			value1 = _capValue(range[0], range[1], 0)
-			value2 = _capValue(range[1], min=1)
-			return (value1, value2)
-		else:
-			raise ValueError("Length of sequence is not 2")
-	else:
-		return _DEFAULT_RANGE
 
 
 
@@ -504,10 +495,10 @@ class PBar():
 		self._requiresClear = False
 		self._enabled = True
 
-		self._range = list(_getRange(range))
+		self._range = list(PBar._getRange(range))
 		self._text = str(text)
 		self._format = FormatSet(format)
-		self._length = self._getLength(length)
+		self._length = PBar._getLength(length)
 		self._charset = CharSet(charset)
 		self._colorset = ColorSet(colorset)
 		self._pos = self._getPos(position)
@@ -571,7 +562,7 @@ class PBar():
 		return (self._range[0], self._range[1])
 	@range.setter
 	def range(self, range: tuple[int, int]):
-		self._range = list(_getRange(range))
+		self._range = list(PBar._getRange(range))
 
 
 	@property
@@ -607,7 +598,7 @@ class PBar():
 		return self._length
 	@length.setter
 	def length(self, length: int):
-		newlen = self._getLength(length)
+		newlen = PBar._getLength(length)
 		if newlen < self._length:
 			self._requiresClear = True		# since the bar is gonna be smaller, we need to redraw it.
 		self._oldValues[1] = self._length
@@ -718,14 +709,36 @@ class PBar():
 
 
 
-
-	def _getLength(self, length: int):
+	@staticmethod
+	def _getLength(length: int):
 		"""Get and process new length requested"""
 		if length != None:
 			tSize: tuple[int, int] = _get_terminal_size()
 			return _capValue(length, tSize[0] - 5, 5)
 		else:
 			return _DEFAULT_LEN
+
+
+
+	@staticmethod
+	def _getRange(range: tuple[int, int]) -> tuple[int, int]:
+		"""Return a capped range"""
+		if range:
+			if not isinstance(range, (tuple, list)):
+				raise TypeError(f"Type of value '{range}' ({type(range)}) is not a tuple/list")
+
+			for item in range:
+				if not isinstance(item, int):
+					raise TypeError(f"Type of value '{item}' ({type(item)}) in range is not int")
+
+			if len(range) == 2:
+				value1 = _capValue(range[0], range[1], 0)
+				value2 = _capValue(range[1], min=1)
+				return (value1, value2)
+			else:
+				raise ValueError("Length of sequence is not 2")
+		else:
+			return _DEFAULT_RANGE
 
 
 
