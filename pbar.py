@@ -19,160 +19,12 @@ _DEFAULT_RANGE = (0, 1)
 _DEFAULT_POS = ("center", "center")
 _DEFAULT_LEN = 20
 
+
 CharSetEntry = Union[str, dict[str, str]]
-CharSet = dict[str, Union[str, CharSetEntry]]
-
-_DEFAULT_CHARSETS: dict[str, CharSet] = {
-	"empty": {
-		"empty":	" ",
-		"full":		" ",
-		"vert":		" ",
-		"horiz":	" ",
-		"corner": {
-			"tleft":	" ",
-			"tright":	" ",
-			"bleft":	" ",
-			"bright":	" "
-		}
-	},
-
-	"normal": {
-		"empty":	"░",
-		"full":		"█",
-		"vert":		"│",
-		"horiz":	"─",
-		"corner": {
-			"tleft":	"┌",
-			"tright":	"┐",
-			"bleft":	"└",
-			"bright":	"┘"
-		}
-	},
-
-	"basic": {
-		"empty":	".",
-		"full":		"#",
-		"vert":		"│"
-	},
-
-	"slim": {
-		"empty":	"░",
-		"full":		"█"
-	},
-
-	"circles": {
-		"empty":	"○",
-		"full":		"●"
-	},
-
-	"basic2": {
-		"empty":	".",
-		"full":		"#",
-		"vert":		"|",
-		"horiz":	"-",
-		"corner": {
-			"tleft":	"+",
-			"tright":	"+",
-			"bleft":	"+",
-			"bright":	"+"
-		}
-	},
-
-	"full": {
-		"empty":	"█",
-		"full":		"█"
-	},
-}
 
 Color = Optional[Union[tuple[int, int, int], str]]
-ColorSet = dict[str, Union[Color, dict[str, Color]]]
-
-_DEFAULT_COLORSETS: dict[str, ColorSet] = {
-	"empty": {
-		"empty":	None,
-		"full":		None,
-		"vert":		None,
-		"horiz":	None,
-		"corner": {
-			"tleft":	None,
-			"tright":	None,
-			"bleft":	None,
-			"bright":	None,
-		},
-		"text":	{
-			"inside":	None,
-			"outside":	None,
-		}
-	},
-
-	"green-red": {
-		"empty":	(255, 0, 0),
-		"full":		(0, 255, 0)
-	},
-
-	"darvil": {
-		"empty":	(0, 103, 194),
-		"full":		(15, 219, 162),
-		"vert":		(247, 111, 152),
-		"horiz":	(247, 111, 152),
-		"corner":	{
-			"tleft":	(247, 111, 152),
-			"tright":	(247, 111, 152),
-			"bleft":	(247, 111, 152),
-			"bright":	(247, 111, 152)
-		},
-		"text": {
-			"outside":	(247, 111, 152),
-			"inside":	None
-		}
-	},
-
-	"error": {
-		"empty":	(200, 0, 0),
-		"full":		(255, 0, 0),
-		"vert":		(255, 100, 100),
-		"horiz":	(255, 100, 100),
-		"corner": {
-			"tleft":	(255, 100, 100),
-			"tright":	(255, 100, 100),
-			"bleft":	(255, 100, 100),
-			"bright":	(255, 100, 100),
-		},
-		"text": {
-			"outside":	(255, 100, 100),
-			"inside":	None
-		}
-
-	}
-}
 
 
-FormatSet = dict[str, str]
-
-_DEFAULT_FORMATTING: dict[str, FormatSet] = {
-	"empty": {
-		"inside":	"",
-		"outside":	""
-	},
-
-	"default": {
-		"inside":	"<percentage>%",
-		"outside":	"<text>"
-	},
-
-	"all-out": {
-		"outside":	"<percentage>%, <range1>/<range2>, <text>"
-	},
-
-	"all-in": {
-		"inside":	"<percentage>%, <range1>/<range2>, <text>"
-	},
-
-	"mixed": {
-		"inside":	"<percentage>%",
-		"outside":	"<text>: (<range1>/<range2>)"
-	}
-}
 
 
 
@@ -191,6 +43,7 @@ def _capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) 
 
 
 
+"""Returns a colored string from across the character indices specified."""
 _formatError: Callable[[str, int, int], str] = lambda string, start, end: string[:start] + VT100.underline + VT100.color((255, 0, 0)) + string[start:end] + VT100.reset + string[end:]
 
 
@@ -200,7 +53,7 @@ _formatError: Callable[[str, int, int], str] = lambda string, start, end: string
 
 
 
-class VT100():
+class VT100:
 	"""Class for using VT100 sequences a bit easier"""
 
 	@staticmethod
@@ -279,114 +132,204 @@ class VT100():
 
 
 
-def _getCharset(charset: Any) -> CharSet:
-		"""Return a full valid character set"""
+class CharSet:
+	EMPTY = {
+		"empty":	" ",
+		"full":		" ",
+		"vert":		" ",
+		"horiz":	" ",
+		"corner": {
+			"tleft":	" ",
+			"tright":	" ",
+			"bleft":	" ",
+			"bright":	" "
+		}
+	}
 
-		def stripCharset(charset: CharSet) -> CharSet:
-			"""Converts empty values to spaces, and makes sure there's only one character"""
-			newset = dict({})
-			for key in charset.keys():
-				value = charset[key]
+	NORMAL = {
+		"empty":	"░",
+		"full":		"█",
+		"vert":		"│",
+		"horiz":	"─",
+		"corner": {
+			"tleft":	"┌",
+			"tright":	"┐",
+			"bleft":	"└",
+			"bright":	"┘"
+		}
+	}
 
-				if isinstance(value, dict):
-					value = stripCharset(value)
-				elif len(value) > 1:
-					value = value[0]
-				elif len(value) == 0:
-					value = " "
+	BASIC = {
+		"empty":	".",
+		"full":		"#",
+		"vert":		"│"
+	}
 
-				newset[key] = value
-			return newset
+	SLIM = {
+		"empty":	"░",
+		"full":		"█"
+	}
 
+	CIRCLES = {
+		"empty":	"○",
+		"full":		"●"
+	}
 
-		if charset:
-			if isinstance(charset, str):
-				# it is a string, so we just get the default character set with that name
-				charset = _DEFAULT_CHARSETS.get(charset, _DEFAULT_CHARSETS["normal"])
-			elif isinstance(charset, dict):
-				# it is a dict
-				charset = stripCharset(charset)
+	BASIC2 = {
+		"empty":	".",
+		"full":		"#",
+		"vert":		"|",
+		"horiz":	"-",
+		"corner": {
+			"tleft":	"+",
+			"tright":	"+",
+			"bleft":	"+",
+			"bright":	"+"
+		}
+	}
 
-				if "corner" in charset.keys():
-					if isinstance(charset["corner"], str):	# this is only a str, so we just make all corners the value of this str
-						charset["corner"] = {
-							"tleft":	charset["corner"],
-							"tright":	charset["corner"],
-							"bleft":	charset["corner"],
-							"bright":	charset["corner"]
-						}
-					elif isinstance(charset["corner"], dict):
-						charset["corner"] = _DEFAULT_CHARSETS["empty"]["corner"] | charset["corner"]	# Merge corners into default dict
-			else:
-				raise TypeError(f"Invalid type ({type(charset)}) for charset")
-
-			set: CharSet = _DEFAULT_CHARSETS["empty"] | charset		# merge charset into default dict
-		else:
-			set = _DEFAULT_CHARSETS["normal"]
-
-		return set
+	FULL = {
+		"empty":	"█",
+		"full":		"█"
+	}
 
 
+	@staticmethod
+	def _strip(setdict: dict):
+		"""Converts empty values to spaces, and makes sure there's only one character"""
+		newset = dict({})
+		for key in setdict.keys():
+			value = setdict[key]
 
+			if isinstance(value, dict):
+				value = CharSet._strip(value)
+			elif len(value) > 1:
+				value = value[0]
+			elif len(value) == 0:
+				value = " "
 
-def _getColorset(colorset: Any) -> ColorSet:
-		"""Return a full valid color set"""
-		if colorset:
-			if isinstance(colorset, str):
-				colorset = _DEFAULT_COLORSETS.get(colorset, _DEFAULT_COLORSETS["empty"])
-			elif isinstance(colorset, dict):
-				colorset = _convertClrs(colorset, "RGB")
+			newset[key] = value
+		return newset
 
-				if "corner" in colorset.keys():
-					if isinstance(colorset["corner"], (tuple, list)):
-						colorset["corner"] = {
-							"tleft": 	colorset["corner"],
-							"tright": 	colorset["corner"],
-							"bleft": 	colorset["corner"],
-							"bright": 	colorset["corner"]
-						}
-					elif isinstance(colorset["corner"], dict):
-						colorset["corner"] = _DEFAULT_COLORSETS["empty"]["corner"] | colorset["corner"]
-					else:
-						raise TypeError(f"Invalid type ({type(colorset['corner'])}) for colorset")
-
-				if "text" in colorset.keys():
-					if isinstance(colorset["text"], (tuple, list)):
-						colorset["text"] = {
-							"inside":	colorset["text"],
-							"outside":	colorset["text"]
-						}
-					elif isinstance(colorset["text"], dict):
-						colorset["text"] = _DEFAULT_COLORSETS["empty"]["text"] | colorset["text"]
-					else:
-						raise TypeError(f"Invalid type ({type(colorset['text'])}) for colorset")
-
-			else:
-				raise TypeError(f"Invalid type ({type(colorset)}) for colorset")
-
-			set: ColorSet = _DEFAULT_COLORSETS["empty"] | colorset
-		else:
-			set = _DEFAULT_COLORSETS["empty"]
-
-		return set
+	@staticmethod
+	def _get(setdict: dict):
+		charset = CharSet._strip(setdict)
+		return CharSet.EMPTY | charset
 
 
 
 
-def _getFormat(formatset: Any) -> FormatSet:
-		"""Return a full valid formatting set"""
-		if formatset:
-			if isinstance(formatset, str):
-				formatset = _DEFAULT_FORMATTING.get(formatset, _DEFAULT_FORMATTING["empty"])
-			elif isinstance(formatset, dict):
-				pass
-			else:
-				raise TypeError(f"Invalid type ({type(formatset)}) for formatset")
-			set: FormatSet = _DEFAULT_FORMATTING["empty"] | formatset
-		else:
-			set = _DEFAULT_FORMATTING["default"]
 
-		return set
+
+
+
+
+class ColorSet:
+	EMPTY = {
+		"empty":	None,
+		"full":		None,
+		"vert":		None,
+		"horiz":	None,
+		"corner": {
+			"tleft":	None,
+			"tright":	None,
+			"bleft":	None,
+			"bright":	None,
+		},
+		"text":	{
+			"inside":	None,
+			"outside":	None,
+		}
+	}
+
+	GREEN_RED = {
+		"empty":	(255, 0, 0),
+		"full":		(0, 255, 0)
+	}
+
+	DARVIL = {
+		"empty":	(0, 103, 194),
+		"full":		(15, 219, 162),
+		"vert":		(247, 111, 152),
+		"horiz":	(247, 111, 152),
+		"corner":	{
+			"tleft":	(247, 111, 152),
+			"tright":	(247, 111, 152),
+			"bleft":	(247, 111, 152),
+			"bright":	(247, 111, 152)
+		},
+		"text": {
+			"outside":	(247, 111, 152),
+			"inside":	None
+		}
+	}
+
+	ERROR = {
+		"empty":	(200, 0, 0),
+		"full":		(255, 0, 0),
+		"vert":		(255, 100, 100),
+		"horiz":	(255, 100, 100),
+		"corner": {
+			"tleft":	(255, 100, 100),
+			"tright":	(255, 100, 100),
+			"bleft":	(255, 100, 100),
+			"bright":	(255, 100, 100),
+		},
+		"text": {
+			"outside":	(255, 100, 100),
+			"inside":	None
+		}
+	}
+
+
+	@staticmethod
+	def _get(setdict: dict):
+		return ColorSet.EMPTY | setdict
+
+
+
+
+
+
+
+class FormatSet:
+	EMPTY = {
+		"inside":	"",
+		"outside":	""
+	}
+
+	DEFAULT = {
+		"inside":	"<percentage>%",
+		"outside":	"<text>"
+	}
+
+	ALL_OUT = {
+		"outside":	"<percentage>%, <range1>/<range2>, <text>"
+	}
+
+	ALL_IN = {
+		"inside":	"<percentage>%, <range1>/<range2>, <text>"
+	}
+
+	MIXED = {
+		"inside":	"<percentage>%",
+		"outside":	"<text>: (<range1>/<range2>)"
+	}
+
+	def __init__(self, formatSet: "FormatSet") -> None:
+		self._newset = FormatSet.EMPTY | formatSet
+
+	def __getitem__(self, item):
+		return self._newset[item]
+
+
+
+
+
+
+
+
+
 
 
 
@@ -560,10 +503,10 @@ class PBar():
 
 		self._range = list(_getRange(range))
 		self._text = str(text)
-		self._format = _getFormat(format)
+		self._format = FormatSet(format)
 		self._length = self._getLength(length)
-		self._charset = _getCharset(charset)
-		self._colorset = _getColorset(colorset)
+		self._charset = CharSet._get(charset)
+		self._colorset = ColorSet._get(colorset)
 		self._pos = self._getPos(position)
 
 		self._oldValues = [self._pos, self._length]
@@ -633,7 +576,7 @@ class PBar():
 		return self._charset
 	@charset.setter
 	def charset(self, charset: Any):
-		self._charset = _getCharset(charset)
+		self._charset = CharSet._get(charset)
 
 
 	@property
@@ -642,7 +585,7 @@ class PBar():
 		return self._colorset
 	@colorset.setter
 	def colorset(self, colorset: Any):
-		self._colorset = _getColorset(colorset)
+		self._colorset = ColorSet._get(colorset)
 
 
 	@property
@@ -651,7 +594,7 @@ class PBar():
 		return self._format
 	@format.setter
 	def format(self, format: Any):
-		self._format = _getFormat(format)
+		self._format = FormatSet(format)
 
 
 	@property
