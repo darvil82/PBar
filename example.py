@@ -10,7 +10,8 @@ mybar = pbar.PBar(
 	format=pbar.FormatSet.MIXED,
 	charset=pbar.CharSet.SLIM,
 	colorset=pbar.ColorSet.DARVIL,
-	length=30
+	length=30,
+	position=("a", "a")
 )
 
 

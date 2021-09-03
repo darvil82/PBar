@@ -20,9 +20,10 @@ _DEFAULT_POS = ("center", "center")
 _DEFAULT_LEN = 20
 
 
-CharSetEntry = Union[str, dict[str, str]]
-
 Color = Optional[Union[tuple[int, int, int], str]]
+ColorSetEntry = dict[str, Color]
+CharSetEntry = dict[str, str]
+FormatSetEntry = dict[str, str]
 
 
 
@@ -65,11 +66,10 @@ class VT100:
 		if pos and len(pos) == 2:
 			position = list(pos)
 			for index, value in enumerate(position):
-				if isinstance(value, int):
-					value = int(value)
-					position[index] += offset[index]
-				else:
+				if not isinstance(value, int):
 					raise TypeError(f"Invalid type {type(value)} for position value")
+
+				position[index] += offset[index]
 
 			return f"\x1b[{position[1]};{position[0]}f"
 		else:
@@ -132,8 +132,23 @@ class VT100:
 
 
 
-class CharSet:
-	EMPTY = {
+class BaseSet:
+	def __init__(self, newSet: "BaseSet") -> None:
+		self._newset = self.EMPTY | newSet
+
+	def __getitem__(self, item):
+		return self._newset[item]
+
+
+
+
+
+
+
+
+
+class CharSet(BaseSet):
+	EMPTY: CharSetEntry = {
 		"empty":	" ",
 		"full":		" ",
 		"vert":		" ",
@@ -146,7 +161,7 @@ class CharSet:
 		}
 	}
 
-	NORMAL = {
+	NORMAL: CharSetEntry = {
 		"empty":	"░",
 		"full":		"█",
 		"vert":		"│",
@@ -159,23 +174,23 @@ class CharSet:
 		}
 	}
 
-	BASIC = {
+	BASIC: CharSetEntry = {
 		"empty":	".",
 		"full":		"#",
 		"vert":		"│"
 	}
 
-	SLIM = {
+	SLIM: CharSetEntry = {
 		"empty":	"░",
 		"full":		"█"
 	}
 
-	CIRCLES = {
+	CIRCLES: CharSetEntry = {
 		"empty":	"○",
 		"full":		"●"
 	}
 
-	BASIC2 = {
+	BASIC2: CharSetEntry = {
 		"empty":	".",
 		"full":		"#",
 		"vert":		"|",
@@ -188,7 +203,7 @@ class CharSet:
 		}
 	}
 
-	FULL = {
+	FULL: CharSetEntry = {
 		"empty":	"█",
 		"full":		"█"
 	}
@@ -211,10 +226,6 @@ class CharSet:
 			newset[key] = value
 		return newset
 
-	@staticmethod
-	def _get(setdict: dict):
-		charset = CharSet._strip(setdict)
-		return CharSet.EMPTY | charset
 
 
 
@@ -224,8 +235,10 @@ class CharSet:
 
 
 
-class ColorSet:
-	EMPTY = {
+
+
+class ColorSet(BaseSet):
+	EMPTY: ColorSetEntry = {
 		"empty":	None,
 		"full":		None,
 		"vert":		None,
@@ -242,12 +255,12 @@ class ColorSet:
 		}
 	}
 
-	GREEN_RED = {
+	GREEN_RED: ColorSetEntry = {
 		"empty":	(255, 0, 0),
 		"full":		(0, 255, 0)
 	}
 
-	DARVIL = {
+	DARVIL: ColorSetEntry = {
 		"empty":	(0, 103, 194),
 		"full":		(15, 219, 162),
 		"vert":		(247, 111, 152),
@@ -264,7 +277,7 @@ class ColorSet:
 		}
 	}
 
-	ERROR = {
+	ERROR: ColorSetEntry = {
 		"empty":	(200, 0, 0),
 		"full":		(255, 0, 0),
 		"vert":		(255, 100, 100),
@@ -282,45 +295,36 @@ class ColorSet:
 	}
 
 
-	@staticmethod
-	def _get(setdict: dict):
-		return ColorSet.EMPTY | setdict
 
 
 
 
 
 
-
-class FormatSet:
-	EMPTY = {
+class FormatSet(BaseSet):
+	EMPTY: FormatSetEntry = {
 		"inside":	"",
 		"outside":	""
 	}
 
-	DEFAULT = {
+	DEFAULT: FormatSetEntry = {
 		"inside":	"<percentage>%",
 		"outside":	"<text>"
 	}
 
-	ALL_OUT = {
+	ALL_OUT: FormatSetEntry = {
 		"outside":	"<percentage>%, <range1>/<range2>, <text>"
 	}
 
-	ALL_IN = {
+	ALL_IN: FormatSetEntry = {
 		"inside":	"<percentage>%, <range1>/<range2>, <text>"
 	}
 
-	MIXED = {
+	MIXED: FormatSetEntry = {
 		"inside":	"<percentage>%",
 		"outside":	"<text>: (<range1>/<range2>)"
 	}
 
-	def __init__(self, formatSet: "FormatSet") -> None:
-		self._newset = FormatSet.EMPTY | formatSet
-
-	def __getitem__(self, item):
-		return self._newset[item]
 
 
 
@@ -337,19 +341,19 @@ class FormatSet:
 def _getRange(range: tuple[int, int]) -> tuple[int, int]:
 	"""Return a capped range"""
 	if range:
-		if isinstance(range, (tuple, list)):
-			for item in range:
-				if not isinstance(item, int):
-					raise TypeError(f"Type of value '{item}' ({type(item)}) in range is not int")
-
-			if len(range) == 2:
-				value1 = _capValue(range[0], range[1], 0)
-				value2 = _capValue(range[1], min=1)
-				return (value1, value2)
-			else:
-				raise ValueError("Length of sequence is not 2")
-		else:
+		if not isinstance(range, (tuple, list)):
 			raise TypeError(f"Type of value '{range}' ({type(range)}) is not a tuple/list")
+
+		for item in range:
+			if not isinstance(item, int):
+				raise TypeError(f"Type of value '{item}' ({type(item)}) in range is not int")
+
+		if len(range) == 2:
+			value1 = _capValue(range[0], range[1], 0)
+			value2 = _capValue(range[1], min=1)
+			return (value1, value2)
+		else:
+			raise ValueError("Length of sequence is not 2")
 	else:
 		return _DEFAULT_RANGE
 
@@ -378,11 +382,10 @@ def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, d
 			return clr
 
 	elif type == "HEX":
-		if isinstance(clr, (tuple, list)) and len(clr) == 3:
-			capped = tuple(_capValue(value, 255, 0) for value in clr)
-			return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
-		else:
-			return clr
+		if not isinstance(clr, (tuple, list)) and len(clr) == 3: return clr
+
+		capped = tuple(_capValue(value, 255, 0) for value in clr)
+		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
 
 
 
@@ -505,24 +508,25 @@ class PBar():
 		self._text = str(text)
 		self._format = FormatSet(format)
 		self._length = self._getLength(length)
-		self._charset = CharSet._get(charset)
-		self._colorset = ColorSet._get(colorset)
+		self._charset = CharSet(charset)
+		self._colorset = ColorSet(colorset)
 		self._pos = self._getPos(position)
 
 		self._oldValues = [self._pos, self._length]
 
 		if inherit:
-			if isinstance(inherit, PBar):
-				self.config = inherit.config	# Get config from the object to inherit from, and apply it to ours
-				if range:		self.range = range
-				if text:		self.text = text
-				if format:		self.format = format
-				if length:		self.length = length
-				if charset:		self.charset = charset
-				if colorset:	self.colorset = colorset
-				if position:	self.position = position
-			else:
+			if not isinstance(inherit, PBar):
 				raise TypeError(f"Type {type(inherit)} is not a PBar object")
+
+			self.config = inherit.config	# Get config from the object to inherit from, and apply it to ours
+			if range:		self.range = range
+			if text:		self.text = text
+			if format:		self.format = format
+			if length:		self.length = length
+			if charset:		self.charset = charset
+			if colorset:	self.colorset = colorset
+			if position:	self.position = position
+
 
 
 
@@ -576,7 +580,7 @@ class PBar():
 		return self._charset
 	@charset.setter
 	def charset(self, charset: Any):
-		self._charset = CharSet._get(charset)
+		self._charset = CharSet(charset)
 
 
 	@property
@@ -585,7 +589,7 @@ class PBar():
 		return self._colorset
 	@colorset.setter
 	def colorset(self, colorset: Any):
-		self._colorset = ColorSet._get(colorset)
+		self._colorset = ColorSet(colorset)
 
 
 	@property
@@ -696,7 +700,7 @@ class PBar():
 
 			if isinstance(position, (tuple, list)):
 				for index, value in enumerate(position):
-					if isinstance(value, str) and value == "center":
+					if value == "center":
 						value = int(tSize[index] / 2)
 					elif isinstance(value, (int, float)):
 						if index == 0:
