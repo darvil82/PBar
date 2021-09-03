@@ -5,13 +5,16 @@ from time import sleep
 
 
 mybar = pbar.PBar(
-	range=(0, 67),
+	range=(14, 67),
 	text="Loading",
-	format=pbar.FormatSet.MIXED,
-	charset=pbar.CharSet.SLIM,
+	charset={
+		"empty":	"H",
+		"full":		"X",
+		"corner":	"O"
+	},
 	colorset=pbar.ColorSet.DARVIL,
-	length=30,
-	position=("a", "a")
+	format=pbar.FormatSet.MIXED,
+	length=30
 )
 
 
