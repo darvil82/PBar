@@ -4,12 +4,12 @@ PBar module for displaying custom progress bars for Python 3.9+
 GitHub Repository:		https://github.com/DarviL82/PBar
 """
 
-from typing import Any, Callable, Optional, SupportsInt, TypeVar, Union, cast, Sequence
-from os import get_terminal_size as _get_terminal_size, system as _runsys
-
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.6.5"
+__version__ = "0.7.0"
+
+from typing import Any, Optional, SupportsInt, TypeVar, Union, cast, Sequence
+from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -27,25 +27,59 @@ FormatSetEntry = dict[str, str]
 
 
 
-
-
-
 Num = TypeVar("Num", int, float)
 
 def _capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) -> Num:
     """Clamp a value to a minimum and/or maximum value."""
 
-    if max != None and value > max:
+    if max is not None and value > max:
         return max
-    elif min != None and value < min:
+    elif min is not None and value < min:
         return min
     else:
         return value
 
 
 
-"""Returns a colored string from across the character indices specified."""
-_formatError: Callable[[str, int, int], str] = lambda string, start, end: string[:start] + VT100.underline + VT100.color((255, 0, 0)) + string[start:end] + VT100.reset + string[end:]
+
+def _formatError(string, start, end):
+	"""Returns a colored string across the character indices specified."""
+
+	return (
+		string[:start] +
+		VT100.underline + VT100.color((255, 0, 0)) + string[start:end] + VT100.reset +
+		string[end:]
+	)
+
+
+
+
+def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, dict]:
+	"""Convert color values to HEX and vice-versa
+	@clr:	Color value to convert.
+	@type:	Type of conversion to do ('RGB' or 'HEX')"""
+
+	if isinstance(clr, dict):
+		endDict = {}
+		for key in clr.keys():
+			endDict[key] = _convertClrs(clr[key], type)
+		return endDict
+
+	if type == "RGB":
+		if isinstance(clr, str) and clr.startswith("#"):
+			clr = clr.lstrip("#")
+			try:
+				return tuple(int(clr[i:i+2], 16) for i in (0, 2, 4))
+			except ValueError:
+				return
+		else:
+			return clr
+
+	elif type == "HEX":
+		if not isinstance(clr, (tuple, list)) and len(clr) == 3: return clr
+
+		capped = tuple(_capValue(value, 255, 0) for value in clr)
+		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
 
 
 
@@ -63,32 +97,35 @@ class VT100:
 		@pos: This tuple can contain either ints, or strings with the value `center` to specify the center of the terminal.
 		@offset: Offset applied to `pos`. (Can be negative)
 		"""
-		if pos and len(pos) == 2:
-			position = list(pos)
-			for index, value in enumerate(position):
-				if not isinstance(value, int):
-					raise TypeError(f"Invalid type {type(value)} for position value")
 
-				position[index] += offset[index]
+		position = list((pos[0], pos[1]))
+		for index, value in enumerate(position):
+			if not isinstance(value, int):
+				raise TypeError(f"Invalid type {type(value)} for position value")
 
-			return f"\x1b[{position[1]};{position[0]}f"
-		else:
-			return ""
+			position[index] += offset[index]
+
+		return f"\x1b[{position[1]};{position[0]}f"
+
 
 	@staticmethod
 	def color(rgb: Optional[Sequence[int]], bg: bool = False):
 		"""Color of the cursor.
 		@rgb:	Tuple with three values from 0 to 255. (RED GREEN BLUE)
 		@bg:	This color will be displayed on the background"""
-		if rgb and len(rgb) == 3:
-			rgb = [_capValue(value, 255, 0) for value in rgb]
-			if bg:
-				return f"\x1b[48;2;{rgb[0]};{rgb[1]};{rgb[2]}m"
-			else:
-				return f"\x1b[38;2;{rgb[0]};{rgb[1]};{rgb[2]}m"
 
-		else:
+		if not isinstance(rgb, (tuple, list)):
 			return ""
+		elif len(rgb) != 3:
+			raise ValueError("Sequence must have 3 items")
+
+		rgb = [_capValue(value, 255, 0) for value in rgb]
+		if bg:
+			return f"\x1b[48;2;{rgb[0]};{rgb[1]};{rgb[2]}m"
+		else:
+			return f"\x1b[38;2;{rgb[0]};{rgb[1]};{rgb[2]}m"
+
+
 
 	@staticmethod
 	def moveHoriz(pos: SupportsInt):
@@ -99,6 +136,7 @@ class VT100:
 		else:
 			return f"\x1b[{pos}C"
 
+
 	@staticmethod
 	def moveVert(pos: SupportsInt):
 		"""Move the cursor vertically `pos` lines (supports negative numbers)."""
@@ -107,6 +145,7 @@ class VT100:
 			return f"\x1b[{abs(pos)}A"
 		else:
 			return f"\x1b[{pos}B"
+
 
 	# simple sequences that dont require parsing
 	reset =			"\x1b[0m"
@@ -132,27 +171,65 @@ class VT100:
 
 
 
-class BaseSet:
+class _BaseSet:
+	"""Base class for all the customizable sets for the bar (colorset, charset, formatset)"""
+
 	def __init__(self, newSet: dict) -> None:
-		self._newset = self.EMPTY | newSet
+		if isinstance(newSet, dict):
+			self._newset = self._populate(self.EMPTY | newSet)
+		else:
+			self._newset = self.DEFAULT
+
+
+
+	def keys(self):
+		return self._newset.keys()
+
 
 	def __getitem__(self, item) -> dict:
 		return self._newset[item]
 
-	def _populate(currentSet: dict) -> dict:
+
+	def __or__(self, other):
+		new = dict(self._newset)
+		new.update(other)
+		return new
+
+
+	def __ior__(self, other):
+		dict.update(self._newset, other)
+		return self._newset
+
+
+	def __repr__(self) -> str:
+		return f"{self.__class__.__name__}({self._newset})"
+
+
+	def _populate(self, currentSet: dict) -> dict:
+		"""Return a new set with all the necessary keys for drawing the bar, making sure that no keys are missing."""
+
+		newSet = {}
 		for key in currentSet.keys():
-			pass
+			currentValue = currentSet[key]
+			defaultSetValue = self.EMPTY[key]
+
+			if not isinstance(currentValue, dict) and isinstance(defaultSetValue, dict):
+				newSet[key] = {}
+				for subkey in defaultSetValue.keys():
+					newSet[key][subkey] = currentValue
+			elif isinstance(currentValue, dict):
+				newSet[key] = defaultSetValue | currentValue
+			else:
+				newSet[key] = currentValue
+
+		return newSet
 
 
 
 
+class CharSet(_BaseSet):
+	"""Container for the character sets."""
 
-
-
-
-
-
-class CharSet(BaseSet):
 	EMPTY: CharSetEntry = {
 		"empty":	" ",
 		"full":		" ",
@@ -166,7 +243,7 @@ class CharSet(BaseSet):
 		}
 	}
 
-	NORMAL: CharSetEntry = {
+	DEFAULT: CharSetEntry = {
 		"empty":	"░",
 		"full":		"█",
 		"vert":		"│",
@@ -214,14 +291,17 @@ class CharSet(BaseSet):
 	}
 
 
-	def __init__(self, newSet: ColorSetEntry) -> None:
-		stripped = CharSet._strip(newSet)
-		super().__init__(stripped)
+	def __init__(self, newSet: CharSetEntry) -> None:
+		super().__init__(newSet)
+		self._newset = CharSet._strip(self._newset)
 
 
 	@staticmethod
 	def _strip(setdict: dict):
 		"""Converts empty values to spaces, and makes sure there's only one character"""
+		if not setdict:
+			return
+
 		newset = {}
 		for key in setdict.keys():
 			value = setdict[key]
@@ -234,22 +314,15 @@ class CharSet(BaseSet):
 				value = " "
 
 			newset[key] = value
+
 		return newset
 
 
 
 
+class ColorSet(_BaseSet):
+	"""Container for the color sets."""
 
-
-
-
-
-
-
-
-
-
-class ColorSet(BaseSet):
 	EMPTY: ColorSetEntry = {
 		"empty":	None,
 		"full":		None,
@@ -266,6 +339,8 @@ class ColorSet(BaseSet):
 			"outside":	None,
 		}
 	}
+
+	DEFAULT = EMPTY
 
 	GREEN_RED: ColorSetEntry = {
 		"empty":	(255, 0, 0),
@@ -307,13 +382,15 @@ class ColorSet(BaseSet):
 	}
 
 
+	def __init__(self, newSet: ColorSetEntry) -> None:
+		super().__init__(_convertClrs(newSet, "RGB"))	# Convert all hex values to rgb tuples
 
 
 
 
+class FormatSet(_BaseSet):
+	"""Container for the formatting sets."""
 
-
-class FormatSet(BaseSet):
 	EMPTY: FormatSetEntry = {
 		"inside":	"",
 		"outside":	""
@@ -336,47 +413,6 @@ class FormatSet(BaseSet):
 		"inside":	"<percentage>%",
 		"outside":	"<text>: (<range1>/<range2>)"
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, dict]:
-	"""Convert color values to HEX and vice-versa
-	@clr:	Color value to convert.
-	@type:	Type of conversion to do ('RGB' or 'HEX')"""
-
-	if isinstance(clr, dict):
-		endDict = {}
-		for key in clr.keys():
-			endDict[key] = _convertClrs(clr[key], type)
-		return endDict
-
-	if type == "RGB":
-		if isinstance(clr, str) and clr.startswith("#"):
-			clr = clr.lstrip("#")
-			try:
-				return tuple(int(clr[i:i+2], 16) for i in (0, 2, 4))
-			except ValueError:
-				return
-		else:
-			return clr
-
-	elif type == "HEX":
-		if not isinstance(clr, (tuple, list)) and len(clr) == 3: return clr
-
-		capped = tuple(_capValue(value, 255, 0) for value in clr)
-		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
 
 
 
@@ -445,8 +481,10 @@ class PBar():
 		---
 
 		@charset: Set of characters to use when drawing the progress bar.
-		This value can either be a string which will specify a default character set to use, or a dictionary, which should specify the custom characters:
-		- Available default character sets: `empty`, `normal`, `basic`, `basic2`, `slim`, `circles` and `full`.
+
+		To use one of the included sets, use any of the constant values in `pbar.CharSet`.
+
+		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom characters:
 		- Custom character set dictionary:
 
 				![image](https://user-images.githubusercontent.com/48654552/127887419-acee1b4f-de1b-4cc7-a1a6-1be75c7f97c9.png)
@@ -456,8 +494,10 @@ class PBar():
 		---
 
 		@colorset: Set of colors to use when drawing the progress bar.
-		This value can either be a string which will specify a default color set to use, or a dictionary, which should specify the custom colors:
-		- Available default color sets: `empty`, `green-red` and `darvil`.
+
+		To use one of the included sets, use any of the constant values in `pbar.ColorSet`.
+
+		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom colors:
 		- Custom color set dictionary:
 
 				![image](https://user-images.githubusercontent.com/48654552/127904550-15001058-cbf2-4ebf-a543-8d6566e9ef36.png)
@@ -474,9 +514,11 @@ class PBar():
 		---
 
 		@format: Formatting used when displaying the values inside and outside the bar.
-		This value can either be a string which will specify a default formatting set to use, or a dictionary, which should specify the custom formats:
-		- Available default formatting sets: `empty`, `default`, `all-out`, `all-in` and `mixed`.
-		- Custom color set dictionary:
+
+		To use one of the included sets, use any of the constant values in `pbar.FormatSet`.
+
+		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom formatting:
+		- Custom formatset dictionary:
 
 				![image](https://user-images.githubusercontent.com/48654552/127889950-9b31d7eb-9a52-442b-be7f-8b9df23b15ae.png)
 
@@ -684,68 +726,70 @@ class PBar():
 
 	def _getPos(self, position: Optional[Sequence[Any]]) -> tuple[int, int]:
 		"""Get and process new position requested"""
-		if not position: position = _DEFAULT_POS
-		if len(position) == 2:
-			newpos = []
-			tSize: tuple[int, int] = _get_terminal_size()
-
-			if isinstance(position, (tuple, list)):
-				for index, value in enumerate(position):
-					if value == "center":
-						value = int(tSize[index] / 2)
-					elif isinstance(value, (int, float)):
-						if index == 0:
-							value = _capValue(value, tSize[0] - self._length / 2 + 2, self._length / 2 + 2)
-						else:
-							value = _capValue(value, tSize[1] - 3, 1)
-
-						value = int(value)
-					else:
-						raise TypeError(f"Type of value {value} ({type(value)}) is not valid")
-					newpos.append(value)
-				return newpos
-		else:
+		if not position:
+			position = _DEFAULT_POS
+		elif not isinstance(position, (tuple, list)):
 			raise TypeError(f"Type of position ({type(position)}) is not Sequence")
+
+		newpos = []
+		tSize: tuple[int, int] = _get_terminal_size()
+
+		for index, value in enumerate(position):
+			if value == "center":
+				value = int(tSize[index] / 2)
+			elif not isinstance(value, (int, float)):
+				raise TypeError(f"Type of value {value} ({type(value)}) is not valid")
+
+			if index == 0:
+				value = _capValue(value, tSize[0] - self._length / 2 + 2, self._length / 2 + 2)
+			else:
+				value = _capValue(value, tSize[1] - 3, 1)
+
+			value = int(value)
+			newpos.append(value)
+		return newpos
+
 
 
 
 	@staticmethod
 	def _getLength(length: int):
 		"""Get and process new length requested"""
-		if length != None:
-			tSize: tuple[int, int] = _get_terminal_size()
-			return _capValue(length, tSize[0] - 5, 5)
-		else:
+		if length is None:
 			return _DEFAULT_LEN
+
+		tSize: tuple[int, int] = _get_terminal_size()
+		return _capValue(length, tSize[0] - 5, 5)
+
 
 
 
 	@staticmethod
 	def _getRange(range: tuple[int, int]) -> tuple[int, int]:
 		"""Return a capped range"""
-		if range:
-			if not isinstance(range, (tuple, list)):
-				raise TypeError(f"Type of value '{range}' ({type(range)}) is not a tuple/list")
-
-			for item in range:
-				if not isinstance(item, int):
-					raise TypeError(f"Type of value '{item}' ({type(item)}) in range is not int")
-
-			if len(range) == 2:
-				value1 = _capValue(range[0], range[1], 0)
-				value2 = _capValue(range[1], min=1)
-				return (value1, value2)
-			else:
-				raise ValueError("Length of sequence is not 2")
-		else:
+		if not range:
 			return _DEFAULT_RANGE
+		elif not isinstance(range, (tuple, list)):
+			raise TypeError(f"Type of value '{range}' ({type(range)}) is not a tuple/list")
+
+		for item in range:
+			if not isinstance(item, int):
+				raise TypeError(f"Type of value '{item}' ({type(item)}) in range is not int")
+
+		if len(range) == 2:
+			value1 = _capValue(range[0], range[1], 0)
+			value2 = _capValue(range[1], min=1)
+			return (value1, value2)
+		else:
+			raise ValueError("Length of sequence is not 2")
+
 
 
 
 
 	def _parseFormat(self, string: str) -> str:
 		"""Parse a string that may contain formatting keys"""
-		if not string: return ""
+		if string is None: return ""
 		ignoreChars = "\x1b\n\r\b\a\f\v"	# Ignore this characters entirely
 		text = ""							# string supplied without "poison" characters
 
@@ -852,7 +896,7 @@ class PBar():
 		def buildTop() -> str:
 			left = VT100.color(self._colorsetCorner["tleft"]) + self._charsetCorner["tleft"] + VT100.reset
 			middle = VT100.color(self._color("horiz")) + self._char("horiz") * (self._length + 2) + VT100.reset
-			right = VT100.color(self._colorsetCorner["tleft"]) + self._charsetCorner["tright"] + VT100.reset
+			right = VT100.color(self._colorsetCorner["tright"]) + self._charsetCorner["tright"] + VT100.reset
 
 			return VT100.pos(self._pos, (centerOffset, 0)) + left + middle + right
 
