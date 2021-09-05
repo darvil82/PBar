@@ -6,7 +6,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ["PBar"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.7.0"
+__version__ = "0.7.1"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, cast, Sequence
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -455,9 +455,11 @@ class PBar():
 	- mybar.percentage
 	- mybar.text
 	- mybar.range
+	- mybar.length
+	- mybar.position
 	- mybar.charset
 	- mybar.colorset
-	- mybar.format
+	- mybar.formatset
 	- mybar.enabled
 	- mybar.config
 	"""
@@ -468,7 +470,7 @@ class PBar():
 			position: Union[str, tuple[int, int]] = None,
 			charset: Optional[CharSetEntry] = None,
 			colorset: Optional[ColorSetEntry] = None,
-			format: Optional[FormatSetEntry] = None,
+			formatset: Optional[FormatSetEntry] = None,
 			inherit: "PBar" = None
 		) -> None:
 		"""
@@ -484,6 +486,12 @@ class PBar():
 		@length: Intenger that specifies how long the bar will be. Default value is `20`.
 
 		---
+
+		@position: Tuple containing the position (X and Y axles of the center) of the progress bar on the terminal.
+		If a value is `center`, the bar will be positioned at the center of the terminal on that axis. Default value is `("center", "center")`
+
+		---
+
 
 		@charset: Set of characters to use when drawing the progress bar.
 
@@ -513,12 +521,7 @@ class PBar():
 
 		---
 
-		@position: Tuple containing the position (X and Y axles of the center) of the progress bar on the terminal.
-		If a value is `center`, the bar will be positioned at the center of the terminal on that axis. Default value is `("center", "center")`
-
-		---
-
-		@format: Formatting used when displaying the values inside and outside the bar.
+		@formatset: Formatting used when displaying the values inside and outside the bar.
 
 		To use one of the included sets, use any of the constant values in `pbar.FormatSet`.
 
@@ -544,7 +547,7 @@ class PBar():
 
 		self._range = list(PBar._getRange(range))
 		self._text = str(text)
-		self._format = FormatSet(format)
+		self._formatset = FormatSet(formatset)
 		self._length = PBar._getLength(length)
 		self._charset = CharSet(charset)
 		self._colorset = ColorSet(colorset)
@@ -559,7 +562,7 @@ class PBar():
 			self.config = inherit.config	# Get config from the object to inherit from, and apply it to ours
 			if range:		self.range = range
 			if text:		self.text = text
-			if format:		self.format = format
+			if formatset:	self.formatset = formatset
 			if length:		self.length = length
 			if charset:		self.charset = charset
 			if colorset:	self.colorset = colorset
@@ -617,7 +620,7 @@ class PBar():
 		"""Set of characters for the bar"""
 		return self._charset
 	@charset.setter
-	def charset(self, charset: Any):
+	def charset(self, charset: CharSetEntry):
 		self._charset = CharSet(charset)
 
 
@@ -626,17 +629,17 @@ class PBar():
 		"""Set of colors for the bar"""
 		return self._colorset
 	@colorset.setter
-	def colorset(self, colorset: Any):
+	def colorset(self, colorset: ColorSetEntry):
 		self._colorset = ColorSet(colorset)
 
 
 	@property
-	def format(self) -> FormatSetEntry:
+	def formatset(self) -> FormatSetEntry:
 		"""Formatting used for the bar"""
-		return self._format
-	@format.setter
-	def format(self, format: Any):
-		self._format = FormatSet(format)
+		return self._formatset
+	@formatset.setter
+	def formatset(self, formatset: FormatSetEntry):
+		self._formatset = FormatSet(formatset)
 
 
 	@property
@@ -679,19 +682,19 @@ class PBar():
 	def config(self) -> dict:
 		"""All the values of the progress bar stored in a dict"""
 		return {
-			"range":	self._range,
-			"text":		self._text,
-			"length":	self._length,
-			"position":	self._pos,
-			"charset":	self._charset,
-			"colorset":	_convertClrs(self._colorset, "HEX"),
-			"format":	self._format,
-			"enabled":	self._enabled
+			"range":		self._range,
+			"text":			self._text,
+			"length":		self._length,
+			"position":		self._pos,
+			"charset":		self._charset,
+			"colorset":		_convertClrs(self._colorset, "HEX"),
+			"formatset":	self._formatset,
+			"enabled":		self._enabled
 		}
 	@config.setter
 	def config(self, config: dict[str, Any]):
 		if isinstance(config, dict):
-			for key in {"range", "text", "length", "position", "charset", "colorset", "format", "enabled"}:
+			for key in {"range", "text", "length", "position", "charset", "colorset", "formatset", "enabled"}:
 				# Move through every key in the dict and populate the config of the class with its values
 				if key in config.keys(): setattr(self, key, config[key])
 
@@ -874,7 +877,7 @@ class PBar():
 		centerOffset = int((length + 2) / -2)		# Number of characters from the end of the bar to the center
 
 		top = VT100.pos(pos, (centerOffset, 0)) + " " * (length + 4)
-		middle = VT100.pos(pos, (centerOffset, 1)) + " " * (length + 5 + len(self._parseFormat(self._format["outside"])))
+		middle = VT100.pos(pos, (centerOffset, 1)) + " " * (length + 5 + len(self._parseFormat(self._formatset["outside"])))
 		bottom = VT100.pos(pos, (centerOffset, 2)) + " " * (length + 4)
 
 		print(VT100.CURSOR_SAVE, top, middle, bottom, VT100.CURSOR_LOAD, sep="", end="", flush=True)
@@ -915,12 +918,12 @@ class PBar():
 			middle = VT100.color(self._color("full")) + self._char("full") * segmentsFull + VT100.RESET + VT100.color(self._color("empty")) + self._char("empty") * segmentsEmpty + VT100.RESET
 
 			# ---------- Build the content outside the bar ----------
-			extra = self._parseFormat(self._format["outside"])
+			extra = self._parseFormat(self._formatset["outside"])
 			extraFormatted = VT100.CLEAR_RIGHT + VT100.color(self._colorsetText["outside"]) + extra + VT100.RESET
 
 
 			# ---------- Build the content inside the bar ----------
-			info = self._parseFormat(self._format["inside"])
+			info = self._parseFormat(self._formatset["inside"])
 			if len(info) > self._length - 3:
 				# if the text is bigger than the size of the bar, we just cut it and add '...' at the end
 				info = info[:self._length - 5] + "... "

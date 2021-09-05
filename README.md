@@ -18,7 +18,7 @@ mybar = pbar.PBar(
 			"outside":	(255, 189, 0)
 		}
 	},
-	format=pbar.FormatSet.MIXED
+	formatset=pbar.FormatSet.MIXED
 )
 
 
