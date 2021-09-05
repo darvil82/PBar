@@ -1,23 +1,20 @@
 #!/bin/env python3.9
 
-from pbar import PBar
+import pbar
 from time import sleep
 
 
-mybar = PBar(
+mybar = pbar.PBar(
 	range=(0, 67),
 	text="Loading",
-	charset="slim",
+	charset=pbar.CharSet.SLIM,
 	length=30,
 	colorset={
 		"text": {
 			"outside":	(255, 189, 0)
 		}
 	},
-	format={
-		"inside":	"<percentage>%!",
-		"outside":	"[<range1>/<range2>] -><text>\<-"
-	}
+	format=pbar.FormatSet.MIXED
 )
 
 
@@ -40,12 +37,11 @@ try:
 
 except KeyboardInterrupt:
 	mybar.text = "Interrupted!"
-	mybar.colorset = "error"
+	mybar.colorset = pbar.ColorSet.ERROR
 
 
 mybar.draw()
 sleep(1)
 mybar.clear()
-
 
 print("Finished!")
