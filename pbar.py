@@ -47,7 +47,7 @@ def _formatError(string, start, end):
 
 	return (
 		string[:start] +
-		VT100.underline + VT100.color((255, 0, 0)) + string[start:end] + VT100.reset +
+		VT100.UNDERLINE + VT100.color((255, 0, 0)) + string[start:end] + VT100.RESET +
 		string[end:]
 	)
 
@@ -97,6 +97,11 @@ class VT100:
 		@pos: This tuple can contain either ints, or strings with the value `center` to specify the center of the terminal.
 		@offset: Offset applied to `pos`. (Can be negative)
 		"""
+
+		if not isinstance(pos, (tuple, list)):
+			raise TypeError("Sequence must have 3 items")
+		elif len(pos) != 2:
+			raise TypeError(f"Type of position ({type(pos)}) is not Sequence")
 
 		position = list((pos[0], pos[1]))
 		for index, value in enumerate(position):
@@ -148,21 +153,22 @@ class VT100:
 
 
 	# simple sequences that dont require parsing
-	reset =			"\x1b[0m"
-	invert =		"\x1b[7m"
-	noInvert =		"\x1b[27m"
-	clearLine =		"\x1b[2K"
-	clearRight =	"\x1b[0K"
-	clearLeft =		"\x1b[1K"
-	clearDown =		"\x1b[0J"
-	cursorShow =	"\x1b[?25h"
-	cursorHide =	"\x1b[?25l"
-	cursorSave =	"\x1b7"
-	cursorLoad =	"\x1b8"
-	bufferNew =		"\x1b[?1049h"
-	bufferOld =		"\x1b[?1049l"
-	underline =		"\x1b[4m"
-	noUnderline =	"\x1b[24m"
+	RESET =			"\x1b[0m"
+	INVERT =		"\x1b[7m"
+	NO_INVERT =		"\x1b[27m"
+	CLEAR_LINE =	"\x1b[2K"
+	CLEAR_RIGHT =	"\x1b[0K"
+	CLEAR_LEFT =	"\x1b[1K"
+	CLEAR_DOWN =	"\x1b[0J"
+	CLEAR_ALL =		"\x1b[2J"
+	CURSOR_SHOW =	"\x1b[?25h"
+	CURSOR_HIDE =	"\x1b[?25l"
+	CURSOR_SAVE =	"\x1b7"
+	CURSOR_LOAD =	"\x1b8"
+	BUFFER_NEW =	"\x1b[?1049h"
+	BUFFER_OLD =	"\x1b[?1049l"
+	UNDERLINE =		"\x1b[4m"
+	NO_UNDERLINE =	"\x1b[24m"
 
 
 
@@ -230,15 +236,15 @@ class CharSet(_BaseSet):
 	"""Container for the character sets."""
 
 	EMPTY: CharSetEntry = {
-		"empty":	" ",
-		"full":		" ",
-		"vert":		" ",
-		"horiz":	" ",
+		"empty":	"",
+		"full":		"",
+		"vert":		"",
+		"horiz":	"",
 		"corner": {
-			"tleft":	" ",
-			"tright":	" ",
-			"bleft":	" ",
-			"bright":	" "
+			"tleft":	"",
+			"tright":	"",
+			"bleft":	"",
+			"bright":	""
 		}
 	}
 
@@ -871,7 +877,7 @@ class PBar():
 		middle = VT100.pos(pos, (centerOffset, 1)) + " " * (length + 5 + len(self._parseFormat(self._format["outside"])))
 		bottom = VT100.pos(pos, (centerOffset, 2)) + " " * (length + 4)
 
-		print(VT100.cursorSave, top, middle, bottom, VT100.cursorLoad, sep="", end="", flush=True)
+		print(VT100.CURSOR_SAVE, top, middle, bottom, VT100.CURSOR_LOAD, sep="", end="", flush=True)
 
 
 
@@ -893,9 +899,9 @@ class PBar():
 
 		# Build all the parts of the progress bar
 		def buildTop() -> str:
-			left = VT100.color(self._colorsetCorner["tleft"]) + self._charsetCorner["tleft"] + VT100.reset
-			middle = VT100.color(self._color("horiz")) + self._char("horiz") * (self._length + 2) + VT100.reset
-			right = VT100.color(self._colorsetCorner["tright"]) + self._charsetCorner["tright"] + VT100.reset
+			left = VT100.color(self._colorsetCorner["tleft"]) + self._charsetCorner["tleft"] + VT100.RESET
+			middle = VT100.color(self._color("horiz")) + self._char("horiz") * (self._length + 2) + VT100.RESET
+			right = VT100.color(self._colorsetCorner["tright"]) + self._charsetCorner["tright"] + VT100.RESET
 
 			return VT100.pos(self._pos, (centerOffset, 0)) + left + middle + right
 
@@ -905,12 +911,12 @@ class PBar():
 			segmentsFull = segments
 			segmentsEmpty = self._length - segmentsFull
 
-			vert = VT100.color(self._color("vert")) + self._char("vert") + VT100.reset
-			middle = VT100.color(self._color("full")) + self._char("full") * segmentsFull + VT100.reset + VT100.color(self._color("empty")) + self._char("empty") * segmentsEmpty + VT100.reset
+			vert = VT100.color(self._color("vert")) + self._char("vert") + VT100.RESET
+			middle = VT100.color(self._color("full")) + self._char("full") * segmentsFull + VT100.RESET + VT100.color(self._color("empty")) + self._char("empty") * segmentsEmpty + VT100.RESET
 
 			# ---------- Build the content outside the bar ----------
 			extra = self._parseFormat(self._format["outside"])
-			extraFormatted = VT100.clearRight + VT100.color(self._colorsetText["outside"]) + extra + VT100.reset
+			extraFormatted = VT100.CLEAR_RIGHT + VT100.color(self._colorsetText["outside"]) + extra + VT100.RESET
 
 
 			# ---------- Build the content inside the bar ----------
@@ -922,14 +928,14 @@ class PBar():
 
 
 			if self.percentage < 50:
-				if self._charset["empty"] == "█":	infoFormatted += VT100.invert
+				if self._charset["empty"] == "█":	infoFormatted += VT100.INVERT
 				if not self._colorsetText["inside"]:	infoFormatted += VT100.color(self._color("empty"))
 			else:
-				if self._charset["full"] == "█":	infoFormatted += VT100.invert
+				if self._charset["full"] == "█":	infoFormatted += VT100.INVERT
 				if not self._colorsetText["inside"]:	infoFormatted += VT100.color(self._color("full"))
 
 
-			infoFormatted += info + VT100.reset
+			infoFormatted += info + VT100.RESET
 			# ---------- //////////////////////////////// ----------
 
 			return (
@@ -939,9 +945,9 @@ class PBar():
 
 
 		def buildBottom() -> str:
-			left = VT100.color(self._colorsetCorner["bleft"]) + self._charsetCorner["bleft"] + VT100.reset
-			middle = VT100.color(self._color("horiz")) + self._char("horiz") * (self._length + 2) + VT100.reset
-			right = VT100.color(self._colorsetCorner["bright"]) + self._charsetCorner["bright"] + VT100.reset
+			left = VT100.color(self._colorsetCorner["bleft"]) + self._charsetCorner["bleft"] + VT100.RESET
+			middle = VT100.color(self._color("horiz")) + self._char("horiz") * (self._length + 2) + VT100.RESET
+			right = VT100.color(self._colorsetCorner["bright"]) + self._charsetCorner["bright"] + VT100.RESET
 
 			return VT100.pos(self._pos, (centerOffset, 2)) + left + middle + right
 
@@ -949,11 +955,11 @@ class PBar():
 
 		# Draw the bar
 		print(
-			VT100.cursorSave,
+			VT100.CURSOR_SAVE,
 			buildTop(),
 			buildMid(),
 			buildBottom(),
-			VT100.cursorLoad,
+			VT100.CURSOR_LOAD,
 
 			sep="", end="", flush=True
 		)
