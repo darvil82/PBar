@@ -461,9 +461,9 @@ class PBar():
 			text: str = "",
 			length: int = None,
 			position: Union[str, tuple[int, int]] = None,
-			charset: Union[None, str, dict[str, str]] = None,
-			colorset: Union[None, str, dict[str, tuple[int, int, int]]] = None,
-			format: Union[None, str, dict[str, str]] = None,
+			charset: Optional[CharSetEntry] = None,
+			colorset: Optional[ColorSetEntry] = None,
+			format: Optional[FormatSetEntry] = None,
 			inherit: "PBar" = None
 		) -> None:
 		"""
@@ -608,7 +608,7 @@ class PBar():
 
 
 	@property
-	def charset(self) -> CharSet:
+	def charset(self) -> CharSetEntry:
 		"""Set of characters for the bar"""
 		return self._charset
 	@charset.setter
@@ -617,7 +617,7 @@ class PBar():
 
 
 	@property
-	def colorset(self) -> ColorSet:
+	def colorset(self) -> ColorSetEntry:
 		"""Set of colors for the bar"""
 		return self._colorset
 	@colorset.setter
@@ -626,7 +626,7 @@ class PBar():
 
 
 	@property
-	def format(self):
+	def format(self) -> FormatSetEntry:
 		"""Formatting used for the bar"""
 		return self._format
 	@format.setter
