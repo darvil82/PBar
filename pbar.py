@@ -181,7 +181,6 @@ class _BaseSet:
 			self._newset = self.DEFAULT
 
 
-
 	def keys(self):
 		return self._newset.keys()
 
