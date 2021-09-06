@@ -191,10 +191,14 @@ class _BaseSet:
 	"""Base class for all the customizable sets for the bar (colorset, charset, formatset)"""
 
 	def __init__(self, newSet: dict) -> None:
-		if not isinstance(newSet, dict):
+		if not newSet:
+			self._newset = self.DEFAULT
+			return
+		elif not isinstance(newSet, dict):
 			raise TypeError(f"newSet type ({type(newSet)}) is not dict")
 
 		self._newset = self._populate(self.EMPTY | newSet)
+
 
 
 	def keys(self):
