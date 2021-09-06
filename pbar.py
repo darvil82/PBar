@@ -200,7 +200,6 @@ class _BaseSet:
 		self._newset = self._populate(self.EMPTY | newSet)
 
 
-
 	def keys(self):
 		return self._newset.keys()
 
