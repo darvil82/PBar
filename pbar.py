@@ -177,14 +177,23 @@ class VT100:
 
 
 
+class UnknownSetKeyError(Exception):
+	def __init__(self, key, setcls) -> None:
+		msg = f"Unknown key {key!r} for {setcls.__class__.__name__!r}"
+		clsKeys = "', '".join(setcls.EMPTY.keys())
+		super().__init__(f"{msg}. Available keys: '{clsKeys}'.")
+
+
+
+
 class _BaseSet:
 	"""Base class for all the customizable sets for the bar (colorset, charset, formatset)"""
 
 	def __init__(self, newSet: dict) -> None:
-		if isinstance(newSet, dict):
-			self._newset = self._populate(self.EMPTY | newSet)
-		else:
-			self._newset = self.DEFAULT
+		if not isinstance(newSet, dict):
+			raise TypeError(f"newSet type ({type(newSet)}) is not dict")
+
+		self._newset = self._populate(self.EMPTY | newSet)
 
 
 	def keys(self):
@@ -216,7 +225,10 @@ class _BaseSet:
 		newSet = {}
 		for key in currentSet.keys():
 			currentValue = currentSet[key]
-			defaultSetValue = self.EMPTY[key]
+			if key not in self.EMPTY.keys():
+				raise UnknownSetKeyError(key, self)
+			else:
+				defaultSetValue = self.EMPTY[key]
 
 			if not isinstance(currentValue, dict) and isinstance(defaultSetValue, dict):
 				newSet[key] = {}
@@ -778,11 +790,11 @@ class PBar():
 		if not range:
 			return _DEFAULT_RANGE
 		elif not isinstance(range, (tuple, list)):
-			raise TypeError(f"Type of value '{range}' ({type(range)}) is not a tuple/list")
+			raise TypeError(f"Type of value {range!r} ({type(range)}) is not a tuple/list")
 
 		for item in range:
 			if not isinstance(item, int):
-				raise TypeError(f"Type of value '{item}' ({type(item)}) in range is not int")
+				raise TypeError(f"Type of value {item!r} ({type(item)}) in range is not int")
 
 		if len(range) == 2:
 			value1 = _capValue(range[0], range[1], 0)
