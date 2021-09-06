@@ -4,7 +4,7 @@ PBar module for displaying custom progress bars for Python 3.9+
 GitHub Repository:		https://github.com/DarviL82/PBar
 """
 
-__all__ = ["PBar", "VT100", "ColorSet", "CharSet", "FormatSet"]
+__all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet")
 __author__ = "David Losantos (DarviL)"
 __version__ = "0.8.0"
 
