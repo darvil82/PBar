@@ -178,6 +178,7 @@ class VT100:
 
 
 class UnknownSetKeyError(Exception):
+	"""A key supplied in a dictionary is unknown for the set class that will use it"""
 	def __init__(self, key, setcls) -> None:
 		msg = f"Unknown key {key!r} for {setcls.__class__.__name__!r}"
 		clsKeys = "', '".join(setcls.EMPTY.keys())
@@ -707,7 +708,7 @@ class PBar():
 	def config(self, config: dict[str, Any]):
 		if isinstance(config, dict):
 			for key in {"range", "text", "length", "position", "charset", "colorset", "formatset", "enabled"}:
-				# Move through every key in the dict and populate the config of the class with its values
+				# Iterate through every key in the dict and populate the config of the class with its values
 				if key in config.keys(): setattr(self, key, config[key])
 
 
@@ -817,8 +818,7 @@ class PBar():
 		for char in str(string):
 			if char not in ignoreChars:
 				if char == "\t":
-					# Convert tabs to spaces because otherwise we can't tell the length of the string properly
-					char = "    "
+					char = "    "	# Convert tabs to spaces because otherwise we can't tell the length of the string properly
 				text += char
 
 		foundOpen = False		# Did we find a '<'?
@@ -879,8 +879,8 @@ class PBar():
 
 
 
-	def _clear(self, values: tuple[Sequence[int], int]):
-		"""Clears the progress bars at the position and length specified"""
+	def _clear(self, values: tuple[tuple[int, int], int]):
+		"""Clears the progress bar at the position and length specified. `values[0]` is the position, and `values[1]` is the length"""
 
 		if not self._enabled: return
 
