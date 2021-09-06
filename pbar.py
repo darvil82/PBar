@@ -312,6 +312,45 @@ class CharSet(_BaseSet):
 		"full":		"█"
 	}
 
+	DIFF: CharSetEntry = {
+		"full":		"+",
+		"empty":	"-"
+	}
+
+	DOTS: CharSetEntry = {
+	"full":		"⣿",
+	"empty":	"⢸"
+	}
+
+	TRIANGLES: CharSetEntry = {
+		"full":		"▶",
+		"empty":	"◁"
+	}
+
+	BRICKS: CharSetEntry = {
+		"full":		"█",
+		"empty":	"▞",
+		"vert":		"┋"
+	}
+
+	ROUNDED: CharSetEntry = {
+		"full":		"█",
+		"empty":	"▁",
+		"horiz":	"─",
+		"vert":		"│",
+		"corner": {
+			"tright":	"╮",
+			"tleft":	"╭",
+			"bleft":	"╰",
+			"bright":	"╯"
+		},
+	}
+
+	TILTED: CharSetEntry = {
+		"full":		"🙽",
+		"empty":	"🙽"
+	}
+
 
 	def __init__(self, newSet: CharSetEntry) -> None:
 		super().__init__(newSet)
@@ -381,8 +420,7 @@ class ColorSet(_BaseSet):
 			"bright":	(247, 111, 152)
 		},
 		"text": {
-			"outside":	(247, 111, 152),
-			"inside":	None
+			"outside":	(247, 111, 152)
 		}
 	}
 
@@ -398,9 +436,26 @@ class ColorSet(_BaseSet):
 			"bright":	(255, 100, 100),
 		},
 		"text": {
-			"outside":	(255, 100, 100),
-			"inside":	None
+			"outside":	(255, 100, 100)
 		}
+	}
+
+	YELLOW: ColorSetEntry = {
+		'full':		(232, 205, 0),
+		'empty':	(167, 114, 39),
+		'horiz':	(218, 183, 123),
+		'vert':		(218, 183, 123),
+		'corner':	(218, 183, 123),
+		'text':		(218, 183, 123)
+	}
+
+	FLAG_ES: ColorSetEntry = {
+		'corner':	(199, 3, 24),
+		'horiz':	(199, 3, 24),
+		'vert':		(255, 197, 0),
+		'full':		(255, 197, 0),
+		'empty':	(154, 118, 0),
+		'text':		(255, 197, 0)
 	}
 
 
