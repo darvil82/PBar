@@ -318,8 +318,8 @@ class CharSet(_BaseSet):
 	}
 
 	DOTS: CharSetEntry = {
-	"full":		"⣿",
-	"empty":	"⢸"
+		"full":		"⣿",
+		"empty":	"⢸"
 	}
 
 	TRIANGLES: CharSetEntry = {
@@ -363,12 +363,16 @@ class CharSet(_BaseSet):
 		if not setdict:
 			return
 
+		IGNORE_CHARS = "\x1b\n\r\b\a\f\v\t"
+
 		newset = {}
 		for key in setdict.keys():
 			value = setdict[key]
 
 			if isinstance(value, dict):
 				value = CharSet._strip(value)
+			elif value in IGNORE_CHARS:
+				value = " "
 			elif len(value) > 1:
 				value = value[0]
 			elif len(value) == 0:
@@ -812,18 +816,18 @@ class PBar():
 			raise TypeError(f"Type of position ({type(position)}) is not Sequence")
 
 		newpos = []
-		tSize: tuple[int, int] = _get_terminal_size()
+		TERM_SIZE: tuple[int, int] = _get_terminal_size()
 
 		for index, value in enumerate(position):
 			if value == "center":
-				value = int(tSize[index] / 2)
+				value = int(TERM_SIZE[index] / 2)
 			elif not isinstance(value, (int, float)):
 				raise TypeError(f"Type of value {value} ({type(value)}) is not valid")
 
 			if index == 0:
-				value = _capValue(value, tSize[0] - self._length / 2 + 2, self._length / 2 + 2)
+				value = _capValue(value, TERM_SIZE[0] - self._length / 2 + 2, self._length / 2 + 2)
 			else:
-				value = _capValue(value, tSize[1] - 3, 1)
+				value = _capValue(value, TERM_SIZE[1] - 3, 1)
 
 			value = int(value)
 			newpos.append(value)
@@ -870,12 +874,12 @@ class PBar():
 	def _parseFormat(self, string: str) -> str:
 		"""Parse a string that may contain formatting keys"""
 		if string is None: return ""
-		ignoreChars = "\x1b\n\r\b\a\f\v"	# Ignore this characters entirely
+		IGNORE_CHARS = "\x1b\n\r\b\a\f\v"	# Ignore this characters entirely
 		text = ""							# string supplied without "poison" characters
 
 		# Remove "dangerous" characters and convert some
 		for char in str(string):
-			if char not in ignoreChars:
+			if char not in IGNORE_CHARS:
 				if char == "\t":
 					char = "    "	# Convert tabs to spaces because otherwise we can't tell the length of the string properly
 				text += char
@@ -966,8 +970,8 @@ class PBar():
 			self._clear(self._oldValues)
 			self._oldValues = [self._pos, self._length]
 
-		centerOffset = int((self._length + 2) / -2)		# Number of characters from the end of the bar to the center
-		segments = int((_capValue(self._range[0], self._range[1], 0) / _capValue(self._range[1], min=1)) * self._length)	# Number of character for the full part of the bar
+		CENTER_OFFSET = int((self._length + 2) / -2)		# Number of characters from the end of the bar to the center
+		NUM_SEGMENTS = int((_capValue(self._range[0], self._range[1], 0) / _capValue(self._range[1], min=1)) * self._length)	# Number of character for the full part of the bar
 
 
 
@@ -977,16 +981,15 @@ class PBar():
 			middle = VT100.color(self._color("horiz")) + self._char("horiz") * (self._length + 2) + VT100.RESET
 			right = VT100.color(self._colorsetCorner["tright"]) + self._charsetCorner["tright"] + VT100.RESET
 
-			return VT100.pos(self._pos, (centerOffset, 0)) + left + middle + right
+			return VT100.pos(self._pos, (CENTER_OFFSET, 0)) + left + middle + right
 
 
 
 		def buildMid() -> str:
-			segmentsFull = segments
-			segmentsEmpty = self._length - segmentsFull
+			NUM_SEGMENTS_EMPTY = self._length - NUM_SEGMENTS
 
 			vert = VT100.color(self._color("vert")) + self._char("vert") + VT100.RESET
-			middle = VT100.color(self._color("full")) + self._char("full") * segmentsFull + VT100.RESET + VT100.color(self._color("empty")) + self._char("empty") * segmentsEmpty + VT100.RESET
+			middle = VT100.color(self._color("full")) + self._char("full") * NUM_SEGMENTS + VT100.RESET + VT100.color(self._color("empty")) + self._char("empty") * NUM_SEGMENTS_EMPTY + VT100.RESET
 
 			# ---------- Build the content outside the bar ----------
 			extra = self._parseFormat(self._formatset["outside"])
@@ -1013,8 +1016,8 @@ class PBar():
 			# ---------- //////////////////////////////// ----------
 
 			return (
-				VT100.pos(self._pos, (centerOffset, 1)) + vert + " " + middle + " " + vert + " " + extraFormatted +
-				VT100.moveHoriz(centerOffset - len(info) / 2 - 2 - len(extra)) + infoFormatted
+				VT100.pos(self._pos, (CENTER_OFFSET, 1)) + vert + " " + middle + " " + vert + " " + extraFormatted +
+				VT100.moveHoriz(CENTER_OFFSET - len(info) / 2 - 2 - len(extra)) + infoFormatted
 			)
 
 
@@ -1023,7 +1026,7 @@ class PBar():
 			middle = VT100.color(self._color("horiz")) + self._char("horiz") * (self._length + 2) + VT100.RESET
 			right = VT100.color(self._colorsetCorner["bright"]) + self._charsetCorner["bright"] + VT100.RESET
 
-			return VT100.pos(self._pos, (centerOffset, 2)) + left + middle + right
+			return VT100.pos(self._pos, (CENTER_OFFSET, 2)) + left + middle + right
 
 
 
