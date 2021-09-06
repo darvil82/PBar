@@ -6,7 +6,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ["PBar", "VT100", "ColorSet", "CharSet", "FormatSet"]
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.7.1"
+__version__ = "0.8.0"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, cast, Sequence
 from os import get_terminal_size as _get_terminal_size, system as _runsys
