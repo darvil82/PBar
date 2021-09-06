@@ -76,7 +76,7 @@ def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, d
 			return clr
 
 	elif type == "HEX":
-		if not isinstance(clr, (tuple, list)) and len(clr) == 3: return clr
+		if not isinstance(clr, (tuple, list)) or len(clr) != 3: return clr
 
 		capped = tuple(_capValue(value, 255, 0) for value in clr)
 		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
