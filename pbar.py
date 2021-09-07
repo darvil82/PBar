@@ -6,7 +6,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet")
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.8.0"
+__version__ = "0.9.0"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, cast, Sequence
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -92,7 +92,7 @@ class VT100:
 	"""Class for using VT100 sequences a bit easier"""
 
 	@staticmethod
-	def pos(pos: Optional[Sequence[Any]], offset: tuple[int, int] = (0, 0)):
+	def pos(pos: Optional[tuple[int, int]], offset: tuple[int, int] = (0, 0)):
 		"""Position of the cursor on the terminal.
 		@pos: This tuple can contain either ints, or strings with the value `center` to specify the center of the terminal.
 		@offset: Offset applied to `pos`. (Can be negative)
@@ -108,7 +108,7 @@ class VT100:
 			if not isinstance(value, int):
 				raise TypeError(f"Invalid type {type(value)} for position value")
 
-			position[index] += offset[index]
+			position[index] += int(offset[index])
 
 		return f"\x1b[{position[1]};{position[0]}f"
 
@@ -133,29 +133,35 @@ class VT100:
 
 
 	@staticmethod
-	def moveHoriz(pos: SupportsInt):
-		"""Move the cursor horizontally `pos` characters (supports negative numbers)."""
-		pos = int(pos)
-		if pos < 0:
-			return f"\x1b[{abs(pos)}D"
+	def moveHoriz(dist: SupportsInt):
+		"""Move the cursor horizontally `dist` characters (supports negative numbers)."""
+		dist = int(dist)
+		if dist < 0:
+			return f"\x1b[{abs(dist)}D"
 		else:
-			return f"\x1b[{pos}C"
+			return f"\x1b[{dist}C"
 
 
 	@staticmethod
-	def moveVert(pos: SupportsInt):
-		"""Move the cursor vertically `pos` lines (supports negative numbers)."""
-		pos = int(pos)
-		if pos < 0:
-			return f"\x1b[{abs(pos)}A"
+	def moveVert(dist: SupportsInt):
+		"""Move the cursor vertically `dist` lines (supports negative numbers)."""
+		dist = int(dist)
+		if dist < 0:
+			return f"\x1b[{abs(dist)}A"
 		else:
-			return f"\x1b[{pos}B"
+			return f"\x1b[{dist}B"
 
 
 	# simple sequences that dont require parsing
 	RESET =			"\x1b[0m"
 	INVERT =		"\x1b[7m"
 	NO_INVERT =		"\x1b[27m"
+	BOLD =			"\x1b[1m"
+	NO_BOLD =		"\x1b[21m"
+	ITALIC =		"\x1b[3m"
+	NO_ITALIC =		"\x1b[23m"
+	BLINK =			"\x1b[5m"
+	NO_BLINK =		"\x1b[25m"
 	CLEAR_LINE =	"\x1b[2K"
 	CLEAR_RIGHT =	"\x1b[0K"
 	CLEAR_LEFT =	"\x1b[1K"
@@ -169,6 +175,7 @@ class VT100:
 	BUFFER_OLD =	"\x1b[?1049l"
 	UNDERLINE =		"\x1b[4m"
 	NO_UNDERLINE =	"\x1b[24m"
+	CURSOR_HOME =	"\x1b[H"
 
 
 
@@ -810,7 +817,7 @@ class PBar():
 			if value == "center":
 				value = int(TERM_SIZE[index] / 2)
 			elif not isinstance(value, (int, float)):
-				raise TypeError(f"Type of value {value} ({type(value)}) is not valid")
+				raise TypeError(f"Type of value {value} ({type(value)}) is not int/float")
 
 			if index == 0:
 				value = _capValue(value, TERM_SIZE[0] - self._length / 2 + 2, self._length / 2 + 2)
@@ -1005,7 +1012,7 @@ class PBar():
 
 			return (
 				VT100.pos(self._pos, (CENTER_OFFSET, 1)) + vert + " " + middle + " " + vert + " " + extraFormatted +
-				VT100.moveHoriz(CENTER_OFFSET - len(info) / 2 - 2 - len(extra)) + infoFormatted
+				VT100.pos(self._pos, (len(info) / -2 + 1, 1)) + infoFormatted
 			)
 
 
