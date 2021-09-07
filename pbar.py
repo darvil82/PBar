@@ -298,12 +298,7 @@ class CharSet(_BaseSet):
 		"full":		"#",
 		"vert":		"|",
 		"horiz":	"-",
-		"corner": {
-			"tleft":	"+",
-			"tright":	"+",
-			"bleft":	"+",
-			"bright":	"+"
-		}
+		"corner":	"+"
 	}
 
 	FULL: CharSetEntry = {
@@ -416,12 +411,7 @@ class ColorSet(_BaseSet):
 		"full":		(15, 219, 162),
 		"vert":		(247, 111, 152),
 		"horiz":	(247, 111, 152),
-		"corner":	{
-			"tleft":	(247, 111, 152),
-			"tright":	(247, 111, 152),
-			"bleft":	(247, 111, 152),
-			"bright":	(247, 111, 152)
-		},
+		"corner":	(247, 111, 152),
 		"text": {
 			"outside":	(247, 111, 152)
 		}
@@ -432,12 +422,7 @@ class ColorSet(_BaseSet):
 		"full":		(255, 0, 0),
 		"vert":		(255, 100, 100),
 		"horiz":	(255, 100, 100),
-		"corner": {
-			"tleft":	(255, 100, 100),
-			"tright":	(255, 100, 100),
-			"bleft":	(255, 100, 100),
-			"bright":	(255, 100, 100),
-		},
+		"corner":	(255, 100, 100),
 		"text": {
 			"outside":	(255, 100, 100)
 		}
