@@ -114,7 +114,7 @@ class VT100:
 
 
 	@staticmethod
-	def color(rgb: Optional[Sequence[int]], bg: bool = False):
+	def color(rgb: Optional[tuple[int, int, int]], bg: bool = False):
 		"""Color of the cursor.
 		@rgb:	Tuple with three values from 0 to 255. (RED GREEN BLUE)
 		@bg:	This color will be displayed on the background"""
@@ -493,6 +493,10 @@ class FormatSet(_BaseSet):
 		"inside":	"<percentage>%",
 		"outside":	"<text>: (<range1>/<range2>)"
 	}
+
+
+	def __init__(self, newSet: FormatSetEntry) -> None:
+		super().__init__(newSet)
 
 
 
