@@ -54,7 +54,7 @@ def _formatError(string, start, end):
 
 
 
-def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, dict]:
+def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, dict, None]:
 	"""Convert color values to HEX and vice-versa
 	@clr:	Color value to convert.
 	@type:	Type of conversion to do ('RGB' or 'HEX')"""
@@ -757,9 +757,9 @@ class PBar():
 			"text":			self._text,
 			"length":		self._length,
 			"position":		self._pos,
-			"charset":		self._charset,
-			"colorset":		_convertClrs(self._colorset, "HEX"),
-			"formatset":	self._formatset,
+			"charset":		dict(self._charset),						# \
+			"colorset":		_convertClrs(dict(self._colorset), "HEX"),	# |- Cast to dict when saving to make it easier to parse in a future.
+			"formatset":	dict(self._formatset),						# /
 			"enabled":		self._enabled
 		}
 	@config.setter
@@ -826,7 +826,7 @@ class PBar():
 
 			value = int(value)
 			newpos.append(value)
-		return newpos
+		return tuple(newpos)
 
 
 
