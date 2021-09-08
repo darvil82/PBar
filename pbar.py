@@ -6,7 +6,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet")
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.9.0"
+__version__ = "0.9.1"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, cast, Sequence
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -993,9 +993,9 @@ class PBar():
 
 			# ---------- Build the content inside the bar ----------
 			info = self._parseFormat(self._formatset["inside"])
-			if len(info) > self._length - 3:
+			if len(info) > self._length - 2:
 				# if the text is bigger than the size of the bar, we just cut it and add '...' at the end
-				info = info[:self._length - 5] + "... "
+				info = info[:self._length - 5] + "..."
 			infoFormatted = VT100.color(self._colorsetText["inside"])
 
 
