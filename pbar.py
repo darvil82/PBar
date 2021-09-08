@@ -184,12 +184,12 @@ class VT100:
 
 
 
-class UnknownSetKeyError(Exception):
+class UnknownSetKeyError(BaseException):
 	"""A key supplied in a dictionary is unknown for the set class that will use it"""
 	def __init__(self, key, setcls) -> None:
 		msg = f"Unknown key {key!r} for {setcls.__class__.__name__!r}"
 		clsKeys = "', '".join(setcls.EMPTY.keys())
-		super().__init__(f"{msg}. Available keys: '{clsKeys}'.")
+		super().__init__(f"{msg}. Available valid keys: '{clsKeys}'.")
 
 
 
