@@ -6,7 +6,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet")
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.9.1"
+__version__ = "0.10.0"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, cast, Sequence
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -30,14 +30,14 @@ FormatSetEntry = dict[str, str]
 Num = TypeVar("Num", int, float)
 
 def _capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) -> Num:
-    """Clamp a value to a minimum and/or maximum value."""
+	"""Clamp a value to a minimum and/or maximum value."""
 
-    if max is not None and value > max:
-        return max
-    elif min is not None and value < min:
-        return min
-    else:
-        return value
+	if max is not None and value > max:
+		return max
+	elif min is not None and value < min:
+		return min
+	else:
+		return value
 
 
 
@@ -60,21 +60,17 @@ def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, d
 	@type:	Type of conversion to do ('RGB' or 'HEX')"""
 
 	if isinstance(clr, dict):
-		endDict = {}
-		for key in clr.keys():
-			endDict[key] = _convertClrs(clr[key], type)
-		return endDict
+		return {key: _convertClrs(clr[key], type) for key in clr.keys()}
 
 	if type == "RGB":
-		if isinstance(clr, str) and clr.startswith("#"):
-			clr = clr.lstrip("#")
-			try:
-				return tuple(int(clr[i:i+2], 16) for i in (0, 2, 4))
-			except ValueError:
-				return
-		else:
+		if not isinstance(clr, str) or not clr.startswith("#"):
 			return clr
 
+		clr = clr.lstrip("#")
+		try:
+			return tuple(int(clr[i:i+2], 16) for i in (0, 2, 4))
+		except ValueError:
+			return
 	elif type == "HEX":
 		if not isinstance(clr, (tuple, list)) or len(clr) != 3: return clr
 
@@ -234,17 +230,14 @@ class _BaseSet:
 		"""Return a new set with all the necessary keys for drawing the bar, making sure that no keys are missing."""
 
 		newSet = {}
-		for key in currentSet.keys():
-			currentValue = currentSet[key]
+		for key, currentValue in currentSet.items():
 			if key not in self.EMPTY.keys():
 				raise UnknownSetKeyError(key, self)
 			else:
 				defaultSetValue = self.EMPTY[key]
 
 			if not isinstance(currentValue, dict) and isinstance(defaultSetValue, dict):
-				newSet[key] = {}
-				for subkey in defaultSetValue.keys():
-					newSet[key][subkey] = currentValue
+				newSet[key] = {subkey: currentValue for subkey in defaultSetValue.keys()}
 			elif isinstance(currentValue, dict):
 				newSet[key] = defaultSetValue | currentValue
 			else:
@@ -367,18 +360,13 @@ class CharSet(_BaseSet):
 		IGNORE_CHARS = "\x1b\n\r\b\a\f\v\t"
 
 		newset = {}
-		for key in setdict.keys():
-			value = setdict[key]
-
+		for key, value in setdict.items():
 			if isinstance(value, dict):
 				value = CharSet._strip(value)
-			elif value in IGNORE_CHARS:
+			elif value in IGNORE_CHARS or len(value) < 1:
 				value = " "
 			elif len(value) > 1:
 				value = value[0]
-			elif len(value) == 0:
-				value = " "
-
 			newset[key] = value
 
 		return newset
@@ -767,7 +755,7 @@ class PBar():
 		if isinstance(config, dict):
 			for key in {"range", "text", "length", "position", "charset", "colorset", "formatset", "enabled"}:
 				# Iterate through every key in the dict and populate the config of the class with its values
-				if key in config.keys(): setattr(self, key, config[key])
+				if key in config: setattr(self, key, config[key])
 
 
 	# --------- ///////////////////////////////////////// ----------
@@ -795,7 +783,7 @@ class PBar():
 		return cast(dict[str, Color], self._colorset["text"])
 
 	def _color(self, key: str) -> Color:
-		assert(key != "corner" and key != "text")
+		assert key not in ["corner", "text"]
 
 		return cast(Color, self._colorset[key])
 
@@ -855,34 +843,38 @@ class PBar():
 			if not isinstance(item, int):
 				raise TypeError(f"Type of value {item!r} ({type(item)}) in range is not int")
 
-		if len(range) == 2:
-			value1 = _capValue(range[0], range[1], 0)
-			value2 = _capValue(range[1], min=1)
-			return (value1, value2)
-		else:
+		if len(range) != 2:
 			raise ValueError("Length of sequence is not 2")
 
+		value1 = _capValue(range[0], range[1], 0)
+		value2 = _capValue(range[1], min=1)
+		return (value1, value2)
 
 
 
 
-	def _parseFormat(self, string: str) -> str:
+
+	def _parseFormat(self, string: str) -> str:  # sourcery no-metrics
 		"""Parse a string that may contain formatting keys"""
 		if string is None: return ""
 		IGNORE_CHARS = "\x1b\n\r\b\a\f\v"	# Ignore this characters entirely
-		text = ""							# string supplied without "poison" characters
 
-		# Remove "dangerous" characters and convert some
-		for char in str(string):
-			if char not in IGNORE_CHARS:
-				if char == "\t":
-					char = "    "	# Convert tabs to spaces because otherwise we can't tell the length of the string properly
-				text += char
+		def removePoisonChars(text: str) -> str:
+			"""Remove "dangerous" characters and convert some"""
+			endStr = ""
+			for char in str(text):
+				if char not in IGNORE_CHARS:
+					if char == "\t":
+						char = "    "	# Convert tabs to spaces because otherwise we can't tell the length of the string properly
+					endStr += char
+			return endStr
+
 
 		foundOpen = False		# Did we find a '<'?
 		foundBackslash = False	# Did we find a '\'?
 		tempStr = ""			# String that contains the current value inside < >
 		endStr = ""				# Final string that will be returned
+		text = removePoisonChars(string)
 
 		# Convert the keys to a final string
 		for index, char in enumerate(text):
@@ -909,11 +901,7 @@ class PBar():
 
 					elif tempStr == "text":
 						if self._text:
-							if self._text is string:
-								# We prevent a recursion exception here, because the user can use the format key '<text>' in the text parameter.
-								endStr += ":)"
-							else:
-								endStr += self._parseFormat(self._text)	# We want to parse the text too, because it can also have keys or other characters
+							endStr += ":)" if self._text is string else self._parseFormat(self._text)
 					else:
 						raise RuntimeError(f"Unknown formatting key ('{_formatError(text, index - len(tempStr), index)}')")
 
