@@ -18,6 +18,7 @@ _runsys("")		# We need to do this, otherwise Windows won't display special VT100
 _DEFAULT_RANGE = (0, 1)
 _DEFAULT_POS = ("center", "center")
 _DEFAULT_LEN = 20
+_IGNORE_CHARS = "\x1b\n\r\b\a\f\v"
 
 
 Color = Optional[Union[tuple[int, int, int], str]]
@@ -857,13 +858,12 @@ class PBar():
 	def _parseFormat(self, string: str) -> str:  # sourcery no-metrics
 		"""Parse a string that may contain formatting keys"""
 		if string is None: return ""
-		IGNORE_CHARS = "\x1b\n\r\b\a\f\v"	# Ignore this characters entirely
 
 		def removePoisonChars(text: str) -> str:
 			"""Remove "dangerous" characters and convert some"""
 			endStr = ""
 			for char in str(text):
-				if char not in IGNORE_CHARS:
+				if char not in _IGNORE_CHARS:	# Ignore this characters entirely
 					if char == "\t":
 						char = "    "	# Convert tabs to spaces because otherwise we can't tell the length of the string properly
 					endStr += char
