@@ -605,7 +605,7 @@ class PBar():
 		self._requiresClear = False
 		self._enabled = True
 
-		self._range = list(PBar._getRange(range))
+		self._range = PBar._getRange(range)
 		self._text = str(text)
 		self._formatset = FormatSet(formatset)
 		self._length = PBar._getLength(length)
@@ -672,7 +672,7 @@ class PBar():
 		return (self._range[0], self._range[1])
 	@range.setter
 	def range(self, range: tuple[int, int]):
-		self._range = list(PBar._getRange(range))
+		self._range = PBar._getRange(range)
 
 
 	@property
