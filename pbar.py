@@ -414,7 +414,7 @@ class ColorSet(_BaseSet):
 	}
 
 	ERROR: ColorSetEntry = {
-		"empty":	(200, 0, 0),
+		"empty":	(100, 0, 0),
 		"full":		(255, 0, 0),
 		"vert":		(255, 100, 100),
 		"horiz":	(255, 100, 100),
@@ -1015,11 +1015,11 @@ class PBar():
 
 		# Draw the bar
 		print(
-			VT100.CURSOR_SAVE,
+			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE,
 			buildTop(),
 			buildMid(),
 			buildBottom(),
-			VT100.CURSOR_LOAD,
+			VT100.CURSOR_LOAD+ VT100.CURSOR_SHOW,
 
 			sep="", end="", flush=True
 		)
