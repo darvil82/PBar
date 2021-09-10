@@ -6,7 +6,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet")
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.10.0"
+__version__ = "0.10.1"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, cast, Sequence
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -958,16 +958,16 @@ class PBar():
 
 
 		# Build all the parts of the progress bar
-		def buildTop() -> str:
+		def buildTop(verticalOffset: int = 0) -> str:
 			left = VT100.color(self._colorsetCorner["tleft"]) + self._charsetCorner["tleft"] + VT100.RESET
 			middle = VT100.color(self._color("horiz")) + self._char("horiz") * (self._length + 2) + VT100.RESET
 			right = VT100.color(self._colorsetCorner["tright"]) + self._charsetCorner["tright"] + VT100.RESET
 
-			return VT100.pos(self._pos, (CENTER_OFFSET, 0)) + left + middle + right
+			return VT100.pos(self._pos, (CENTER_OFFSET, verticalOffset)) + left + middle + right
 
 
 
-		def buildMid() -> str:
+		def buildMid(verticalOffset: int = 1) -> str:
 			NUM_SEGMENTS_EMPTY = self._length - NUM_SEGMENTS
 
 			vert = VT100.color(self._color("vert")) + self._char("vert") + VT100.RESET
@@ -998,29 +998,28 @@ class PBar():
 			# ---------- //////////////////////////////// ----------
 
 			return (
-				VT100.pos(self._pos, (CENTER_OFFSET, 1)) + vert + " " + middle + " " + vert + " " + extraFormatted +
-				VT100.pos(self._pos, (len(info) / -2 + 1, 1)) + infoFormatted
+				VT100.pos(self._pos, (CENTER_OFFSET, verticalOffset)) + vert + " " + middle + " " + vert + " " + extraFormatted +
+				VT100.pos(self._pos, (len(info) / -2 + 1, verticalOffset)) + infoFormatted
 			)
 
 
-		def buildBottom() -> str:
+		def buildBottom(verticalOffset: int = 2) -> str:
 			left = VT100.color(self._colorsetCorner["bleft"]) + self._charsetCorner["bleft"] + VT100.RESET
 			middle = VT100.color(self._color("horiz")) + self._char("horiz") * (self._length + 2) + VT100.RESET
 			right = VT100.color(self._colorsetCorner["bright"]) + self._charsetCorner["bright"] + VT100.RESET
 
-			return VT100.pos(self._pos, (CENTER_OFFSET, 2)) + left + middle + right
+			return VT100.pos(self._pos, (CENTER_OFFSET, verticalOffset)) + left + middle + right
 
 
+		fullBar: str = (
+			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE
+			+ buildTop()
+			+ buildMid()
+			+ buildBottom()
+			+ VT100.CURSOR_LOAD + VT100.CURSOR_SHOW
+		)
 
 		# Draw the bar
-		print(
-			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE,
-			buildTop(),
-			buildMid(),
-			buildBottom(),
-			VT100.CURSOR_LOAD+ VT100.CURSOR_SHOW,
-
-			sep="", end="", flush=True
-		)
+		print(fullBar, flush=True, end="")
 
 		self._requiresClear = False

@@ -7,7 +7,7 @@ from time import sleep
 mybar = pbar.PBar(
 	range=(0, 67),
 	text="Loading",
-	charset=pbar.CharSet.SLIM,
+	charset=pbar.CharSet.ROUNDED,
 	length=30,
 	colorset={
 		"text": {
