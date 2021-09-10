@@ -854,7 +854,6 @@ class PBar():
 
 
 
-
 	def _parseFormat(self, string: str) -> str:  # sourcery no-metrics
 		"""Parse a string that may contain formatting keys"""
 		if string is None: return ""
