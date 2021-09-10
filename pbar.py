@@ -527,7 +527,7 @@ class PBar():
 			range: tuple[int, int] = None,
 			text: str = "",
 			length: int = None,
-			position: Union[str, tuple[int, int]] = None,
+			position: tuple[Union[int, str], Union[int, str]] = None,
 			charset: Optional[CharSetEntry] = None,
 			colorset: Optional[ColorSetEntry] = None,
 			formatset: Optional[FormatSetEntry] = None,
