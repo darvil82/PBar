@@ -43,7 +43,7 @@ def _capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) 
 
 
 
-def _formatError(string, start, end):
+def _formatError(string: str, start: int, end: int) -> str:
 	"""Returns a colored string across the character indices specified."""
 
 	return (
