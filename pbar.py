@@ -527,6 +527,14 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: dict, c
 
 
 
+def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: dict, colorset: dict) -> str:
+	return ""
+
+
+
+
+
+
 
 
 class PBar():
@@ -1000,51 +1008,13 @@ class PBar():
 		# Build all the parts of the progress bar
 		barShape = _genShape((self._pos[0] + CENTER_OFFSET, self._pos[1]), (self._length, 1), self._charset, self._colorset)
 
-
-		def buildMid() -> str:
-			NUM_SEGMENTS_EMPTY = self._length - NUM_SEGMENTS
-
-			charFull = VT100.color(self._color("full")) + self._char("full")
-			charEmpty = VT100.color(self._color("empty")) + self._char("empty")
-
-			middle = charFull*NUM_SEGMENTS + charEmpty*NUM_SEGMENTS_EMPTY
-
-			# ---------- Build the content outside the bar ----------
-			txtOut = self._parseFormat(self._formatset["outside"])
-			txtOutFormatted = VT100.color(self._colorsetText["outside"]) + txtOut
-
-
-			# ---------- Build the content inside the bar ----------
-			txtIn = self._parseFormat(self._formatset["inside"])
-			if len(txtIn) > self._length - 2:
-				# if the text is bigger than the size of the bar, we just cut it and add '...' at the end
-				txtIn = txtIn[:self._length - 5] + "..."
-			txtInFormatted = VT100.color(self._colorsetText["inside"])
-
-
-			if self.percentage < 50:
-				if self._charset["empty"] == "█":	txtInFormatted += VT100.INVERT
-				if not self._colorsetText["inside"]:	txtInFormatted += VT100.color(self._color("empty"))
-			else:
-				if self._charset["full"] == "█":	txtInFormatted += VT100.INVERT
-				if not self._colorsetText["inside"]:	txtInFormatted += VT100.color(self._color("full"))
-
-
-			txtInFormatted += txtIn + VT100.RESET
-			# ---------- //////////////////////////////// ----------
-
-			return (
-				VT100.pos(self._pos, (CENTER_OFFSET + 2, 1))
-				+ middle
-				+ VT100.moveHoriz(3) + txtOutFormatted + VT100.CLEAR_RIGHT
-				+ VT100.pos(self._pos, (len(txtIn) / -2 + 1, 1)) + txtInFormatted
-			)
+		barContent = _genBarContent((self._pos[0] + CENTER_OFFSET + 1, self._pos[1] + 1), (self._length, 1), self._charset, self._colorset)
 
 
 		fullBar: str = (
 			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE
 			+ barShape
-			+ buildMid()
+			+ barContent
 			+ VT100.CURSOR_LOAD + VT100.CURSOR_SHOW
 		)
 
