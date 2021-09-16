@@ -9,7 +9,7 @@ __author__ = "David Losantos (DarviL)"
 __version__ = "0.10.1"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, cast, Sequence
-from os import get_terminal_size as _get_terminal_size, system as _runsys
+from os import get_terminal_size as _get_terminal_size, stat, system as _runsys
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -123,11 +123,7 @@ class VT100:
 
 		rgb = [_capValue(value, 255, 0) for value in rgb]
 
-		if bg:
-			type = 48
-		else:
-			type = 38
-
+		type = 48 if bg else 38
 		return f"\x1b[{type};2;{rgb[0]};{rgb[1]};{rgb[2]}m"
 
 
@@ -483,6 +479,79 @@ class FormatSet(_BaseSet):
 		super().__init__(newSet)
 
 
+	@staticmethod
+	def _rmPoisonChars(text: str) -> str:
+		"""Remove "dangerous" characters and convert some"""
+		endStr = ""
+		for char in str(text):
+			if char not in _IGNORE_CHARS:	# Ignore this characters entirely
+				if char == "\t":
+					char = "    "	# Convert tabs to spaces because otherwise we can't tell the length of the string properly
+				endStr += char
+		return endStr
+
+
+	@staticmethod
+	def _parseFormat(string: str, cls: "PBar") -> str:
+		"""Parse a string that may contain formatting keys"""
+		if string is None: return ""
+
+		foundOpen = False		# Did we find a '<'?
+		foundBackslash = False	# Did we find a '\'?
+		tempStr = ""			# String that contains the current value inside < >
+		endStr = ""				# Final string that will be returned
+		text = FormatSet._rmPoisonChars(string)
+
+		# Convert the keys to a final string
+		for index, char in enumerate(text):
+			if foundBackslash:
+				# Also skip the character next to the slash
+				foundBackslash = False
+				endStr += char
+				continue
+			elif char == "\\":
+				# Found backslash, skip it
+				foundBackslash = True
+				continue
+
+			elif foundOpen:
+				# Found '<'. Now we add every char to tempStr until we find a '>'.
+				if char == ">":
+					# Found '>'. Now just add the formatting keys.
+					if tempStr == "percentage":
+						endStr += str(cls.percentage)
+					elif tempStr == "range1":
+						endStr += str(cls._range[0])
+					elif tempStr == "range2":
+						endStr += str(cls._range[1])
+
+					elif tempStr == "text":
+						if cls._text:
+							endStr += FormatSet._rmPoisonChars(cls._text)
+					else:
+						raise RuntimeError(f"Unknown formatting key ('{_formatError(text, index - len(tempStr), index)}')")
+
+					foundOpen = False
+					tempStr = ""
+				else:
+					# No '>' encountered, we can just add another character.
+					tempStr += char.lower()
+			elif char == "<":
+				foundOpen = True
+			else:
+				# It is just a normal character that doesn't belong to any formatting key, so just append it to the end string.
+				endStr += char
+
+			if index + 1 == len(text):
+				# This is the last character, so add the temp str to the final string
+				endStr += tempStr
+
+		return endStr
+
+
+
+
+
 
 
 def _genShape(position: tuple[int, int], size: tuple[int, int], charset: dict, colorset: dict) -> str:
@@ -527,8 +596,19 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: dict, c
 
 
 
-def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: dict, colorset: dict) -> str:
-	return ""
+def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: dict, colorset: dict, text: tuple[str, str], rangeValue: tuple[int, int]) -> str:
+	width, height = _capValue(size[0], min=3), _capValue(size[1], min=0) + 1
+	SEGMENTS_FULL = int((_capValue(rangeValue[0], rangeValue[1], 0) / _capValue(rangeValue[1], min=1)) * width)	# Number of character for the full part of the bar
+	SEGMENTS_EMPTY = width - SEGMENTS_FULL
+
+	charFull = VT100.color(colorset["full"]) + charset["full"]
+	charEmpty = VT100.color(colorset["empty"]) + charset["empty"]
+
+	return "".join((
+			VT100.pos((position), (0, row))
+			+ charFull*SEGMENTS_FULL
+			+ charEmpty*SEGMENTS_EMPTY
+		) for row in range(1, height))
 
 
 
@@ -905,76 +985,6 @@ class PBar():
 
 
 
-	def _parseFormat(self, string: str) -> str:  # sourcery no-metrics
-		"""Parse a string that may contain formatting keys"""
-		if string is None: return ""
-
-		def removePoisonChars(text: str) -> str:
-			"""Remove "dangerous" characters and convert some"""
-			endStr = ""
-			for char in str(text):
-				if char not in _IGNORE_CHARS:	# Ignore this characters entirely
-					if char == "\t":
-						char = "    "	# Convert tabs to spaces because otherwise we can't tell the length of the string properly
-					endStr += char
-			return endStr
-
-
-		foundOpen = False		# Did we find a '<'?
-		foundBackslash = False	# Did we find a '\'?
-		tempStr = ""			# String that contains the current value inside < >
-		endStr = ""				# Final string that will be returned
-		text = removePoisonChars(string)
-
-		# Convert the keys to a final string
-		for index, char in enumerate(text):
-			if foundBackslash:
-				# Also skip the character next to the slash
-				foundBackslash = False
-				endStr += char
-				continue
-			elif char == "\\":
-				# Found backslash, skip it
-				foundBackslash = True
-				continue
-
-			elif foundOpen:
-				# Found '<'. Now we add every char to tempStr until we find a '>'.
-				if char == ">":
-					# Found '>'. Now just add the formatting keys.
-					if tempStr == "percentage":
-						endStr += str(self.percentage)
-					elif tempStr == "range1":
-						endStr += str(self._range[0])
-					elif tempStr == "range2":
-						endStr += str(self._range[1])
-
-					elif tempStr == "text":
-						if self._text:
-							endStr += ":)" if self._text is string else self._parseFormat(self._text)
-					else:
-						raise RuntimeError(f"Unknown formatting key ('{_formatError(text, index - len(tempStr), index)}')")
-
-					foundOpen = False
-					tempStr = ""
-				else:
-					# No '>' encountered, we can just add another character.
-					tempStr += char.lower()
-			elif char == "<":
-				foundOpen = True
-			else:
-				# It is just a normal character that doesn't belong to any formatting key, so just append it to the end string.
-				endStr += char
-
-			if index + 1 == len(text):
-				# This is the last character, so add the temp str to the final string
-				endStr += tempStr
-
-		return endStr
-
-
-
-
 	def _clear(self, values: tuple[tuple[int, int], int]):
 		"""Clears the progress bar at the position and length specified. `values[0]` is the position, and `values[1]` is the length"""
 
@@ -985,8 +995,19 @@ class PBar():
 		centerOffset = int((length + 2) / -2)		# Number of characters from the end of the bar to the center
 
 		barShape = _genShape((pos[0] + centerOffset, pos[1]), (length, 1), CharSet.EMPTY, ColorSet.EMPTY)
+		barContent = _genBarContent(
+			(self._pos[0] + centerOffset + 2, self._pos[1]),
+			(self._length, 1),
+			CharSet.EMPTY,
+			ColorSet.EMPTY,
+			(
+				"",
+				""
+			),
+			self._range
+		)
 
-		print(VT100.CURSOR_SAVE, barShape, VT100.CURSOR_LOAD, sep="", end="", flush=True)
+		print(VT100.CURSOR_SAVE, barShape, barContent, VT100.CURSOR_LOAD, sep="", end="", flush=True)
 
 
 
@@ -1002,13 +1023,27 @@ class PBar():
 			self._oldValues = [self._pos, self._length]
 
 		CENTER_OFFSET = int((self._length + 2) / -2)		# Number of characters from the end of the bar to the center
-		NUM_SEGMENTS = int((_capValue(self._range[0], self._range[1], 0) / _capValue(self._range[1], min=1)) * self._length)	# Number of character for the full part of the bar
 
 
 		# Build all the parts of the progress bar
-		barShape = _genShape((self._pos[0] + CENTER_OFFSET, self._pos[1]), (self._length, 1), self._charset, self._colorset)
+		barShape = _genShape(
+			(self._pos[0] + CENTER_OFFSET, self._pos[1]),
+			(self._length, 1),
+			self._charset,
+			self._colorset
+		)
 
-		barContent = _genBarContent((self._pos[0] + CENTER_OFFSET + 1, self._pos[1] + 1), (self._length, 1), self._charset, self._colorset)
+		barContent = _genBarContent(
+			(self._pos[0] + CENTER_OFFSET + 2, self._pos[1]),
+			(self._length, 1),
+			self._charset,
+			self._colorset,
+			(
+				FormatSet._parseFormat(self._formatset["inside"], self),
+				FormatSet._parseFormat(self._formatset["outside"], self)
+			),
+			self._range
+		)
 
 
 		fullBar: str = (
