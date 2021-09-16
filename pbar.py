@@ -453,16 +453,19 @@ class FormatSet(_BaseSet):
 
 	EMPTY: FormatSetEntry = {
 		"inside":	"",
-		"outside":	""
+		"right":	"",
+		"left":		"",
+		"title":	"",
+		"subtitle":	""
 	}
 
 	DEFAULT: FormatSetEntry = {
 		"inside":	"<percentage>%",
-		"outside":	"<text>"
+		"right":	"<text>"
 	}
 
 	ALL_OUT: FormatSetEntry = {
-		"outside":	"<percentage>%, <range1>/<range2>, <text>"
+		"right":	"<percentage>%, <range1>/<range2>, <text>"
 	}
 
 	ALL_IN: FormatSetEntry = {
@@ -471,7 +474,7 @@ class FormatSet(_BaseSet):
 
 	MIXED: FormatSetEntry = {
 		"inside":	"<percentage>%",
-		"outside":	"<text>: (<range1>/<range2>)"
+		"right":	"<text>: (<range1>/<range2>)"
 	}
 
 
@@ -807,7 +810,7 @@ class PBar():
 
 
 	@property
-	def charset(self) -> CharSetEntry:
+	def charset(self) -> CharSet:
 		"""Set of characters for the bar"""
 		return self._charset
 	@charset.setter
@@ -816,7 +819,7 @@ class PBar():
 
 
 	@property
-	def colorset(self) -> ColorSetEntry:
+	def colorset(self) -> ColorSet:
 		"""Set of colors for the bar"""
 		return self._colorset
 	@colorset.setter
@@ -825,7 +828,7 @@ class PBar():
 
 
 	@property
-	def formatset(self) -> FormatSetEntry:
+	def formatset(self) -> FormatSet:
 		"""Formatting used for the bar"""
 		return self._formatset
 	@formatset.setter
@@ -1040,7 +1043,7 @@ class PBar():
 			self._colorset,
 			(
 				FormatSet._parseFormat(self._formatset["inside"], self),
-				FormatSet._parseFormat(self._formatset["outside"], self)
+				FormatSet._parseFormat(self._formatset["right"], self)
 			),
 			self._range
 		)
