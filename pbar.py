@@ -495,7 +495,7 @@ class FormatSet(_BaseSet):
 
 
 	@staticmethod
-	def _parseFormat(string: str, cls: "PBar") -> str:
+	def _parseFormat(cls: "PBar", string: str) -> str:
 		"""Parse a string that may contain formatting keys"""
 		if string is None: return ""
 
@@ -599,9 +599,10 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: dict, c
 
 
 
-def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: dict, colorset: dict, text: tuple[str, str], rangeValue: tuple[int, int]) -> str:
+def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: dict, colorset: dict,
+				   formatset: dict, rangeValue: tuple[int, int]) -> str:
 	width, height = _capValue(size[0], min=3), _capValue(size[1], min=0) + 1
-	SEGMENTS_FULL = int((_capValue(rangeValue[0], rangeValue[1], 0) / _capValue(rangeValue[1], min=1)) * width)	# Number of character for the full part of the bar
+	SEGMENTS_FULL = int((_capValue(rangeValue[0], rangeValue[1], 0) / _capValue(rangeValue[1], min=1))*width)	# Number of character for the full part of the bar
 	SEGMENTS_EMPTY = width - SEGMENTS_FULL
 
 	charFull = VT100.color(colorset["full"]) + charset["full"]
@@ -1003,10 +1004,7 @@ class PBar():
 			(self._length, 1),
 			CharSet.EMPTY,
 			ColorSet.EMPTY,
-			(
-				"",
-				""
-			),
+			self._formatset,
 			self._range
 		)
 
@@ -1041,10 +1039,7 @@ class PBar():
 			(self._length, 1),
 			self._charset,
 			self._colorset,
-			(
-				FormatSet._parseFormat(self._formatset["inside"], self),
-				FormatSet._parseFormat(self._formatset["right"], self)
-			),
+			self._formatset,
 			self._range
 		)
 
