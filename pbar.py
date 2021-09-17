@@ -9,7 +9,7 @@ __author__ = "David Losantos (DarviL)"
 __version__ = "0.10.1"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, cast, Sequence
-from os import get_terminal_size as _get_terminal_size, stat, system as _runsys
+from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
