@@ -17,7 +17,7 @@ _runsys("")		# We need to do this, otherwise Windows won't display special VT100
 
 _DEFAULT_RANGE = (0, 1)
 _DEFAULT_POS = ("center", "center")
-_DEFAULT_LEN = 20
+_DEFAULT_SIZE = (20, 1)
 _IGNORE_CHARS = "\x1b\n\r\b\a\f\v"
 
 
@@ -76,7 +76,7 @@ def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, d
 		if not isinstance(clr, (tuple, list)) or len(clr) != 3: return clr
 
 		capped = tuple(_capValue(value, 255, 0) for value in clr)
-		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
+		return f"#{capped[0]:X}{capped[1]:X}{capped[2]:X}"
 
 
 
@@ -195,8 +195,7 @@ class _BaseSet:
 
 	def __init__(self, newSet: dict) -> None:
 		if not newSet:
-			self._newset = self.DEFAULT
-			return
+			newSet = self.DEFAULT
 		elif not isinstance(newSet, dict):
 			raise TypeError(f"newSet type ({type(newSet)}) is not dict")
 
@@ -390,7 +389,10 @@ class ColorSet(_BaseSet):
 		},
 		"text":	{
 			"inside":	None,
-			"outside":	None,
+			"right":	None,
+			"left":		None,
+			"title":	None,
+			"subtitle":	None
 		}
 	}
 
@@ -451,12 +453,12 @@ class ColorSet(_BaseSet):
 class FormatSet(_BaseSet):
 	"""Container for the formatting sets."""
 
-	EMPTY: FormatSetEntry = {
-		"inside":	"",
-		"right":	"",
-		"left":		"",
-		"title":	"",
-		"subtitle":	""
+	EMPTY: FormatSetEntry = {		# ! please remember to change this back
+		"inside":	"INSIDE",
+		"right":	"RIGHT",
+		"left":		"LEFT",
+		"title":	"TITLE",
+		"subtitle":	"SUBTITLE"
 	}
 
 	DEFAULT: FormatSetEntry = {
@@ -557,7 +559,7 @@ class FormatSet(_BaseSet):
 
 
 
-def _genShape(position: tuple[int, int], size: tuple[int, int], charset: dict, colorset: dict) -> str:
+def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet, colorset: ColorSet) -> str:
 	"""Generates a basic rectangular shape that uses a charset and a colorset"""
 	width, height = _capValue(size[0], min=3) + 2, _capValue(size[1], min=0) + 1
 
@@ -599,8 +601,9 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: dict, c
 
 
 
-def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: dict, colorset: dict,
-				   formatset: dict, rangeValue: tuple[int, int]) -> str:
+def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: CharSet, colorset: ColorSet,
+				   rangeValue: tuple[int, int]) -> str:
+	"""Generates the progress shape with a colorset and a charset specified"""
 	width, height = _capValue(size[0], min=3), _capValue(size[1], min=0) + 1
 	SEGMENTS_FULL = int((_capValue(rangeValue[0], rangeValue[1], 0) / _capValue(rangeValue[1], min=1))*width)	# Number of character for the full part of the bar
 	SEGMENTS_EMPTY = width - SEGMENTS_FULL
@@ -613,6 +616,18 @@ def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: di
 			+ charFull*SEGMENTS_FULL
 			+ charEmpty*SEGMENTS_EMPTY
 		) for row in range(1, height))
+
+
+
+
+
+def _genBarText(position: tuple[int, int], size: tuple[int, int], colorset: ColorSet, formatset: FormatSet) -> str:
+	"""Generates all text for the bar"""
+	width, height = _capValue(size[0], min=3), _capValue(size[1], min=0) + 1
+	textTitle = formatset["title"]
+
+	return ""
+
 
 
 
@@ -661,12 +676,11 @@ class PBar():
 	def __init__(self,
 			range: tuple[int, int] = None,
 			text: str = "",
-			length: int = None,
+			size: tuple[int, int] = None,
 			position: tuple[Union[int, str], Union[int, str]] = None,
 			charset: Optional[CharSetEntry] = None,
 			colorset: Optional[ColorSetEntry] = None,
-			formatset: Optional[FormatSetEntry] = None,
-			inherit: "PBar" = None
+			formatset: Optional[FormatSetEntry] = None
 		) -> None:
 		"""
 		### Detailed descriptions:
@@ -678,7 +692,7 @@ class PBar():
 
 		---
 
-		@length: Intenger that specifies how long the bar will be. Default value is `20`.
+		@size: Tuple that specifies the width and height of the bar. Default value is `(20, 1)`.
 
 		---
 
@@ -732,37 +746,19 @@ class PBar():
 			- `<range1>`
 			- `<range2>`
 			- `<text>`
-
-		---
-
-		@inherit: Inherits all properties from the PBar object specified.
 		"""
 		self._requiresClear = False
 		self._enabled = True
 
 		self._range = PBar._getRange(range)
-		self._text = str(text)
+		self._text = FormatSet._rmPoisonChars(text)
 		self._formatset = FormatSet(formatset)
-		self._length = PBar._getLength(length)
+		self._size = PBar._getSize(size)
 		self._charset = CharSet(charset)
 		self._colorset = ColorSet(colorset)
 		self._pos = self._getPos(position)
 
-		self._oldValues = [self._pos, self._length]
-
-		if inherit:
-			if not isinstance(inherit, PBar):
-				raise TypeError(f"Type {type(inherit)} is not a PBar object")
-
-			self.config = inherit.config	# Get config from the object to inherit from, and apply it to ours
-			if range:		self.range = range
-			if text:		self.text = text
-			if formatset:	self.formatset = formatset
-			if length:		self.length = length
-			if charset:		self.charset = charset
-			if colorset:	self.colorset = colorset
-			if position:	self.position = position
-
+		self._oldValues = [self._pos, self._size]
 
 
 
@@ -782,13 +778,13 @@ class PBar():
 
 	def clear(self):
 		"""Clear the progress bar"""
-		self._clear([self._pos, self._length])
+		self._clear([self._pos, self._size])
 
 
 	@property
 	def percentage(self):
 		"""Percentage of the progress of the current range"""
-		return int((self._range[0] * 100) / self._range[1])
+		return int((self._range[0]*100) / self._range[1])
 
 
 	@property
@@ -797,7 +793,7 @@ class PBar():
 		return self._text
 	@text.setter
 	def text(self, text: str):
-		self._text = str(text)
+		self._text = FormatSet._rmPoisonChars(text)
 		self._requiresClear = True
 
 
@@ -838,16 +834,16 @@ class PBar():
 
 
 	@property
-	def length(self):
-		"""Length of the progress bar"""
-		return self._length
-	@length.setter
-	def length(self, length: int):
-		newlen = PBar._getLength(length)
-		if newlen < self._length:
+	def size(self):
+		"""Size of the progress bar"""
+		return self._size
+	@size.setter
+	def size(self, size: tuple[int, int]):
+		newsize = PBar._getSize(size)
+		if newsize != self._size:
 			self._requiresClear = True		# since the bar is gonna be smaller, we need to redraw it.
-		self._oldValues[1] = self._length
-		self._length = newlen
+		self._oldValues[1] = self._size
+		self._size = newsize
 
 
 	@property
@@ -879,7 +875,7 @@ class PBar():
 		return {
 			"range":		self._range,
 			"text":			self._text,
-			"length":		self._length,
+			"size":			self._size,
 			"position":		self._pos,
 			"charset":		dict(self._charset),						# \
 			"colorset":		_convertClrs(dict(self._colorset), "HEX"),	# |- Cast to dict when saving to make it easier to parse in a future.
@@ -889,7 +885,7 @@ class PBar():
 	@config.setter
 	def config(self, config: dict[str, Any]):
 		if isinstance(config, dict):
-			for key in {"range", "text", "length", "position", "charset", "colorset", "formatset", "enabled"}:
+			for key in {"range", "text", "size", "position", "charset", "colorset", "formatset", "enabled"}:
 				# Iterate through every key in the dict and populate the config of the class with its values
 				if key in config: setattr(self, key, config[key])
 
@@ -897,42 +893,16 @@ class PBar():
 	# --------- ///////////////////////////////////////// ----------
 
 
-	@property
-	def _charsetCorner(self) -> dict[str, str]:
-		"""type checker does not understand that CharSet["corner"] is always dict[str, str]"""
-		return cast(dict[str, str], self._charset["corner"])
-
-	def _char(self, key: str) -> str:
-		assert(key != "corner")
-
-		return cast(str, self._charset[key])
 
 
-	@property
-	def _colorsetCorner(self) -> dict[str, Color]:
-		"""type checker does not understand that ColorSet["corner"] is always dict[str, Color]"""
-		return cast(dict[str, Color], self._colorset["corner"])
-
-	@property
-	def _colorsetText(self) -> dict[str, Color]:
-		"""type checker does not understand that ColorSet["text"] is always dict[str, Color]"""
-		return cast(dict[str, Color], self._colorset["text"])
-
-	def _color(self, key: str) -> Color:
-		assert key not in ["corner", "text"]
-
-		return cast(Color, self._colorset[key])
-
-
-
-
-
-	def _getPos(self, position: Optional[Sequence[Any]]) -> tuple[int, int]:
+	def _getPos(self, position: Optional[tuple[int, int]]) -> tuple[int, int]:
 		"""Get and process new position requested"""
 		if not position:
 			position = _DEFAULT_POS
 		elif not isinstance(position, (tuple, list)):
 			raise TypeError(f"Type of position ({type(position)}) is not Sequence")
+		elif len(position) != 2:
+			raise ValueError("Sequence must have two items")
 
 		newpos = []
 		TERM_SIZE: tuple[int, int] = _get_terminal_size()
@@ -944,25 +914,29 @@ class PBar():
 				raise TypeError(f"Type of value {value} ({type(value)}) is not int/float")
 
 			if index == 0:
-				value = _capValue(value, TERM_SIZE[0] - self._length / 2 + 2, self._length / 2 + 2)
+				value = _capValue(value, TERM_SIZE[0] - self._size[0] / 2 + 2, self._size[0] / 2 + 2)
 			else:
 				value = _capValue(value, TERM_SIZE[1] - 3, 1)
 
-			value = int(value)
-			newpos.append(value)
+			newpos.append(int(value))
 		return tuple(newpos)
 
 
 
 
 	@staticmethod
-	def _getLength(length: int):
+	def _getSize(size: Optional[tuple[int, int]]) -> tuple[int, int]:
 		"""Get and process new length requested"""
-		if length is None:
-			return _DEFAULT_LEN
+		if size is None:
+			return _DEFAULT_SIZE
+		elif not isinstance(size, (tuple, list)):
+			raise TypeError(f"Type of size ({type(size)}) is not Sequence")
+		elif len(size) != 2:
+			raise ValueError("Sequence must have two items")
 
-		tSize: tuple[int, int] = _get_terminal_size()
-		return _capValue(length, tSize[0] - 5, 5)
+		# tSize: tuple[int, int] = _get_terminal_size()
+		# return _capValue(size, tSize[0] - 5, 5)
+		return size
 
 
 
@@ -989,7 +963,7 @@ class PBar():
 
 
 
-	def _clear(self, values: tuple[tuple[int, int], int]):
+	def _clear(self, values: tuple[tuple[int, int], int]):		# TODO: Rework
 		"""Clears the progress bar at the position and length specified. `values[0]` is the position, and `values[1]` is the length"""
 
 		if not self._enabled: return
@@ -1001,7 +975,7 @@ class PBar():
 		barShape = _genShape((pos[0] + centerOffset, pos[1]), (length, 1), CharSet.EMPTY, ColorSet.EMPTY)
 		barContent = _genBarContent(
 			(self._pos[0] + centerOffset + 2, self._pos[1]),
-			(self._length, 1),
+			self._size,
 			CharSet.EMPTY,
 			ColorSet.EMPTY,
 			self._formatset,
@@ -1009,6 +983,37 @@ class PBar():
 		)
 
 		print(VT100.CURSOR_SAVE, barShape, barContent, VT100.CURSOR_LOAD, sep="", end="", flush=True)
+
+
+
+
+	def _genBar(self) -> str:
+		POSITION = (self._pos[0] + int(self._size[0] / -2),
+					self._pos[1] + int(self._size[1] / -2))
+
+		# Build all the parts of the progress bar
+		barShape = _genShape(
+			POSITION,
+			self._size, self._charset, self._colorset
+		)
+
+		barContent = _genBarContent(
+			POSITION,
+			self._size, self._charset, self._colorset, self._range
+		)
+
+		barText = _genBarText(
+			POSITION,
+			self._size, self._colorset, self._formatset
+		)
+
+
+		return (
+			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE
+			+ barShape
+			+ barContent
+			+ VT100.CURSOR_LOAD + VT100.CURSOR_SHOW
+		)
 
 
 
@@ -1021,37 +1026,10 @@ class PBar():
 		if self._requiresClear:
 			# Clear the bar at the old position and length
 			self._clear(self._oldValues)
-			self._oldValues = [self._pos, self._length]
+			self._oldValues = [self._pos, self._size]
 
-		CENTER_OFFSET = int((self._length + 2) / -2)		# Number of characters from the end of the bar to the center
-
-
-		# Build all the parts of the progress bar
-		barShape = _genShape(
-			(self._pos[0] + CENTER_OFFSET, self._pos[1]),
-			(self._length, 1),
-			self._charset,
-			self._colorset
-		)
-
-		barContent = _genBarContent(
-			(self._pos[0] + CENTER_OFFSET + 2, self._pos[1]),
-			(self._length, 1),
-			self._charset,
-			self._colorset,
-			self._formatset,
-			self._range
-		)
-
-
-		fullBar: str = (
-			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE
-			+ barShape
-			+ barContent
-			+ VT100.CURSOR_LOAD + VT100.CURSOR_SHOW
-		)
 
 		# Draw the bar
-		print(fullBar, flush=True, end="")
+		print(self._genBar(), flush=True, end="")
 
 		self._requiresClear = False

@@ -8,7 +8,7 @@ mybar = pbar.PBar(
 	range=(0, 67),
 	text="Loading",
 	charset=pbar.CharSet.ROUNDED,
-	length=30,
+	size=(30, 1),
 	colorset={
 		"text": {
 			"outside":	(255, 189, 0)
