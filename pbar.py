@@ -448,17 +448,21 @@ class ColorSet(_BaseSet):
 		super().__init__(_convertClrs(newSet, "RGB"))	# Convert all hex values to rgb tuples
 
 
+	# def parsedValues(self, bg = False) -> "ColorSet":	# TODO: Broken! Need to implement method to iterate trough all values.
+	# 	return ColorSet({key: VT100.color(value, bg) for key, value in self._newset.items()})
+
+
 
 
 class FormatSet(_BaseSet):
 	"""Container for the formatting sets."""
 
 	EMPTY: FormatSetEntry = {		# ! please remember to change this back
-		"inside":	"INSIDE",
-		"right":	"RIGHT",
-		"left":		"LEFT",
-		"title":	"TITLE",
-		"subtitle":	"SUBTITLE"
+		"inside":	"",
+		"right":	"",
+		"left":		"",
+		"title":	"",
+		"subtitle":	""
 	}
 
 	DEFAULT: FormatSetEntry = {
@@ -497,7 +501,7 @@ class FormatSet(_BaseSet):
 
 
 	@staticmethod
-	def _parseFormat(cls: "PBar", string: str) -> str:
+	def _parseString(cls: "PBar", string: str) -> str:
 		"""Parse a string that may contain formatting keys"""
 		if string is None: return ""
 
@@ -543,6 +547,8 @@ class FormatSet(_BaseSet):
 					tempStr += char.lower()
 			elif char == "<":
 				foundOpen = True
+			# elif char == " ":
+			# 	endStr += VT100.moveHoriz(1)	# ?: Maybe in a future
 			else:
 				# It is just a normal character that doesn't belong to any formatting key, so just append it to the end string.
 				endStr += char
@@ -552,6 +558,11 @@ class FormatSet(_BaseSet):
 				endStr += tempStr
 
 		return endStr
+
+
+	def parsedValues(self, cls: "PBar") -> "FormatSet":
+		"""Returns a new FormatSet with all values parsed with the properties of the PBar object specified"""
+		return FormatSet({key: FormatSet._parseString(cls, value) for key, value in self._newset.items()})
 
 
 
@@ -600,7 +611,6 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 
 
 
-
 def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: CharSet, colorset: ColorSet,
 				   rangeValue: tuple[int, int]) -> str:
 	"""Generates the progress shape with a colorset and a charset specified"""
@@ -623,10 +633,39 @@ def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: Ch
 
 def _genBarText(position: tuple[int, int], size: tuple[int, int], colorset: ColorSet, formatset: FormatSet) -> str:
 	"""Generates all text for the bar"""
-	width, height = _capValue(size[0], min=3), _capValue(size[1], min=0) + 1
-	textTitle = formatset["title"]
+	width, height = _capValue(size[0], min=3) + 3, _capValue(size[1], min=0) + 1
 
-	return ""
+	textTitle = (
+		VT100.pos(position, (1, 0))
+		+ VT100.color(colorset["text"]["title"])
+		+ formatset["title"]
+	)
+
+	textSubtitle = (
+		VT100.pos(position, (width - len(formatset["subtitle"]), height))
+		+ VT100.color(colorset["text"]["subtitle"])
+		+ formatset["subtitle"]
+	)
+
+	textRight = (
+		VT100.pos(position, (width + 2, height/2))
+		+ VT100.color(colorset["text"]["right"])
+		+ formatset["right"]
+	)
+
+	textLeft = (
+		VT100.pos(position, (-len(formatset["left"]) - 1, height/2))
+		+ VT100.color(colorset["text"]["left"])
+		+ formatset["left"]
+	)
+
+	textInside = (
+		VT100.pos(position, (width/2 - len(formatset["inside"])/2 + 1, height/2))
+		+ VT100.color(colorset["text"]["inside"])
+		+ formatset["inside"]
+	)
+
+	return textTitle + textSubtitle + textRight + textLeft + textInside
 
 
 
@@ -991,6 +1030,8 @@ class PBar():
 		POSITION = (self._pos[0] + int(self._size[0] / -2),
 					self._pos[1] + int(self._size[1] / -2))
 
+		# parsedColorSet = self._colorset.parsedValues()
+
 		# Build all the parts of the progress bar
 		barShape = _genShape(
 			POSITION,
@@ -998,20 +1039,20 @@ class PBar():
 		)
 
 		barContent = _genBarContent(
-			POSITION,
+			(POSITION[0] + 2, POSITION[1]),
 			self._size, self._charset, self._colorset, self._range
 		)
 
 		barText = _genBarText(
 			POSITION,
-			self._size, self._colorset, self._formatset
+			self._size, self._colorset, self._formatset.parsedValues(self)
 		)
-
 
 		return (
 			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE
 			+ barShape
 			+ barContent
+			+ barText
 			+ VT100.CURSOR_LOAD + VT100.CURSOR_SHOW
 		)
 
