@@ -225,9 +225,8 @@ class _BaseSet:
 		return f"{self.__class__.__name__}({self._newset})"
 
 
-	def _populate(self, currentSet: dict) -> dict:
+	def _populate(self, currentSet: dict) -> dict:		# ?: Needs a proper rewrite
 		"""Return a new set with all the necessary keys for drawing the bar, making sure that no keys are missing."""
-
 		newSet = {}
 		for key, currentValue in currentSet.items():
 			if key not in self.EMPTY.keys():
@@ -243,6 +242,23 @@ class _BaseSet:
 				newSet[key] = currentValue
 
 		return newSet
+
+
+	def iterValues(self, set: dict, func, *fargs) -> dict:		# !: I don't know how to write this properly, help.
+		"""
+		Return dict with all values in dict with the values returned by the function specified.
+		`*fargs` are other args for the function.
+		"""
+		newSet = {}
+		for key, value in set.items():
+			if isinstance(value, dict):
+				newSet[key] = self.iterValues(value, func, *fargs)
+			else:
+				newSet[key] = func(*fargs, value)
+		return newSet
+
+
+
 
 
 
@@ -410,7 +426,7 @@ class ColorSet(_BaseSet):
 		"horiz":	(247, 111, 152),
 		"corner":	(247, 111, 152),
 		"text": {
-			"outside":	(247, 111, 152)
+			"right":	(247, 111, 152)
 		}
 	}
 
@@ -421,7 +437,7 @@ class ColorSet(_BaseSet):
 		"horiz":	(255, 100, 100),
 		"corner":	(255, 100, 100),
 		"text": {
-			"outside":	(255, 100, 100)
+			"right":	(255, 100, 100)
 		}
 	}
 
@@ -448,8 +464,8 @@ class ColorSet(_BaseSet):
 		super().__init__(_convertClrs(newSet, "RGB"))	# Convert all hex values to rgb tuples
 
 
-	# def parsedValues(self, bg = False) -> "ColorSet":	# TODO: Broken! Need to implement method to iterate trough all values.
-	# 	return ColorSet({key: VT100.color(value, bg) for key, value in self._newset.items()})
+	def parsedValues(self, bg = False) -> "ColorSet":
+		return ColorSet(self.iterValues(self._newset, VT100.color))
 
 
 
@@ -457,7 +473,7 @@ class ColorSet(_BaseSet):
 class FormatSet(_BaseSet):
 	"""Container for the formatting sets."""
 
-	EMPTY: FormatSetEntry = {		# ! please remember to change this back
+	EMPTY: FormatSetEntry = {
 		"inside":	"",
 		"right":	"",
 		"left":		"",
@@ -562,7 +578,7 @@ class FormatSet(_BaseSet):
 
 	def parsedValues(self, cls: "PBar") -> "FormatSet":
 		"""Returns a new FormatSet with all values parsed with the properties of the PBar object specified"""
-		return FormatSet({key: FormatSet._parseString(cls, value) for key, value in self._newset.items()})
+		return FormatSet(self.iterValues(self._newset, self._parseString, cls))
 
 
 
@@ -570,17 +586,17 @@ class FormatSet(_BaseSet):
 
 
 
-def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet, colorset: ColorSet) -> str:
-	"""Generates a basic rectangular shape that uses a charset and a colorset"""
+def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet, parsedColorset: ColorSet) -> str:
+	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
 	width, height = _capValue(size[0], min=3) + 2, _capValue(size[1], min=0) + 1
 
-	charVert = VT100.color(colorset["vert"]) + charset["vert"]
-	charHoriz = VT100.color(colorset["horiz"]) + charset["horiz"]
+	charVert = parsedColorset["vert"] + charset["vert"]
+	charHoriz = parsedColorset["horiz"] + charset["horiz"]
 	charCorner = (
-		VT100.color(colorset["corner"]["tleft"]) + charset["corner"]["tleft"],
-		VT100.color(colorset["corner"]["tright"]) + charset["corner"]["tright"],
-		VT100.color(colorset["corner"]["bleft"]) + charset["corner"]["bleft"],
-		VT100.color(colorset["corner"]["bright"]) + charset["corner"]["bright"]
+		parsedColorset["corner"]["tleft"] + charset["corner"]["tleft"],
+		parsedColorset["corner"]["tright"] + charset["corner"]["tright"],
+		parsedColorset["corner"]["bleft"] + charset["corner"]["bleft"],
+		parsedColorset["corner"]["bright"] + charset["corner"]["bright"]
 	)
 
 	endStr: str = (
@@ -611,15 +627,15 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 
 
 
-def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: CharSet, colorset: ColorSet,
+def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: CharSet, parsedColorset: ColorSet,
 				   rangeValue: tuple[int, int]) -> str:
-	"""Generates the progress shape with a colorset and a charset specified"""
+	"""Generates the progress shape with a parsed colorset and a charset specified"""
 	width, height = _capValue(size[0], min=3), _capValue(size[1], min=0) + 1
 	SEGMENTS_FULL = int((_capValue(rangeValue[0], rangeValue[1], 0) / _capValue(rangeValue[1], min=1))*width)	# Number of character for the full part of the bar
 	SEGMENTS_EMPTY = width - SEGMENTS_FULL
 
-	charFull = VT100.color(colorset["full"]) + charset["full"]
-	charEmpty = VT100.color(colorset["empty"]) + charset["empty"]
+	charFull = parsedColorset["full"] + charset["full"]
+	charEmpty = parsedColorset["empty"] + charset["empty"]
 
 	return "".join((
 			VT100.pos((position), (0, row))
@@ -631,37 +647,37 @@ def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: Ch
 
 
 
-def _genBarText(position: tuple[int, int], size: tuple[int, int], colorset: ColorSet, formatset: FormatSet) -> str:
+def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset: ColorSet, formatset: FormatSet) -> str:
 	"""Generates all text for the bar"""
 	width, height = _capValue(size[0], min=3) + 3, _capValue(size[1], min=0) + 1
 
 	textTitle = (
 		VT100.pos(position, (1, 0))
-		+ VT100.color(colorset["text"]["title"])
+		+ parsedColorset["text"]["title"]
 		+ formatset["title"]
 	)
 
 	textSubtitle = (
 		VT100.pos(position, (width - len(formatset["subtitle"]), height))
-		+ VT100.color(colorset["text"]["subtitle"])
+		+ parsedColorset["text"]["subtitle"]
 		+ formatset["subtitle"]
 	)
 
 	textRight = (
 		VT100.pos(position, (width + 2, height/2))
-		+ VT100.color(colorset["text"]["right"])
+		+ parsedColorset["text"]["right"]
 		+ formatset["right"]
 	)
 
 	textLeft = (
 		VT100.pos(position, (-len(formatset["left"]) - 1, height/2))
-		+ VT100.color(colorset["text"]["left"])
+		+ VT100.color(parsedColorset["text"]["left"])
 		+ formatset["left"]
 	)
 
 	textInside = (
 		VT100.pos(position, (width/2 - len(formatset["inside"])/2 + 1, height/2))
-		+ VT100.color(colorset["text"]["inside"])
+		+ VT100.color(parsedColorset["text"]["inside"])
 		+ formatset["inside"]
 	)
 
@@ -1030,22 +1046,22 @@ class PBar():
 		POSITION = (self._pos[0] + int(self._size[0] / -2),
 					self._pos[1] + int(self._size[1] / -2))
 
-		# parsedColorSet = self._colorset.parsedValues()
+		parsedColorSet = self._colorset.parsedValues()
 
 		# Build all the parts of the progress bar
 		barShape = _genShape(
 			POSITION,
-			self._size, self._charset, self._colorset
+			self._size, self._charset, parsedColorSet
 		)
 
 		barContent = _genBarContent(
 			(POSITION[0] + 2, POSITION[1]),
-			self._size, self._charset, self._colorset, self._range
+			self._size, self._charset, parsedColorSet, self._range
 		)
 
 		barText = _genBarText(
 			POSITION,
-			self._size, self._colorset, self._formatset.parsedValues(self)
+			self._size, parsedColorSet, self._formatset.parsedValues(self)
 		)
 
 		return (
