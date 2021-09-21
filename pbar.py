@@ -8,7 +8,7 @@ __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet")
 __author__ = "David Losantos (DarviL)"
 __version__ = "0.10.1"
 
-from typing import Any, Optional, SupportsInt, TypeVar, Union, cast, Sequence
+from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
 
 
@@ -244,17 +244,21 @@ class _BaseSet:
 		return newSet
 
 
-	def iterValues(self, set: dict, func, *fargs) -> dict:		# !: I don't know how to write this properly, help.
+	def iterValues(self, val: dict[dict, tuple[Optional[list[Any]], Optional[dict]]], func: Callable) -> dict:		# thanks MithicSpirit
 		"""
-		Return dict with all values in dict with the values returned by the function specified.
-		`*fargs` are other args for the function.
+		Return dict with all values in it used as args for a function that will return a new value.
+		@val: This represents the dictionary which contains a key for the dict to process, and a tuple containing
+			  the *args and *kwargs.
 		"""
 		newSet = {}
-		for key, value in set.items():
+		for key, value in val.items():
+			print(key, value)
 			if isinstance(value, dict):
-				newSet[key] = self.iterValues(value, func, *fargs)
+				newSet[key] = self.iterValues(value, func)
 			else:
-				newSet[key] = func(*fargs, value)
+				args = value[0] or ()
+				kwargs = value[1] or {}
+				newSet[key] = func(*args, *kwargs)
 		return newSet
 
 
@@ -465,7 +469,8 @@ class ColorSet(_BaseSet):
 
 
 	def parsedValues(self, bg = False) -> "ColorSet":
-		return ColorSet(self.iterValues(self._newset, VT100.color))
+		newset = {key: ((value, bg), None) for key, value in self._newset.items()}
+		return ColorSet(self.iterValues(newset, VT100.color))
 
 
 
@@ -578,7 +583,8 @@ class FormatSet(_BaseSet):
 
 	def parsedValues(self, cls: "PBar") -> "FormatSet":
 		"""Returns a new FormatSet with all values parsed with the properties of the PBar object specified"""
-		return FormatSet(self.iterValues(self._newset, self._parseString, cls))
+		newset = {key: ((cls, value), None) for key, value in self._newset.items()}
+		return FormatSet(self.iterValues(newset, self._parseString))
 
 
 
