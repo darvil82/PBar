@@ -244,7 +244,7 @@ class _BaseSet:
 		return newSet
 
 
-	def iterValues(self, val: dict[dict, tuple[Optional[list[Any]], Optional[dict]]], func: Callable) -> dict:		# thanks MithicSpirit
+	def iterValues(self, val: dict[dict, tuple[Optional[list[Any]], Optional[dict]]], func: Callable) -> dict:		# !thanks MithicSpirit. Still doesnt work
 		"""
 		Return dict with all values in it used as args for a function that will return a new value.
 		@val: This represents the dictionary which contains a key for the dict to process, and a tuple containing
@@ -252,7 +252,6 @@ class _BaseSet:
 		"""
 		newSet = {}
 		for key, value in val.items():
-			print(key, value)
 			if isinstance(value, dict):
 				newSet[key] = self.iterValues(value, func)
 			else:
