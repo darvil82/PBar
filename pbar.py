@@ -55,13 +55,13 @@ def _formatError(string: str, start: int, end: int) -> str:
 
 
 
-def _convertClrs(clr: Union[str, tuple, dict], type: str) -> Union[str, tuple, dict, None]:
+def _convertClrs(clr: Union[str, tuple], type: str) -> Union[str, tuple, dict, None]:
 	"""Convert color values to HEX and vice-versa
 	@clr:	Color value to convert.
 	@type:	Type of conversion to do ('RGB' or 'HEX')"""
 
 	if isinstance(clr, dict):
-		return {key: _convertClrs(clr[key], type) for key in clr.keys()}
+		return {key: _convertClrs(value, type) for key, value in clr.items()}
 
 	if type == "RGB":
 		if not isinstance(clr, str) or not clr.startswith("#"):
@@ -127,25 +127,18 @@ class VT100:
 		return f"\x1b[{type};2;{rgb[0]};{rgb[1]};{rgb[2]}m"
 
 
-
 	@staticmethod
 	def moveHoriz(dist: SupportsInt):
 		"""Move the cursor horizontally `dist` characters (supports negative numbers)."""
 		dist = int(dist)
-		if dist < 0:
-			return f"\x1b[{abs(dist)}D"
-		else:
-			return f"\x1b[{dist}C"
+		return f"\x1b[{abs(dist)}{'D' if dist < 0 else 'C'}"
 
 
 	@staticmethod
 	def moveVert(dist: SupportsInt):
 		"""Move the cursor vertically `dist` lines (supports negative numbers)."""
 		dist = int(dist)
-		if dist < 0:
-			return f"\x1b[{abs(dist)}A"
-		else:
-			return f"\x1b[{dist}B"
+		return f"\x1b[{abs(dist)}{'A' if dist < 0 else 'B'}"
 
 
 	# simple sequences that dont require parsing
@@ -206,6 +199,10 @@ class _BaseSet:
 		return self._newset.keys()
 
 
+	def items(self):
+		return dict.items(self._newset)
+
+
 	def __getitem__(self, item) -> dict:
 		return self._newset[item]
 
@@ -244,7 +241,7 @@ class _BaseSet:
 		return newSet
 
 
-	def iterValues(self, val: dict[dict, tuple[Optional[list[Any]], Optional[dict]]], func: Callable) -> dict:		# !thanks MithicSpirit. Still doesnt work
+	def iterValues(self, val: dict[dict, tuple[Optional[list[Any]], Optional[dict]]], func: Callable) -> dict:		# !thanks MithicSpirit. Still doesnt work with dicts inside dicts.
 		"""
 		Return dict with all values in it used as args for a function that will return a new value.
 		@val: This represents the dictionary which contains a key for the dict to process, and a tuple containing
@@ -253,6 +250,7 @@ class _BaseSet:
 		newSet = {}
 		for key, value in val.items():
 			if isinstance(value, dict):
+				raise NotImplementedError	# !: Using workarounds everywhere.
 				newSet[key] = self.iterValues(value, func)
 			else:
 				args = value[0] or ()
@@ -375,13 +373,11 @@ class CharSet(_BaseSet):
 		if not setdict:
 			return
 
-		IGNORE_CHARS = "\x1b\n\r\b\a\f\v\t"
-
 		newset = {}
 		for key, value in setdict.items():
 			if isinstance(value, dict):
 				value = CharSet._strip(value)
-			elif value in IGNORE_CHARS or len(value) < 1:
+			elif value in _IGNORE_CHARS or len(value) < 1:
 				value = " "
 			elif len(value) > 1:
 				value = value[0]
@@ -429,7 +425,7 @@ class ColorSet(_BaseSet):
 		"horiz":	(247, 111, 152),
 		"corner":	(247, 111, 152),
 		"text": {
-			"right":	(247, 111, 152)
+			"right":	(247, 111, 152),
 		}
 	}
 
@@ -468,8 +464,16 @@ class ColorSet(_BaseSet):
 
 
 	def parsedValues(self, bg = False) -> "ColorSet":
-		newset = {key: ((value, bg), None) for key, value in self._newset.items()}
-		return ColorSet(self.iterValues(newset, VT100.color))
+		"""Convert all values in the ColorSet to parsed color sequences"""
+		# newset = {key: ((value, bg), None) for key, value in self._newset.items()}
+		# return ColorSet(self.iterValues(newset, VT100.color))
+		newDict = {}
+		for key, value in self.items():
+			if isinstance(value, dict):
+				newDict[key] = ColorSet.parsedValues(value, bg)
+			else:
+				newDict[key] = VT100.color(value, bg)
+		return newDict
 
 
 
@@ -586,6 +590,18 @@ class FormatSet(_BaseSet):
 		return FormatSet(self.iterValues(newset, self._parseString))
 
 
+	@staticmethod
+	def cleanedValues(val: "FormatSet") -> "FormatSet":
+		"""Convert all values in the FormatSet to strings with spaces of the same size."""
+		newDict = {}
+		for key, value in val.items():
+			if isinstance(value, dict):
+				newDict[key] = FormatSet.cleanedValues(value)
+			else:
+				newDict[value] = " "*len(value)
+		return newDict
+
+
 
 
 
@@ -676,13 +692,13 @@ def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset
 
 	textLeft = (
 		VT100.pos(position, (-len(formatset["left"]) - 1, height/2))
-		+ VT100.color(parsedColorset["text"]["left"])
+		+ parsedColorset["text"]["left"]
 		+ formatset["left"]
 	)
 
 	textInside = (
 		VT100.pos(position, (width/2 - len(formatset["inside"])/2 + 1, height/2))
-		+ VT100.color(parsedColorset["text"]["inside"])
+		+ parsedColorset["text"]["inside"]
 		+ formatset["inside"]
 	)
 
@@ -735,7 +751,7 @@ class PBar():
 	"""
 	def __init__(self,
 			range: tuple[int, int] = None,
-			text: str = "",
+			text: str = None,
 			size: tuple[int, int] = None,
 			position: tuple[Union[int, str], Union[int, str]] = None,
 			charset: Optional[CharSetEntry] = None,
@@ -782,7 +798,7 @@ class PBar():
 		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom colors:
 		- Custom color set dictionary:
 
-				![image](https://user-images.githubusercontent.com/48654552/127904550-15001058-cbf2-4ebf-a543-8d6566e9ef36.png)
+				![image](https://user-images.githubusercontent.com/48654552/134371850-1d858a6e-8003-40da-a5ff-f36bd06a5b07.png)
 
 			Note: It is not needed to specify all the keys and values.
 
@@ -797,7 +813,7 @@ class PBar():
 		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom formatting:
 		- Custom formatset dictionary:
 
-				![image](https://user-images.githubusercontent.com/48654552/127889950-9b31d7eb-9a52-442b-be7f-8b9df23b15ae.png)
+				![image](https://user-images.githubusercontent.com/48654552/134372064-2abd9fab-37dd-4334-8d30-26e2f0967313.png)
 
 			Note: It is not needed to specify all the keys and values.
 
@@ -811,7 +827,7 @@ class PBar():
 		self._enabled = True
 
 		self._range = PBar._getRange(range)
-		self._text = FormatSet._rmPoisonChars(text)
+		self._text = FormatSet._rmPoisonChars(text) if text is not None else ""
 		self._formatset = FormatSet(formatset)
 		self._size = PBar._getSize(size)
 		self._charset = CharSet(charset)
@@ -826,30 +842,45 @@ class PBar():
 	# --------- Properties / Methods the user should use. ----------
 
 	def draw(self):
-		"""Print the progress bar on screen"""
-		self._draw()
+		"""Print the progress bar on screen."""
+
+		if self._requiresClear:
+			# Clear the bar at the old position and length
+			self._printStr(self._genClearedBar(self._oldValues))
+			self._oldValues = [self._pos, self._size]
+
+		# Draw the bar
+		self._printStr(self._genBar())
+
+		self._requiresClear = False
 
 
-	def step(self, steps: int = 1):
-		"""Add `steps` to the first value in range, then draw the bar"""
+	def step(self, steps: int = 1, text=None):
+		"""
+		Add `steps` to the first value in range, then draw the bar.
+		@steps: Value to add to the first value in range.
+		@text: Text to be displayed on the bar.
+		"""
 		self.range = (self._range[0] + steps, self._range[1])
-		self._draw()
+		if text is not None: self.text = text
+		self.draw()
 
 
 	def clear(self):
-		"""Clear the progress bar"""
-		self._clear([self._pos, self._size])
+		"""Clear the progress bar."""
+		bar = self._genClearedBar([self._pos, self._size])
+		self._printStr(bar)
 
 
 	@property
 	def percentage(self):
-		"""Percentage of the progress of the current range"""
+		"""Percentage of the progress of the current range."""
 		return int((self._range[0]*100) / self._range[1])
 
 
 	@property
 	def text(self):
-		"""Text to be displayed on the bar"""
+		"""Text to be displayed on the bar."""
 		return self._text
 	@text.setter
 	def text(self, text: str):
@@ -859,7 +890,7 @@ class PBar():
 
 	@property
 	def range(self) -> tuple[int, int]:
-		"""Range for the bar progress"""
+		"""Range for the bar progress."""
 		return (self._range[0], self._range[1])
 	@range.setter
 	def range(self, range: tuple[int, int]):
@@ -868,7 +899,7 @@ class PBar():
 
 	@property
 	def charset(self) -> CharSet:
-		"""Set of characters for the bar"""
+		"""Set of characters for the bar."""
 		return self._charset
 	@charset.setter
 	def charset(self, charset: CharSetEntry):
@@ -877,7 +908,7 @@ class PBar():
 
 	@property
 	def colorset(self) -> ColorSet:
-		"""Set of colors for the bar"""
+		"""Set of colors for the bar."""
 		return self._colorset
 	@colorset.setter
 	def colorset(self, colorset: ColorSetEntry):
@@ -886,7 +917,7 @@ class PBar():
 
 	@property
 	def formatset(self) -> FormatSet:
-		"""Formatting used for the bar"""
+		"""Formatting used for the bar."""
 		return self._formatset
 	@formatset.setter
 	def formatset(self, formatset: FormatSetEntry):
@@ -895,20 +926,19 @@ class PBar():
 
 	@property
 	def size(self):
-		"""Size of the progress bar"""
+		"""Size of the progress bar."""
 		return self._size
 	@size.setter
 	def size(self, size: tuple[int, int]):
 		newsize = PBar._getSize(size)
-		if newsize != self._size:
-			self._requiresClear = True		# since the bar is gonna be smaller, we need to redraw it.
+		self._requiresClear = True if newsize != self._size else False	# since the bar is gonna change it's size, we need to redraw it.
 		self._oldValues[1] = self._size
 		self._size = newsize
 
 
 	@property
 	def position(self):
-		"""Position of the progress bar"""
+		"""Position of the progress bar."""
 		return self._pos
 	@position.setter
 	def position(self, position: Union[None, str, tuple[int, int]]):
@@ -931,7 +961,7 @@ class PBar():
 
 	@property
 	def config(self) -> dict:
-		"""All the values of the progress bar stored in a dict"""
+		"""All the values of the progress bar stored in a dict."""
 		return {
 			"range":		self._range,
 			"text":			self._text,
@@ -951,8 +981,6 @@ class PBar():
 
 
 	# --------- ///////////////////////////////////////// ----------
-
-
 
 
 	def _getPos(self, position: Optional[tuple[int, int]]) -> tuple[int, int]:
@@ -982,8 +1010,6 @@ class PBar():
 		return tuple(newpos)
 
 
-
-
 	@staticmethod
 	def _getSize(size: Optional[tuple[int, int]]) -> tuple[int, int]:
 		"""Get and process new length requested"""
@@ -997,8 +1023,6 @@ class PBar():
 		# tSize: tuple[int, int] = _get_terminal_size()
 		# return _capValue(size, tSize[0] - 5, 5)
 		return size
-
-
 
 
 	@staticmethod
@@ -1021,33 +1045,48 @@ class PBar():
 		return (value1, value2)
 
 
+	def _genClearedBar(self, values: tuple[tuple[int, int], int]) -> str:
+		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
 
+		size = values[1]
+		parsedColorSet = ColorSet.parsedValues(ColorSet.EMPTY)
 
-	def _clear(self, values: tuple[tuple[int, int], int]):		# TODO: Rework
-		"""Clears the progress bar at the position and length specified. `values[0]` is the position, and `values[1]` is the length"""
+		POSITION = (self._pos[0] + int(size[0] / -2),
+					self._pos[1] + int(size[1] / -2))
 
-		if not self._enabled: return
-
-		pos = values[0]
-		length = values[1]
-		centerOffset = int((length + 2) / -2)		# Number of characters from the end of the bar to the center
-
-		barShape = _genShape((pos[0] + centerOffset, pos[1]), (length, 1), CharSet.EMPTY, ColorSet.EMPTY)
-		barContent = _genBarContent(
-			(self._pos[0] + centerOffset + 2, self._pos[1]),
-			self._size,
+		barShape = _genShape(
+			POSITION,
+			size,
 			CharSet.EMPTY,
-			ColorSet.EMPTY,
-			self._formatset,
-			self._range
+			parsedColorSet
 		)
 
-		print(VT100.CURSOR_SAVE, barShape, barContent, VT100.CURSOR_LOAD, sep="", end="", flush=True)
+		barContent = _genBarContent(
+			(POSITION[0] + 2, POSITION[1]),
+			size,
+			CharSet.EMPTY,
+			parsedColorSet,
+			(0, 1)
+		)
 
+		barText = _genBarText(
+			POSITION,
+			size,
+			parsedColorSet,
+			FormatSet.cleanedValues(self._formatset.parsedValues(self))
+		)
 
+		return (
+			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE
+			+ barShape
+			+ barContent
+			+ barText
+			+ VT100.CURSOR_LOAD + VT100.CURSOR_SHOW
+		)
 
 
 	def _genBar(self) -> str:
+		"""Generate the progress bar"""
 		POSITION = (self._pos[0] + int(self._size[0] / -2),
 					self._pos[1] + int(self._size[1] / -2))
 
@@ -1078,20 +1117,7 @@ class PBar():
 		)
 
 
-
-
-	def _draw(self):
-		"""Draw the progress bar"""
-
+	def _printStr(self, barString: str):
+		"""Prints string to stream"""
 		if not self._enabled: return
-
-		if self._requiresClear:
-			# Clear the bar at the old position and length
-			self._clear(self._oldValues)
-			self._oldValues = [self._pos, self._size]
-
-
-		# Draw the bar
-		print(self._genBar(), flush=True, end="")
-
-		self._requiresClear = False
+		print(barString, flush=True, end="")
