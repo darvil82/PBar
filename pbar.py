@@ -6,7 +6,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet")
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -771,7 +771,11 @@ class PBar():
 		---
 
 		@position: Tuple containing the position (X and Y axles of the center) of the progress bar on the terminal.
-		If a value is `center`, the bar will be positioned at the center of the terminal on that axis. Default value is `("center", "center")`
+
+		- If an axis value is `center`, the bar will be positioned at the center of the terminal on that axis.
+		- Negative values will position the bar at the other side of the terminal.
+
+		Default value is `("center", "center")`
 
 		---
 
@@ -998,10 +1002,13 @@ class PBar():
 			elif not isinstance(value, (int, float)):
 				raise TypeError(f"Type of value {value} ({type(value)}) is not int/float")
 
+			if value < 0:
+				value = TERM_SIZE[index] + value
+
 			if index == 0:
-				value = _capValue(value, TERM_SIZE[0] - self._size[0] / 2 + 2, self._size[0] / 2 + 2)
+				value = _capValue(value, TERM_SIZE[0] - self._size[0]/2 + 2, self._size[0] / 2 + 2)
 			else:
-				value = _capValue(value, TERM_SIZE[1] - 3, 1)
+				value = _capValue(value, TERM_SIZE[1] - self._size[1], 1 + self._size[1]/2)
 
 			newpos.append(int(value))
 		return tuple(newpos)
