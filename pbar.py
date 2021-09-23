@@ -661,16 +661,25 @@ def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset
 	"""Generates all text for the bar"""
 	width, height = _capValue(size[0], min=3) + 3, _capValue(size[1], min=0) + 1
 
+	def stripText(string: str, maxlen: int):
+		"""Return a string stripped if the len of it is larger than the maxlen specified"""
+		return string[:maxlen-3] + "..." if len(string) > maxlen else string
+
+	txtMaxWidth = width - 1
+	txtSubtitle = stripText(formatset["subtitle"], txtMaxWidth)
+	txtInside = stripText(formatset["inside"], txtMaxWidth-4)
+	txtTitle = stripText(formatset["title"], txtMaxWidth)
+
 	textTitle = (
 		VT100.pos(position, (1, 0))
 		+ parsedColorset["text"]["title"]
-		+ formatset["title"]
+		+ txtTitle
 	)
 
 	textSubtitle = (
-		VT100.pos(position, (width - len(formatset["subtitle"]), height))
+		VT100.pos(position, (width - len(txtSubtitle), height))
 		+ parsedColorset["text"]["subtitle"]
-		+ formatset["subtitle"]
+		+ txtSubtitle
 	)
 
 	textRight = (
@@ -685,13 +694,13 @@ def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset
 		+ formatset["left"]
 	)
 
-	textInside = (
-		VT100.pos(position, (width/2 - len(formatset["inside"])/2 + 1, height/2))
+	txtInside = (
+		VT100.pos(position, (width/2 - len(txtInside)/2 + 1, height/2))
 		+ parsedColorset["text"]["inside"]
-		+ formatset["inside"]
+		+ txtInside
 	)
 
-	return textTitle + textSubtitle + textRight + textLeft + textInside
+	return textTitle + textSubtitle + textRight + textLeft + txtInside
 
 
 
