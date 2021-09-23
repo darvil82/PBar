@@ -6,7 +6,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet")
 __author__ = "David Losantos (DarviL)"
-__version__ = "0.10.1"
+__version__ = "1.0.0"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -21,10 +21,12 @@ _DEFAULT_SIZE = (20, 1)
 _IGNORE_CHARS = "\x1b\n\r\b\a\f\v"
 
 
-Color = Optional[Union[tuple[int, int, int], str]]
-ColorSetEntry = dict[str, Color]
-CharSetEntry = dict[str, str]
-FormatSetEntry = dict[str, str]
+# Type Aliases
+Color = Optional[Union[tuple[int, int, int], str, None]]
+ColorSetEntry = dict[str, Union["ColorSetEntry", Color]]
+CharSetEntry = dict[str, Union["CharSetEntry", str]]
+FormatSetEntry = dict[str, Union["FormatSetEntry", str]]
+Position = tuple[Union[str, int], Union[str, int]]
 
 
 
@@ -41,8 +43,6 @@ def _capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) 
 		return value
 
 
-
-
 def _formatError(string: str, start: int, end: int) -> str:
 	"""Returns a colored string across the character indices specified."""
 
@@ -53,9 +53,7 @@ def _formatError(string: str, start: int, end: int) -> str:
 	)
 
 
-
-
-def _convertClrs(clr: Union[str, tuple], type: str) -> Union[str, tuple, dict, None]:
+def _convertClrs(clr: ColorSetEntry, type: str) -> Union[str, tuple, dict, None]:
 	"""Convert color values to HEX and vice-versa
 	@clr:	Color value to convert.
 	@type:	Type of conversion to do ('RGB' or 'HEX')"""
@@ -67,20 +65,16 @@ def _convertClrs(clr: Union[str, tuple], type: str) -> Union[str, tuple, dict, N
 		if not isinstance(clr, str) or not clr.startswith("#"):
 			return clr
 
-		clr = clr.lstrip("#")
+		clrs = clr.lstrip("#")
 		try:
-			return tuple(int(clr[i:i+2], 16) for i in (0, 2, 4))
+			return tuple(int(clrs[i:i+2], 16) for i in (0, 2, 4))
 		except ValueError:
-			return
+			return clr
 	elif type == "HEX":
 		if not isinstance(clr, (tuple, list)) or len(clr) != 3: return clr
 
 		capped = tuple(_capValue(value, 255, 0) for value in clr)
 		return f"#{capped[0]:X}{capped[1]:X}{capped[2]:X}"
-
-
-
-
 
 
 
@@ -121,10 +115,10 @@ class VT100:
 		elif len(rgb) != 3:
 			raise ValueError("Sequence must have 3 items")
 
-		rgb = [_capValue(value, 255, 0) for value in rgb]
+		crgb = [_capValue(value, 255, 0) for value in rgb]
 
 		type = 48 if bg else 38
-		return f"\x1b[{type};2;{rgb[0]};{rgb[1]};{rgb[2]}m"
+		return f"\x1b[{type};2;{crgb[0]};{crgb[1]};{crgb[2]}m"
 
 
 	@staticmethod
@@ -169,10 +163,6 @@ class VT100:
 
 
 
-
-
-
-
 class UnknownSetKeyError(BaseException):
 	"""A key supplied in a dictionary is unknown for the set class that will use it"""
 	def __init__(self, key, setcls) -> None:
@@ -181,10 +171,11 @@ class UnknownSetKeyError(BaseException):
 		super().__init__(f"{msg}. Available valid keys: '{clsKeys}'.")
 
 
-
-
 class _BaseSet:
 	"""Base class for all the customizable sets for the bar (colorset, charset, formatset)"""
+
+	EMPTY: dict = {}
+	DEFAULT: dict = {}
 
 	def __init__(self, newSet: dict) -> None:
 		if not newSet:
@@ -251,15 +242,12 @@ class _BaseSet:
 		for key, value in val.items():
 			if isinstance(value, dict):
 				raise NotImplementedError	# !: Using workarounds everywhere.
-				newSet[key] = self.iterValues(value, func)
-			else:
-				args = value[0] or ()
-				kwargs = value[1] or {}
-				newSet[key] = func(*args, *kwargs)
+				#newSet[key] = self.iterValues(value, func)
+			#else:
+			args = value[0] or ()
+			kwargs = value[1] or {}
+			newSet[key] = func(*args, *kwargs)
 		return newSet
-
-
-
 
 
 
@@ -424,8 +412,12 @@ class ColorSet(_BaseSet):
 		"vert":		(247, 111, 152),
 		"horiz":	(247, 111, 152),
 		"corner":	(247, 111, 152),
-		"text": {
-			"right":	(247, 111, 152),
+		"text":	{
+			"right":	(15, 219, 162),
+			"title":	(247, 111, 152),
+			"subtitle":	(247, 111, 152),
+			"left":		(15, 219, 162),
+			"inside":	(15, 219, 162)
 		}
 	}
 
@@ -435,9 +427,7 @@ class ColorSet(_BaseSet):
 		"vert":		(255, 100, 100),
 		"horiz":	(255, 100, 100),
 		"corner":	(255, 100, 100),
-		"text": {
-			"right":	(255, 100, 100)
-		}
+		"text":		(255, 100, 100)
 	}
 
 	YELLOW: ColorSetEntry = {
@@ -455,7 +445,13 @@ class ColorSet(_BaseSet):
 		'vert':		(255, 197, 0),
 		'full':		(255, 197, 0),
 		'empty':	(154, 118, 0),
-		'text':		(255, 197, 0)
+		'text':	{
+			"inside":	(255, 197, 0),
+			"right":	(255, 197, 0),
+			"left":		(255, 197, 0),
+			"title":	(199, 3, 24),
+			"subtitle":	(199, 3, 24)
+		}
 	}
 
 
@@ -463,17 +459,15 @@ class ColorSet(_BaseSet):
 		super().__init__(_convertClrs(newSet, "RGB"))	# Convert all hex values to rgb tuples
 
 
-	def parsedValues(self, bg = False) -> "ColorSet":
+	def parsedValues(self, bg = False) -> ColorSetEntry:
 		"""Convert all values in the ColorSet to parsed color sequences"""
 		# newset = {key: ((value, bg), None) for key, value in self._newset.items()}
 		# return ColorSet(self.iterValues(newset, VT100.color))
-		newDict = {}
-		for key, value in self.items():
-			if isinstance(value, dict):
-				newDict[key] = ColorSet.parsedValues(value, bg)
-			else:
-				newDict[key] = VT100.color(value, bg)
-		return newDict
+		return {
+		    key: ColorSet.parsedValues(value, bg)
+		    if isinstance(value, dict) else VT100.color(value, bg)
+		    for key, value in self.items()
+		}
 
 
 
@@ -490,21 +484,23 @@ class FormatSet(_BaseSet):
 	}
 
 	DEFAULT: FormatSetEntry = {
+		"right":	"<percentage>%",
+		"title":	"<text>"
+	}
+
+	DESCRIPTIVE: FormatSetEntry = {
+		"right":	"<percentage>%",
+		"title":	"<text>",
+		"subtitle":	"<range1> of <range2>"
+	}
+
+	LEFT_RIGHT: FormatSetEntry = {
+		"left":		"<range1>/<range2>",
+		"right":	"<text>: <percentage>%"
+	}
+
+	ONLY_PERCENTAGE: FormatSetEntry = {
 		"inside":	"<percentage>%",
-		"right":	"<text>"
-	}
-
-	ALL_OUT: FormatSetEntry = {
-		"right":	"<percentage>%, <range1>/<range2>, <text>"
-	}
-
-	ALL_IN: FormatSetEntry = {
-		"inside":	"<percentage>%, <range1>/<range2>, <text>"
-	}
-
-	MIXED: FormatSetEntry = {
-		"inside":	"<percentage>%",
-		"right":	"<text>: (<range1>/<range2>)"
 	}
 
 
@@ -593,26 +589,21 @@ class FormatSet(_BaseSet):
 	@staticmethod
 	def cleanedValues(val: "FormatSet") -> "FormatSet":
 		"""Convert all values in the FormatSet to strings with spaces of the same size."""
-		newDict = {}
-		for key, value in val.items():
-			if isinstance(value, dict):
-				newDict[key] = FormatSet.cleanedValues(value)
-			else:
-				newDict[value] = " "*len(value)
-		return newDict
+		return FormatSet({
+		    key: FormatSet.cleanedValues(value)
+		    if isinstance(value, dict) else " " * len(value)
+		    for key, value in val.items()
+		})
 
 
 
 
-
-
-
-def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet, parsedColorset: ColorSet) -> str:
+def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet, parsedColorset: dict, filled: Optional[str] = " ") -> str:
 	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
 	width, height = _capValue(size[0], min=3) + 2, _capValue(size[1], min=0) + 1
 
 	charVert = parsedColorset["vert"] + charset["vert"]
-	charHoriz = parsedColorset["horiz"] + charset["horiz"]
+	charHoriz = charset["horiz"]
 	charCorner = (
 		parsedColorset["corner"]["tleft"] + charset["corner"]["tleft"],
 		parsedColorset["corner"]["tright"] + charset["corner"]["tright"],
@@ -623,7 +614,7 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 	endStr: str = (
 		VT100.pos((position))
 		+ charCorner[0]
-		+ charHoriz*width
+		+ parsedColorset["horiz"] + charHoriz*width
 		+ charCorner[1]
 	)
 
@@ -631,19 +622,18 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 		endStr += (
 			VT100.pos((position), (0, row))
 			+ charVert
-			+ VT100.moveHoriz(width)
+			+ (VT100.moveHoriz(width) if filled is None else filled[0]*width)
 			+ charVert
 		)
 
 	endStr += (
 		VT100.pos((position), (0, height))
 		+ charCorner[2]
-		+ charHoriz*width
+		+ parsedColorset["horiz"] + charHoriz*width
 		+ charCorner[3]
 	)
 
 	return endStr
-
 
 
 
@@ -655,20 +645,19 @@ def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: Ch
 	SEGMENTS_FULL = int((_capValue(rangeValue[0], rangeValue[1], 0) / _capValue(rangeValue[1], min=1))*width)	# Number of character for the full part of the bar
 	SEGMENTS_EMPTY = width - SEGMENTS_FULL
 
-	charFull = parsedColorset["full"] + charset["full"]
-	charEmpty = parsedColorset["empty"] + charset["empty"]
+	charFull = charset["full"]
+	charEmpty = charset["empty"]
 
 	return "".join((
 			VT100.pos((position), (0, row))
-			+ charFull*SEGMENTS_FULL
-			+ charEmpty*SEGMENTS_EMPTY
+			+ parsedColorset["full"] + charFull*SEGMENTS_FULL
+			+ parsedColorset["empty"] + charEmpty*SEGMENTS_EMPTY
 		) for row in range(1, height))
 
 
 
 
-
-def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset: ColorSet, formatset: FormatSet) -> str:
+def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset: dict[str, Union[dict, str]], formatset: FormatSet) -> str:
 	"""Generates all text for the bar"""
 	width, height = _capValue(size[0], min=3) + 3, _capValue(size[1], min=0) + 1
 
@@ -703,11 +692,6 @@ def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset
 	)
 
 	return textTitle + textSubtitle + textRight + textLeft + textInside
-
-
-
-
-
 
 
 
@@ -753,7 +737,7 @@ class PBar():
 			range: tuple[int, int] = None,
 			text: str = None,
 			size: tuple[int, int] = None,
-			position: tuple[Union[int, str], Union[int, str]] = None,
+			position: Optional[Position] = None,
 			charset: Optional[CharSetEntry] = None,
 			colorset: Optional[ColorSetEntry] = None,
 			formatset: Optional[FormatSetEntry] = None
@@ -837,9 +821,8 @@ class PBar():
 		self._oldValues = [self._pos, self._size]
 
 
-
-
 	# --------- Properties / Methods the user should use. ----------
+
 
 	def draw(self):
 		"""Print the progress bar on screen."""
@@ -931,7 +914,7 @@ class PBar():
 	@size.setter
 	def size(self, size: tuple[int, int]):
 		newsize = PBar._getSize(size)
-		self._requiresClear = True if newsize != self._size else False	# since the bar is gonna change it's size, we need to redraw it.
+		self._requiresClear = newsize != self._size
 		self._oldValues[1] = self._size
 		self._size = newsize
 
@@ -941,7 +924,7 @@ class PBar():
 		"""Position of the progress bar."""
 		return self._pos
 	@position.setter
-	def position(self, position: Union[None, str, tuple[int, int]]):
+	def position(self, position: Position):
 		newpos = self._getPos(position)
 		# we dont need to update the position and ask to redraw if the value supplied is the same
 		if newpos != self._pos:
@@ -983,7 +966,7 @@ class PBar():
 	# --------- ///////////////////////////////////////// ----------
 
 
-	def _getPos(self, position: Optional[tuple[int, int]]) -> tuple[int, int]:
+	def _getPos(self, position: Position) -> tuple[int, int]:
 		"""Get and process new position requested"""
 		if not position:
 			position = _DEFAULT_POS
@@ -1045,7 +1028,7 @@ class PBar():
 		return (value1, value2)
 
 
-	def _genClearedBar(self, values: tuple[tuple[int, int], int]) -> str:
+	def _genClearedBar(self, values: tuple[tuple[int, int], tuple[int, int]]) -> str:
 		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
 
 		size = values[1]
@@ -1061,14 +1044,6 @@ class PBar():
 			parsedColorSet
 		)
 
-		barContent = _genBarContent(
-			(POSITION[0] + 2, POSITION[1]),
-			size,
-			CharSet.EMPTY,
-			parsedColorSet,
-			(0, 1)
-		)
-
 		barText = _genBarText(
 			POSITION,
 			size,
@@ -1079,7 +1054,6 @@ class PBar():
 		return (
 			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE
 			+ barShape
-			+ barContent
 			+ barText
 			+ VT100.CURSOR_LOAD + VT100.CURSOR_SHOW
 		)
