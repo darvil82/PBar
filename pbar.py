@@ -503,6 +503,11 @@ class FormatSet(_BaseSet):
 		"inside":	"<percentage>%",
 	}
 
+	SIMPLE: FormatSetEntry = {
+		"title":	"<text>",
+		"subtitle":	"<range1>/<range2>"
+	}
+
 
 	def __init__(self, newSet: FormatSetEntry) -> None:
 		super().__init__(newSet)
@@ -746,7 +751,7 @@ class PBar():
 			range: tuple[int, int] = None,
 			text: str = None,
 			size: tuple[int, int] = None,
-			position: Optional[Position] = None,
+			position: tuple[Union[str, int], Union[str, int]] = None,
 			charset: Optional[CharSetEntry] = None,
 			colorset: Optional[ColorSetEntry] = None,
 			formatset: Optional[FormatSetEntry] = None
