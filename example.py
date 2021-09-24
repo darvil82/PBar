@@ -23,11 +23,11 @@ try:
 	while mybar.percentage < 100:
 		sleep(0.1)
 		mybar.colorset |= {		# Merge with our own dict
-			"full":		(0, mybar.percentage * 2, 100),
-			"empty":	(255 - mybar.percentage * 2, 100, 0),
+			"full":		(0, mybar.percentage*2, 100),
+			"empty":	(255 - mybar.percentage*2, 100, 0),
 			"text":	{
-				"title":	(0, mybar.percentage * 2, 100),
-				"subtitle":	(255 - mybar.percentage * 2, 100, 0),
+				"title":	(0, mybar.percentage*2, 100),
+				"subtitle":	(255 - mybar.percentage*2, 100, 0),
 			}
 		}
 		mybar.step()			# Step over the range and draw bar
