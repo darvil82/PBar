@@ -6,7 +6,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = {"PBar", "VT100", "ColorSet", "CharSet", "FormatSet"}
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.2.0-0"
+__version__ = "1.2.1"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -896,7 +896,7 @@ class PBar():
 
 	def clear(self):
 		"""Clear the progress bar."""
-		bar = self._genClearedBar([self._pos, self._size])
+		bar = self._genClearedBar((self._pos, self._size))
 		self._printStr(bar)
 
 
@@ -1046,7 +1046,7 @@ class PBar():
 			if index == 0:
 				value = _capValue(value, TERM_SIZE[0] - self._size[0]/2 + 2, self._size[0] / 2 + 2)
 			else:
-				value = _capValue(value, TERM_SIZE[1] - self._size[1], 1 + self._size[1]/2)
+				value = _capValue(value, TERM_SIZE[1] - self._size[1]/2, 1 + self._size[1]/2)
 
 			newpos.append(int(value))
 		return tuple(newpos)
@@ -1087,14 +1087,14 @@ class PBar():
 		return (value1, value2)
 
 
-	def _genClearedBar(self, values: tuple[tuple[int, int], tuple[int, int]]) -> str:
+	def _genClearedBar(self, values: tuple[Position, tuple[int, int]]) -> str:
 		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
-
 		size = values[1]
+		pos = values[0]
 		parsedColorSet = ColorSet.parsedValues(ColorSet.EMPTY)
 
-		POSITION = (self._pos[0] + int(size[0] / -2),
-					self._pos[1] + int(size[1] / -2))
+		POSITION = (pos[0] + int(size[0] / -2),
+					pos[1] + int(size[1] / -2))
 
 		barShape = _genShape(
 			POSITION,
