@@ -6,10 +6,11 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = {"PBar", "VT100", "ColorSet", "CharSet", "FormatSet"}
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
+from time import time as _time
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -492,9 +493,10 @@ class FormatSet(_BaseSet):
 	}
 
 	DESCRIPTIVE: FormatSetEntry = {
-		"right":	"<percentage>%",
+		"right":	"E. Time: <etime>s.",
 		"title":	"<text>",
-		"subtitle":	"<range1> of <range2>"
+		"subtitle":	"<range1> of <range2>",
+		"inside":	"<percentage>%"
 	}
 
 	LEFT_RIGHT: FormatSetEntry = {
@@ -509,6 +511,20 @@ class FormatSet(_BaseSet):
 	SIMPLE: FormatSetEntry = {
 		"title":	"<text>",
 		"subtitle":	"<range1>/<range2>"
+	}
+
+	E_TIME: FormatSetEntry = {
+		"title":	"<text>",
+		"subtitle":	"Elapsed <etime> seconds"
+	}
+
+	TITLE_SUBTITLE: FormatSetEntry = {
+		"title":	"<text> (<range1>/<range2>)",
+		"subtitle":	"<percentage>%, (<etime>s)"
+	}
+
+	CLASSIC: FormatSetEntry = {
+		"right":	"<text>: <percentage>% (<range1>/<range2>) [<etime>s]"
 	}
 
 
@@ -561,6 +577,8 @@ class FormatSet(_BaseSet):
 						endStr += str(cls._range[0])
 					elif tempStr == "range2":
 						endStr += str(cls._range[1])
+					elif tempStr == "etime":
+						endStr += str(cls.etime)
 
 					elif tempStr == "text":
 						if cls._text:
@@ -694,13 +712,15 @@ def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset
 		VT100.pos(position, (width + 2, height/2))
 		+ parsedColorset["text"]["right"]
 		+ formatset["right"]
-	)
+		+ VT100.CLEAR_RIGHT
+	) if formatset["right"] else ""
 
 	textLeft = (
 		VT100.pos(position, (-len(formatset["left"]) - 1, height/2))
+		+ VT100.CLEAR_LEFT
 		+ parsedColorset["text"]["left"]
 		+ formatset["left"]
-	)
+	) if formatset["left"] else ""
 
 	txtInside = (
 		VT100.pos(position, (width/2 - len(txtInside)/2 + 1, height/2))
@@ -734,6 +754,7 @@ class PBar():
 	- mybar.draw()
 	- mybar.step()
 	- mybar.clear()
+	- mybar.resetETime()
 
 	---
 
@@ -748,6 +769,7 @@ class PBar():
 	- mybar.colorset
 	- mybar.formatset
 	- mybar.enabled
+	- mybar.etime
 	- mybar.config
 	"""
 	def __init__(self,
@@ -811,7 +833,7 @@ class PBar():
 
 		---
 
-		@formatset: Formatting used when displaying the values inside and outside the bar.
+		@formatset: Formatting used when displaying the strings in different places around the bar.
 
 		To use one of the included sets, use any of the constant values in `pbar.FormatSet`.
 
@@ -823,13 +845,15 @@ class PBar():
 			Note: It is not needed to specify all the keys and values.
 
 		- Available formatting keys:
-			- `<percentage>`
-			- `<range1>`
-			- `<range2>`
-			- `<text>`
+			- `<percentage>`:	Percentage of the bar.
+			- `<range1>`:		First value of the range.
+			- `<range2>`:		Second value of the range.
+			- `<text>`:			Text selected in the `text` property/arg.
+			- `<etime>`:		Elapsed time since the bar created.
 		"""
 		self._requiresClear = False
 		self._enabled = True
+		self._time = _time()
 
 		self._range = PBar._getRange(range)
 		self._text = FormatSet._rmPoisonChars(text) if text is not None else ""
@@ -874,6 +898,11 @@ class PBar():
 		"""Clear the progress bar."""
 		bar = self._genClearedBar([self._pos, self._size])
 		self._printStr(bar)
+
+
+	def resetETime(self):
+		"""Reset the elapsed time counter."""
+		self._time = _time()
 
 
 	@property
@@ -961,6 +990,16 @@ class PBar():
 	@enabled.setter
 	def enabled(self, state: bool):
 		self._enabled = state
+
+
+	@property
+	def etime(self, asFloat=False) -> Union[str, float]:
+		"""
+		Time elapsed since the bar created.
+		@asFloat: Return a float instead of a string.
+		"""
+		etime = _time() - self._time
+		return (f"{etime:5.4}" if etime > 0.01 else "0.0") if not asFloat else etime
 
 
 	@property
