@@ -6,7 +6,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = {"PBar", "VT100", "ColorSet", "CharSet", "FormatSet"}
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.2.0"
+__version__ = "1.2.0-0"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -993,13 +993,9 @@ class PBar():
 
 
 	@property
-	def etime(self, asFloat=False) -> Union[str, float]:
-		"""
-		Time elapsed since the bar created.
-		@asFloat: Return a float instead of a string.
-		"""
-		etime = _time() - self._time
-		return (f"{etime:5.4}" if etime > 0.01 else "0.0") if not asFloat else etime
+	def etime(self) -> float:
+		"""Time elapsed since the bar created."""
+		return round(_time() - self._time, 2)
 
 
 	@property
