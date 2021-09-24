@@ -6,7 +6,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = {"PBar", "VT100", "ColorSet", "CharSet", "FormatSet"}
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.1.0-1"
+__version__ = "1.1.1"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -364,11 +364,14 @@ class CharSet(_BaseSet):
 		newset = {}
 		for key, value in setdict.items():
 			if isinstance(value, dict):
-				value = CharSet._strip(value)
-			elif value in _IGNORE_CHARS+"\t" or len(value) < 1:
-				value = " "
-			elif len(value) > 1:
+				newset[key] = CharSet._strip(value)
+				continue
+
+			if len(value) > 1:
 				value = value[0]
+
+			if value in _IGNORE_CHARS+"\t":
+				value = "?"
 			newset[key] = value
 
 		return newset
