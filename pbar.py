@@ -6,7 +6,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = {"PBar", "VT100", "ColorSet", "CharSet", "FormatSet"}
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.2.1"
+__version__ = "1.3.0"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -172,7 +172,7 @@ class UnknownSetKeyError(BaseException):
 		super().__init__(f"{msg}. Available valid keys: '{clsKeys}'.")
 
 
-class _BaseSet:
+class _BaseSet(dict):
 	"""Base class for all the customizable sets for the bar (colorset, charset, formatset)"""
 
 	EMPTY: dict = {}
@@ -184,34 +184,11 @@ class _BaseSet:
 		elif not isinstance(newSet, dict):
 			raise TypeError(f"newSet type ({type(newSet)}) is not dict")
 
-		self._newset = self._populate(self.EMPTY | newSet)
-
-
-	def keys(self):
-		return self._newset.keys()
-
-
-	def items(self):
-		return dict.items(self._newset)
-
-
-	def __getitem__(self, item) -> dict:
-		return self._newset[item]
-
-
-	def __or__(self, other):
-		new = dict(self._newset)
-		new.update(other)
-		return new
-
-
-	def __ior__(self, other):
-		dict.update(self._newset, other)
-		return self._newset
+		super().__init__(self._populate(self.EMPTY | newSet))
 
 
 	def __repr__(self) -> str:
-		return f"{self.__class__.__name__}({self._newset})"
+		return f"{self.__class__.__name__}({dict(self)})"
 
 
 	def _populate(self, currentSet: dict) -> dict:		# ?: Needs a proper rewrite
@@ -353,7 +330,7 @@ class CharSet(_BaseSet):
 
 	def __init__(self, newSet: CharSetEntry) -> None:
 		super().__init__(newSet)
-		self._newset = CharSet._strip(self._newset)
+		self = CharSet._strip(self)
 
 
 	@staticmethod
@@ -465,7 +442,7 @@ class ColorSet(_BaseSet):
 
 	def parsedValues(self, bg = False) -> ColorSetEntry:
 		"""Convert all values in the ColorSet to parsed color sequences"""
-		# newset = {key: ((value, bg), None) for key, value in self._newset.items()}
+		# newset = {key: ((value, bg), None) for key, value in self.items()}
 		# return ColorSet(self.iterValues(newset, VT100.color))
 		return {
 		    key: ColorSet.parsedValues(value, bg)
@@ -474,6 +451,14 @@ class ColorSet(_BaseSet):
 		}
 
 
+
+
+class UnknownFormattingKeyError(BaseException):
+	def __init__(self, string, indices) -> None:
+		start, end = indices
+		value = string[start:end]
+		errStr = _formatError(string, start, end)
+		super().__init__(f"Unknown formatting key {value!r} ('{errStr}')")
 
 
 class FormatSet(_BaseSet):
@@ -584,7 +569,7 @@ class FormatSet(_BaseSet):
 						if cls._text:
 							endStr += FormatSet._rmPoisonChars(cls._text)
 					else:
-						raise RuntimeError(f"Unknown formatting key ('{_formatError(text, index - len(tempStr), index)}')")
+						raise UnknownFormattingKeyError(text, (index - len(tempStr), index))
 
 					foundOpen = False
 					tempStr = ""
@@ -608,7 +593,7 @@ class FormatSet(_BaseSet):
 
 	def parsedValues(self, cls: "PBar") -> "FormatSet":
 		"""Returns a new FormatSet with all values parsed with the properties of the PBar object specified"""
-		newset = {key: ((cls, value), None) for key, value in self._newset.items()}
+		newset = {key: ((cls, value), None) for key, value in self.items()}
 		return FormatSet(self.iterValues(newset, self._parseString))
 
 
