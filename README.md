@@ -10,10 +10,10 @@ from time import sleep
 
 
 mybar = pbar.PBar(
-	range=(0, 67),							# Range displayed as the progress
-	text="Loading",							# Some text to be displayed
-	charset=pbar.CharSet.ROUNDED,			# Characters that the bar will use
-	size=(30, 1),							# Width and height
+	range=(0, 67),				# Range displayed as the progress
+	text="Loading",				# Some text to be displayed
+	charset=pbar.CharSet.ROUNDED,		# Characters that the bar will use
+	size=(30, 1),				# Width and height
 	formatset=pbar.FormatSet.TITLE_SUBTITLE	# Text that will be displayed on the different places
 
 )
@@ -35,7 +35,7 @@ try:
 		}
 		mybar.step()			# Step over the range and draw bar
 	else:
-		mybar.text = "Done!"	# Change the text of the bar
+		mybar.text = "Done!"		# Change the text of the bar
 		mybar.colorset |= {
 			"text":		(0, 255, 0)
 		}
