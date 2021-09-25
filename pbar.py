@@ -6,7 +6,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = {"PBar", "VT100", "ColorSet", "CharSet", "FormatSet"}
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -75,7 +75,7 @@ def _convertClrs(clr: ColorSetEntry, type: str) -> Union[str, tuple, dict, None]
 		if not isinstance(clr, (tuple, list)) or len(clr) != 3: return clr
 
 		capped = tuple(_capValue(value, 255, 0) for value in clr)
-		return f"#{capped[0]:X}{capped[1]:X}{capped[2]:X}"
+		return f"#{capped[0]:x}{capped[1]:x}{capped[2]:x}"
 
 
 
@@ -440,7 +440,7 @@ class ColorSet(_BaseSet):
 		super().__init__(_convertClrs(newSet, "RGB"))	# Convert all hex values to rgb tuples
 
 
-	def parsedValues(self, bg = False) -> ColorSetEntry:
+	def parsedValues(self, bg = False) -> dict[str, Union[dict, str]]:
 		"""Convert all values in the ColorSet to parsed color sequences"""
 		# newset = {key: ((value, bg), None) for key, value in self.items()}
 		# return ColorSet(self.iterValues(newset, VT100.color))
@@ -792,7 +792,8 @@ class PBar():
 
 		@charset: Set of characters to use when drawing the progress bar.
 
-		To use one of the included sets, use any of the constant values in `pbar.CharSet`.
+		To use one of the included sets, use any of the constant values in `pbar.CharSet`. Keep in mind that some fonts might not have
+		the characters used in some charsets.
 
 		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom characters:
 		- Custom character set dictionary:
@@ -991,9 +992,9 @@ class PBar():
 			"text":			self._text,
 			"size":			self._size,
 			"position":		self._pos,
-			"charset":		dict(self._charset),						# \
-			"colorset":		_convertClrs(dict(self._colorset), "HEX"),	# |- Cast to dict when saving to make it easier to parse in a future.
-			"formatset":	dict(self._formatset),						# /
+			"charset":		self._charset,
+			"colorset":		_convertClrs(self._colorset, "HEX"),
+			"formatset":	self._formatset,
 			"enabled":		self._enabled
 		}
 	@config.setter
@@ -1097,8 +1098,8 @@ class PBar():
 
 		return (
 			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE
-			+ barShape
 			+ barText
+			+ barShape
 			+ VT100.CURSOR_LOAD + VT100.CURSOR_SHOW
 		)
 

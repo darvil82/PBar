@@ -5,14 +5,12 @@ from time import sleep
 
 
 mybar = pbar.PBar(
-	range=(0, 67),					# Range displayed as the progress
-	text="Loading",					# Some text to be displayed
-	charset=pbar.CharSet.TILTED,	# Characters that the bar will use
-	size=(30, 1),					# Width and height
-	formatset={						# Text that will be displayed on the different places
-		"title":	"<text>",
-		"subtitle":	"<range1> of <range2>"
-	}
+	range=(0, 67),							# Range displayed as the progress
+	text="Loading",							# Some text to be displayed
+	charset=pbar.CharSet.ROUNDED,			# Characters that the bar will use
+	size=(30, 1),							# Width and height
+	formatset=pbar.FormatSet.TITLE_SUBTITLE	# Text that will be displayed on the different places
+
 )
 
 
@@ -46,4 +44,4 @@ mybar.draw()
 sleep(1)
 mybar.clear()
 
-print("Finished!")		# The cursor stays at the same position
+print("Finished!")				# The cursor stays at the same position
