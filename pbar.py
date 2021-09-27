@@ -1,5 +1,7 @@
 """
-PBar module for displaying custom progress bars for Python 3.9+
+![logo_small](https://user-images.githubusercontent.com/48654552/134910682-2d7e72b5-443d-47d8-aa17-dfeb6eca974a.png)
+
+### pbar module for displaying custom progress bars for Python 3.9+
 
 GitHub Repository:		https://github.com/DarviL82/PBar
 """
@@ -722,15 +724,7 @@ class PBar():
 	"""
 	# PBar - Progress bar
 
-	PBar is an object for managing progress bars in python.
-
-	---
-
-	## Initialization
-
-	>>> mybar = PBar()
-
-	- A progress bar will be initialized with all the default values. For customization, use the arguments or the properties available.
+	Object for managing a progress bar.
 
 	---
 
