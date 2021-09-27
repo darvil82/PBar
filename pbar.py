@@ -1,5 +1,5 @@
 """
-![logo_small](https://user-images.githubusercontent.com/48654552/134910682-2d7e72b5-443d-47d8-aa17-dfeb6eca974a.png)
+![logo_small](https://user-images.githubusercontent.com/48654552/134991429-1109ad1d-92fa-423f-8ce1-3b777471cb3d.png)
 
 ### pbar module for displaying custom progress bars for Python 3.9+
 
