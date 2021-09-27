@@ -1,7 +1,7 @@
 """
 ![logo_small](https://user-images.githubusercontent.com/48654552/134991429-1109ad1d-92fa-423f-8ce1-3b777471cb3d.png)
 
-### pbar module for displaying custom progress bars for Python 3.9+
+### PBar module for displaying custom progress bars for Python 3.9+
 
 GitHub Repository:		https://github.com/DarviL82/PBar
 """
