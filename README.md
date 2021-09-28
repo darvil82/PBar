@@ -1,4 +1,4 @@
-<img height=125px src="resources/logo.png">
+<img width=50% src="resources/logo.png">
 
 ---
 
