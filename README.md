@@ -1,5 +1,6 @@
 <img height=125px src="resources/logo.png">
-<hr>
+
+---
 
 PBar is a small work in progress python module to display customizable progress bars on the terminal. Contributions are welcome!
 
