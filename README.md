@@ -2,10 +2,13 @@
 
 ---
 
-PBar is a small work in progress python module to display customizable progress bars on the terminal. Contributions are welcome!
+### PBar is a small work in progress python module to display customizable progress bars on the terminal. Contributions are welcome!
 
-## Example
-### This code here...
+https://user-images.githubusercontent.com/48654552/134776865-c7516cf1-0c66-44da-ae2c-f2cbedd2527c.mp4
+
+
+<details>
+	<summary><b>See the code</b></summary>
 
 ```py
 import pbar
@@ -54,10 +57,7 @@ mybar.clear()
 
 print("Finished!")				# The cursor stays at the same position
 ```
-
-### ...will generate something like this:
-
-https://user-images.githubusercontent.com/48654552/134776865-c7516cf1-0c66-44da-ae2c-f2cbedd2527c.mp4
+</details>
 
 
 ## Requirements
