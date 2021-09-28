@@ -8,7 +8,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = {"PBar", "VT100", "ColorSet", "CharSet", "FormatSet"}
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -18,11 +18,7 @@ from time import time as _time
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
 
 
-_DEFAULT_RANGE = (0, 1)
-_DEFAULT_POS = ("center", "center")
-_DEFAULT_SIZE = (20, 1)
 _IGNORE_CHARS = "\x1b\n\r\b\a\f\v"
-
 
 # Type Aliases
 Color = Optional[Union[tuple[int, int, int], str, None]]
@@ -752,17 +748,17 @@ class PBar():
 	- mybar.config
 	"""
 	def __init__(self,
-			range: tuple[int, int] = None,
+			range: tuple[int, int] = (0, 1),
 			text: str = None,
-			size: tuple[int, int] = None,
-			position: tuple[Union[str, int], Union[str, int]] = None,
+			size: tuple[int, int] = (20, 1),
+			position: tuple[Union[str, int], Union[str, int]] = ("center", "center"),
 			charset: Optional[CharSetEntry] = None,
 			colorset: Optional[ColorSetEntry] = None,
 			formatset: Optional[FormatSetEntry] = None
 		) -> None:
 		"""
 		### Detailed descriptions:
-		@range: This tuple will specify the range of two values to display in the progress bar. Default value is `(0, 1)`.
+		@range: This tuple will specify the range of two values to display in the progress bar.
 
 		---
 
@@ -770,7 +766,7 @@ class PBar():
 
 		---
 
-		@size: Tuple that specifies the width and height of the bar. Default value is `(20, 1)`.
+		@size: Tuple that specifies the width and height of the bar.
 
 		---
 
@@ -779,10 +775,7 @@ class PBar():
 		- If an axis value is `center`, the bar will be positioned at the center of the terminal on that axis.
 		- Negative values will position the bar at the other side of the terminal.
 
-		Default value is `("center", "center")`
-
 		---
-
 
 		@charset: Set of characters to use when drawing the progress bar.
 
@@ -1004,9 +997,7 @@ class PBar():
 
 	def _getPos(self, position: Position) -> tuple[int, int]:
 		"""Get and process new position requested"""
-		if not position:
-			position = _DEFAULT_POS
-		elif not isinstance(position, (tuple, list)):
+		if not isinstance(position, (tuple, list)):
 			raise TypeError(f"Type of position ({type(position)}) is not Sequence")
 		elif len(position) != 2:
 			raise ValueError("Sequence must have two items")
@@ -1035,9 +1026,7 @@ class PBar():
 	@staticmethod
 	def _getSize(size: Optional[tuple[int, int]]) -> tuple[int, int]:
 		"""Get and process new length requested"""
-		if size is None:
-			return _DEFAULT_SIZE
-		elif not isinstance(size, (tuple, list)):
+		if not isinstance(size, (tuple, list)):
 			raise TypeError(f"Type of size ({type(size)}) is not Sequence")
 		elif len(size) != 2:
 			raise ValueError("Sequence must have two items")
@@ -1050,9 +1039,7 @@ class PBar():
 	@staticmethod
 	def _getRange(range: tuple[int, int]) -> tuple[int, int]:
 		"""Return a capped range"""
-		if not range:
-			return _DEFAULT_RANGE
-		elif not isinstance(range, (tuple, list)):
+		if not isinstance(range, (tuple, list)):
 			raise TypeError(f"Type of value {range!r} ({type(range)}) is not a tuple/list")
 
 		for item in range:
