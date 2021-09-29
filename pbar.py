@@ -6,9 +6,9 @@
 GitHub Repository:		https://github.com/DarviL82/PBar
 """
 
-__all__ = {"PBar", "VT100", "ColorSet", "CharSet", "FormatSet"}
+__all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet")
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.3.2"
+__version__ = "1.4.0"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -65,6 +65,10 @@ def _convertClrs(clr: ColorSetEntry, type: str) -> Union[str, tuple, dict, None]
 			return clr
 
 		clrs = clr.lstrip("#")
+
+		if len(clrs) == 3:
+			clrs = "".join(c*2 for c in clrs)
+
 		try:
 			return tuple(int(clrs[i:i+2], 16) for i in (0, 2, 4))
 		except ValueError:
@@ -76,29 +80,30 @@ def _convertClrs(clr: ColorSetEntry, type: str) -> Union[str, tuple, dict, None]
 		return f"#{capped[0]:x}{capped[1]:x}{capped[2]:x}"
 
 
+def chkSeqOfLen(obj: object, length: int):
+	"""Check if an object is a Sequence and has the length specified. If not, raises exceptions."""
+	if not isinstance(obj, (tuple, list)):
+		raise TypeError(f"Value {obj!r} ({type(obj)}) is not Sequence")
+	elif len(obj) != length:
+		raise ValueError(f"Sequence {obj} must have {length} items")
+	return True
+
+
 
 
 class VT100:
 	"""Class for using VT100 sequences a bit easier"""
 
 	@staticmethod
-	def pos(pos: Optional[tuple[int, int]], offset: tuple[int, int] = (0, 0)):
+	def pos(pos: Optional[tuple[SupportsInt, SupportsInt]], offset: tuple[SupportsInt, SupportsInt] = (0, 0)):
 		"""Position of the cursor on the terminal.
 		@pos: This tuple can contain either ints, or strings with the value `center` to specify the center of the terminal.
 		@offset: Offset applied to `pos`. (Can be negative)
 		"""
+		chkSeqOfLen(pos, 2)
 
-		if not isinstance(pos, (tuple, list)):
-			raise TypeError("Sequence must have 3 items")
-		elif len(pos) != 2:
-			raise TypeError(f"Type of position ({type(pos)}) is not Sequence")
-
-		position = list((pos[0], pos[1]))
-		for index, value in enumerate(position):
-			if not isinstance(value, int):
-				raise TypeError(f"Invalid type {type(value)} for position value")
-
-			position[index] += int(offset[index])
+		position = (int(pos[0]) + int(offset[0]),
+					int(pos[1] + int(offset[1])))
 
 		return f"\x1b[{position[1]};{position[0]}f"
 
@@ -564,8 +569,7 @@ class FormatSet(_BaseSet):
 						endStr += str(cls.etime)
 
 					elif tempStr == "text":
-						if cls._text:
-							endStr += FormatSet._rmPoisonChars(cls._text)
+						if cls._text:	endStr += FormatSet._rmPoisonChars(cls._text)
 					else:
 						raise UnknownFormattingKeyError(text, (index - len(tempStr), index))
 
@@ -672,6 +676,7 @@ def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset
 
 	def stripText(string: str, maxlen: int):
 		"""Return a string stripped if the len of it is larger than the maxlen specified"""
+		maxlen = _capValue(maxlen, min=3)
 		return string[:maxlen-3] + "..." if len(string) > maxlen else string
 
 	txtMaxWidth = width - 1
@@ -997,13 +1002,10 @@ class PBar():
 
 	def _getPos(self, position: Position) -> tuple[int, int]:
 		"""Get and process new position requested"""
-		if not isinstance(position, (tuple, list)):
-			raise TypeError(f"Type of position ({type(position)}) is not Sequence")
-		elif len(position) != 2:
-			raise ValueError("Sequence must have two items")
+		chkSeqOfLen(position, 2)
 
-		newpos = []
 		TERM_SIZE: tuple[int, int] = _get_terminal_size()
+		newpos = []
 
 		for index, value in enumerate(position):
 			if value == "center":
@@ -1024,37 +1026,22 @@ class PBar():
 
 
 	@staticmethod
-	def _getSize(size: Optional[tuple[int, int]]) -> tuple[int, int]:
+	def _getSize(size: Optional[tuple[SupportsInt, SupportsInt]]) -> tuple[int, int]:
 		"""Get and process new length requested"""
-		if not isinstance(size, (tuple, list)):
-			raise TypeError(f"Type of size ({type(size)}) is not Sequence")
-		elif len(size) != 2:
-			raise ValueError("Sequence must have two items")
-
-		# tSize: tuple[int, int] = _get_terminal_size()
-		# return _capValue(size, tSize[0] - 5, 5)
-		return size
+		chkSeqOfLen(size, 2)
+		return (int(_capValue(size[0], min=0)),
+				int(_capValue(size[1], min=0)))
 
 
 	@staticmethod
-	def _getRange(range: tuple[int, int]) -> tuple[int, int]:
+	def _getRange(range: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
 		"""Return a capped range"""
-		if not isinstance(range, (tuple, list)):
-			raise TypeError(f"Type of value {range!r} ({type(range)}) is not a tuple/list")
-
-		for item in range:
-			if not isinstance(item, int):
-				raise TypeError(f"Type of value {item!r} ({type(item)}) in range is not int")
-
-		if len(range) != 2:
-			raise ValueError("Length of sequence is not 2")
-
-		value1 = _capValue(range[0], range[1], 0)
-		value2 = _capValue(range[1], min=1)
-		return (value1, value2)
+		chkSeqOfLen(range, 2)
+		return (int(_capValue(range[0], range[1], 0)),
+				int(_capValue(range[1], min=1)))
 
 
-	def _genClearedBar(self, values: tuple[Position, tuple[int, int]]) -> str:
+	def _genClearedBar(self, values: tuple[tuple[int, int], tuple[int, int]]) -> str:
 		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
 		size = values[1]
 		pos = values[0]
