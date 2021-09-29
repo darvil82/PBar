@@ -2,7 +2,7 @@
 
 ---
 
-### PBar is a small work in progress python module to display customizable progress bars on the terminal. Contributions are welcome!
+### PBar is a small work in progress python module to display customizable progress bars on the terminal easily. Contributions are welcome!
 
 https://user-images.githubusercontent.com/48654552/134776865-c7516cf1-0c66-44da-ae2c-f2cbedd2527c.mp4
 
