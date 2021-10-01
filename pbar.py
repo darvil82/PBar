@@ -8,7 +8,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet")
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -40,16 +40,6 @@ def _capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) 
 		return min
 	else:
 		return value
-
-
-def _formatError(string: str, start: int, end: int) -> str:
-	"""Returns a colored string across the character indices specified."""
-
-	return (
-		string[:start] +
-		VT100.UNDERLINE + VT100.color((255, 0, 0)) + string[start:end] + VT100.RESET +
-		string[end:]
-	)
 
 
 def _convertClrs(clr: ColorSetEntry, type: str) -> Union[str, tuple, dict, None]:
@@ -154,6 +144,7 @@ class VT100:
 	CLEAR_LEFT =	"\x1b[1K"
 	CLEAR_DOWN =	"\x1b[0J"
 	CLEAR_ALL =		"\x1b[2J"
+	CLEAR_SCROLL =	"\x1b[3J"
 	CURSOR_SHOW =	"\x1b[?25h"
 	CURSOR_HIDE =	"\x1b[?25l"
 	CURSOR_SAVE =	"\x1b7"
@@ -457,11 +448,26 @@ class ColorSet(_BaseSet):
 
 
 class UnknownFormattingKeyError(BaseException):
+	"""Unknown formatting key used in a formatset string"""
 	def __init__(self, string, indices) -> None:
 		start, end = indices
 		value = string[start:end]
-		errStr = _formatError(string, start, end)
-		super().__init__(f"Unknown formatting key {value!r} ('{errStr}')")
+		super().__init__(
+			f"Unknown formatting key {value!r} ('"
+			+ string[:start]
+			+ VT100.color((150, 0, 0), True) + string[start:end] + VT100.RESET
+			+ string[end:] + "')"
+		)
+
+
+class UnexpectedEndOfStringError(BaseException):
+	"""Unexpected end of string when parsing a formatting key"""
+	def __init__(self, string) -> None:
+		super().__init__(
+			f"Unexpected end of string ('{string}"
+			+ VT100.color((150, 0, 0), True)
+			+ VT100.BOLD + "◀ Expected '>'" + VT100.RESET + "')"
+		)
 
 
 class FormatSet(_BaseSet):
@@ -545,17 +551,18 @@ class FormatSet(_BaseSet):
 
 		# Convert the keys to a final string
 		for index, char in enumerate(text):
-			if foundBackslash:
-				# Also skip the character next to the slash
-				foundBackslash = False
-				endStr += char
-				continue
-			elif char == "\\":
-				# Found backslash, skip it
-				foundBackslash = True
-				continue
+			if not foundOpen:
+				if foundBackslash:
+					# Also skip the character next to the slash
+					foundBackslash = False
+					endStr += char
+					continue
+				elif char == "\\":
+					# Found backslash, skip it
+					foundBackslash = True
+					continue
 
-			elif foundOpen:
+			if foundOpen:
 				# Found '<'. Now we add every char to tempStr until we find a '>'.
 				if char == ">":
 					# Found '>'. Now just add the formatting keys.
@@ -586,10 +593,7 @@ class FormatSet(_BaseSet):
 				# It is just a normal character that doesn't belong to any formatting key, so just append it to the end string.
 				endStr += char
 
-			if index + 1 == len(text):
-				# This is the last character, so add the temp str to the final string
-				endStr += tempStr
-
+		if foundOpen:	raise UnexpectedEndOfStringError(text)
 		return endStr
 
 
