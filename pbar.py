@@ -466,7 +466,7 @@ class UnexpectedEndOfStringError(BaseException):
 		super().__init__(
 			f"Unexpected end of string ('{string}"
 			+ VT100.color((150, 0, 0), True)
-			+ VT100.BOLD + "◀ Expected '>'" + VT100.RESET + "')"
+			+ VT100.BOLD + "◄ Expected '>'" + VT100.RESET + "')"
 		)
 
 
