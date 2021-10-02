@@ -6,9 +6,9 @@
 GitHub Repository:		https://github.com/DarviL82/PBar
 """
 
-__all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet")
+__all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet", "taskWrapper")
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.4.1"
+__version__ = "1.5.0"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -70,7 +70,7 @@ def _convertClrs(clr: ColorSetEntry, type: str) -> Union[str, tuple, dict, None]
 		return f"#{capped[0]:x}{capped[1]:x}{capped[2]:x}"
 
 
-def chkSeqOfLen(obj: object, length: int):
+def _chkSeqOfLen(obj: object, length: int):
 	"""Check if an object is a Sequence and has the length specified. If not, raises exceptions."""
 	if not isinstance(obj, (tuple, list)):
 		raise TypeError(f"Value {obj!r} ({type(obj)}) is not Sequence")
@@ -90,7 +90,7 @@ class VT100:
 		@pos: This tuple can contain either ints, or strings with the value `center` to specify the center of the terminal.
 		@offset: Offset applied to `pos`. (Can be negative)
 		"""
-		chkSeqOfLen(pos, 2)
+		_chkSeqOfLen(pos, 2)
 
 		position = (int(pos[0]) + int(offset[0]),
 					int(pos[1] + int(offset[1])))
@@ -834,9 +834,9 @@ class PBar():
 			- `<text>`:			Text selected in the `text` property/arg.
 			- `<etime>`:		Elapsed time since the bar created.
 		"""
-		self._requiresClear = False
-		self._enabled = True
-		self._time = _time()
+		self._requiresClear = False		# This controls if the bar needs to clear its old position before drawing.
+		self._enabled = True			# If disabled, the bar will never draw.
+		self._time = _time()			# The elapsed time since the bar created.
 
 		self._range = PBar._getRange(range)
 		self._text = FormatSet._rmPoisonChars(text) if text is not None else ""
@@ -846,7 +846,7 @@ class PBar():
 		self._colorset = ColorSet(colorset)
 		self._pos = self._getPos(position)
 
-		self._oldValues = [self._pos, self._size]
+		self._oldValues = [self._pos, self._size]	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
 
 	# --------- Properties / Methods the user should use. ----------
@@ -858,7 +858,7 @@ class PBar():
 		if self._requiresClear:
 			# Clear the bar at the old position and length
 			self._printStr(self._genClearedBar(self._oldValues))
-			self._oldValues = [self._pos, self._size]
+			self._oldValues = [self._pos, self._size]	# Reset the old values
 
 		# Draw the bar
 		self._printStr(self._genBar())
@@ -885,7 +885,7 @@ class PBar():
 
 	def resetETime(self):
 		"""Reset the elapsed time counter."""
-		self._time = _time()
+		self._time = _time()	# Just set _time to the current time.
 
 
 	@classmethod
@@ -909,7 +909,6 @@ class PBar():
 	@text.setter
 	def text(self, text: str):
 		self._text = FormatSet._rmPoisonChars(text)
-		self._requiresClear = True
 
 
 	@property
@@ -1018,7 +1017,7 @@ class PBar():
 
 	def _getPos(self, position: Position) -> tuple[int, int]:
 		"""Get and process new position requested"""
-		chkSeqOfLen(position, 2)
+		_chkSeqOfLen(position, 2)
 
 		TERM_SIZE: tuple[int, int] = _get_terminal_size()
 		newpos = []
@@ -1044,7 +1043,7 @@ class PBar():
 	@staticmethod
 	def _getSize(size: Optional[tuple[SupportsInt, SupportsInt]]) -> tuple[int, int]:
 		"""Get and process new length requested"""
-		chkSeqOfLen(size, 2)
+		_chkSeqOfLen(size, 2)
 		return (int(_capValue(size[0], min=0)),
 				int(_capValue(size[1], min=0)))
 
@@ -1052,7 +1051,7 @@ class PBar():
 	@staticmethod
 	def _getRange(range: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
 		"""Return a capped range"""
-		chkSeqOfLen(range, 2)
+		_chkSeqOfLen(range, 2)
 		return (int(_capValue(range[0], range[1], 0)),
 				int(_capValue(range[1], min=1)))
 
@@ -1124,3 +1123,22 @@ class PBar():
 		"""Prints string to stream"""
 		if not self._enabled: return
 		print(barString, flush=True, end="")
+
+
+
+
+def taskWrapper(pbObj: "PBar", shwFuncName = True, shwLine = False, shwFilename = False):
+	"""
+	Meant to be used as a decorator. Takes a PBar object and steps over while setting `text`
+	as the function name, file line, or the file name.
+	"""
+	def wrapper(func):
+		pbObj.text = (
+			(f"{__file__!r}" if shwFilename else "")
+			+ (f":{func.__name__}" if shwFuncName else "")
+			+ (f"{'@ ' if shwFuncName else ''}{func.__code__.co_firstlineno + 1}" if shwLine else "")
+		)
+		pbObj.draw()
+		func()
+		pbObj.step()
+	return wrapper
