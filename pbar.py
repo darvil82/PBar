@@ -735,26 +735,27 @@ class PBar():
 
 	## Methods
 
-	- mybar.draw()
-	- mybar.step()
-	- mybar.clear()
-	- mybar.resetETime()
+	- PBar.draw()
+	- PBar.step()
+	- PBar.clear()
+	- PBar.resetETime()
+	- PBar.fromConfig()
 
 	---
 
 	## Properties
 
-	- mybar.percentage
-	- mybar.text
-	- mybar.range
-	- mybar.length
-	- mybar.position
-	- mybar.charset
-	- mybar.colorset
-	- mybar.formatset
-	- mybar.enabled
-	- mybar.etime
-	- mybar.config
+	- PBar.percentage
+	- PBar.text
+	- PBar.range
+	- PBar.length
+	- PBar.position
+	- PBar.charset
+	- PBar.colorset
+	- PBar.formatset
+	- PBar.enabled
+	- PBar.etime
+	- PBar.config
 	"""
 	def __init__(self,
 			range: tuple[int, int] = (0, 1),
@@ -887,6 +888,14 @@ class PBar():
 		self._time = _time()
 
 
+	@classmethod
+	def fromConfig(cls, other: Union["PBar", dict]) -> "PBar":
+		"""Return a PBar object created with the configuration of the PBar/dict object given."""
+		pb = PBar()
+		pb.config = other.config if isinstance(other, PBar) else other
+		return pb
+
+
 	@property
 	def percentage(self):
 		"""Percentage of the progress of the current range."""
@@ -995,10 +1004,13 @@ class PBar():
 		}
 	@config.setter
 	def config(self, config: dict[str, Any]):
-		if isinstance(config, dict):
-			for key in {"range", "text", "size", "position", "charset", "colorset", "formatset", "enabled"}:
-				# Iterate through every key in the dict and populate the config of the class with its values
-				if key in config: setattr(self, key, config[key])
+		if not isinstance(config, dict):
+			raise TypeError(f"config value type ({type(config)}) is not dictionary")
+		for key in {"range", "text", "size", "position", "charset", "colorset", "formatset", "enabled"}:
+			# Iterate through every key in the dict and populate the config of the class with its values
+			if key not in config:
+				raise ValueError(f"config dict is missing the {key!r} key")
+			setattr(self, key, config[key])
 
 
 	# --------- ///////////////////////////////////////// ----------
