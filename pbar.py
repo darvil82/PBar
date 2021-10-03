@@ -1154,13 +1154,13 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRang
 		pbarObj.range = (0, len(lines)) if overwriteRange else pbarObj.range
 
 		for inst in lines:	# Iterate through every statement
-			try:
 				instComment = _getComment(inst)
 				if titleComments and instComment:	pbarObj.text = instComment
 				pbarObj.draw()
-				eval(inst, scope)	# yep, this uses evil()
-			except SyntaxError:
-				raise RuntimeError("Multi-line expressions are not supported inside functions decorated with taskWrapper")
-			pbarObj.step()
+				try:
+					eval(inst, scope)	# yep, this uses evil()
+				except SyntaxError:
+					raise RuntimeError("Multi-line expressions are not supported inside functions decorated with taskWrapper")
+				pbarObj.step()
 
 	return wrapper
