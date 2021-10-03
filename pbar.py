@@ -1155,7 +1155,8 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRang
 
 		for inst in lines:	# Iterate through every statement
 			try:
-				pbarObj.text = _getComment(inst) if titleComments else ""
+				instComment = _getComment(inst)
+				if titleComments and instComment:	pbarObj.text = instComment
 				pbarObj.draw()
 				eval(inst, scope)	# yep, this uses evil()
 			except SyntaxError:
