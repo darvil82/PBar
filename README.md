@@ -72,22 +72,22 @@ mybar = pbar.PBar()
 
 Note that the object constructor provides many arguments (all optional) for configuring the bar when constructing it:
 
-- ### **range**: This tuple will specify the range of two values to display in the progress bar.
+- **range**: This tuple will specify the range of two values to display in the progress bar.
 
 
-- ### **text**: String to show in the progress bar.
+- **text**: String to show in the progress bar.
 
 
-- ### **size**: Tuple that specifies the width and height of the bar.
+- **size**: Tuple that specifies the width and height of the bar.
 
 
-- ### **position**: Tuple containing the position (X and Y axles of the center) of the progress bar on the terminal.
+- **position**: Tuple containing the position (X and Y axles of the center) of the progress bar on the terminal.
 
 	- If an axis value is `center`, the bar will be positioned at the center of the terminal on that axis.
 	- Negative values will position the bar at the other side of the terminal.
 
 
-- ### **charset**: Set of characters to use when drawing the progress bar.
+- **charset**: Set of characters to use when drawing the progress bar.
 
 	- To use one of the included sets, use any of the constant values in `pbar.CharSet`. Keep in mind that some fonts might not have
 	the characters used in some charsets.
@@ -100,7 +100,7 @@ Note that the object constructor provides many arguments (all optional) for conf
 		Note: It is not needed to specify all the keys and values.
 
 
-- ### **colorset**: Set of colors to use when drawing the progress bar.
+- **colorset**: Set of colors to use when drawing the progress bar.
 
 	- To use one of the included sets, use any of the constant values in `pbar.ColorSet`.
 
@@ -114,7 +114,7 @@ Note that the object constructor provides many arguments (all optional) for conf
 		Note: The colors can also be specified as HEX in a string.
 
 
-- ### **formatset**: Formatting used when displaying the strings in different places around the bar.
+- **formatset**: Formatting used when displaying the strings in different places around the bar.
 
 	- To use one of the included sets, use any of the constant values in `pbar.FormatSet`.
 
