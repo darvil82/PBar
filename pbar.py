@@ -802,7 +802,7 @@ class PBar():
 		To use one of the included sets, use any of the constant values in `pbar.CharSet`. Keep in mind that some fonts might not have
 		the characters used in some charsets.
 
-		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom characters:
+		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom characters.
 		- Custom character set dictionary:
 
 				![image](https://user-images.githubusercontent.com/48654552/127887419-acee1b4f-de1b-4cc7-a1a6-1be75c7f97c9.png)
@@ -815,7 +815,7 @@ class PBar():
 
 		To use one of the included sets, use any of the constant values in `pbar.ColorSet`.
 
-		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom colors:
+		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom colors.
 		- Custom color set dictionary:
 
 				![image](https://user-images.githubusercontent.com/48654552/134371850-1d858a6e-8003-40da-a5ff-f36bd06a5b07.png)
@@ -830,7 +830,7 @@ class PBar():
 
 		To use one of the included sets, use any of the constant values in `pbar.FormatSet`.
 
-		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom formatting:
+		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom formatting.
 		- Custom formatset dictionary:
 
 				![image](https://user-images.githubusercontent.com/48654552/134372064-2abd9fab-37dd-4334-8d30-26e2f0967313.png)
