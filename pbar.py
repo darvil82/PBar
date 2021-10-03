@@ -8,11 +8,12 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet", "taskWrapper")
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.5.0"
+__version__ = "1.5.0-1"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
 from time import time as _time
+from inspect import getsourcelines as _srclines
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -40,6 +41,15 @@ def _capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) 
 		return min
 	else:
 		return value
+
+
+def _getComment(string: str) -> Optional[str]:
+	"""Returns the comment got from the string supplied. Returns None if there is no comment."""
+	try:
+		cnt = string.index("#") + 1
+		return string[cnt:].strip()
+	except ValueError:
+		return
 
 
 def _convertClrs(clr: ColorSetEntry, type: str) -> Union[str, tuple, dict, None]:
@@ -1127,18 +1137,29 @@ class PBar():
 
 
 
-def taskWrapper(pbObj: "PBar", shwFuncName = True, shwLine = False, shwFilename = False):
+def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRange = True):
 	"""
-	Meant to be used as a decorator. Takes a PBar object and steps over while setting `text`
-	as the function name, file line, or the file name.
+	Use as a decorator. Takes a PBar object, sets its range depending on the quantity of
+	statements inside the decorated function, and `steps` the bar over after every function statement.
+	Note: Multi-line expressions are not supported.
+
+	@pbarObj: PBar object to use.
+	@scope: Dictionary containing the scope local variables.
+	@titleComments: If True, comments on a statement will be treated as titles for the progress bar.
+	@overwriteRange: If True, overwrites the range of the bar.
 	"""
 	def wrapper(func):
-		pbObj.text = (
-			(f"{__file__!r}" if shwFilename else "")
-			+ (f":{func.__name__}" if shwFuncName else "")
-			+ (f"{'@ ' if shwFuncName else ''}{func.__code__.co_firstlineno + 1}" if shwLine else "")
-		)
-		pbObj.draw()
-		func()
-		pbObj.step()
+		lines = _srclines(func)[0][2:]	# Get the source lines of code
+
+		pbarObj.range = (0, len(lines)) if overwriteRange else pbarObj.range
+
+		for inst in lines:	# Iterate through every statement
+			try:
+				pbarObj.text = _getComment(inst) if titleComments else ""
+				pbarObj.draw()
+				eval(inst, scope)
+			except SyntaxError:
+				raise RuntimeError("Multi-line expressions are not supported inside functions decorated with taskWrapper")
+			pbarObj.step()
+
 	return wrapper
