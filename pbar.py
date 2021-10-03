@@ -1157,7 +1157,7 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRang
 			try:
 				pbarObj.text = _getComment(inst) if titleComments else ""
 				pbarObj.draw()
-				eval(inst, scope)
+				eval(inst, scope)	# yep, this uses evil()
 			except SyntaxError:
 				raise RuntimeError("Multi-line expressions are not supported inside functions decorated with taskWrapper")
 			pbarObj.step()
