@@ -169,14 +169,14 @@ Function arguments:
 - **titleComments**: If True, comments on a statement will be treated as titles for the progress bar.
 - **overwriteRange**: If True, overwrites the range of the bar.
 
-When setting `titleComments` as `True`, we can use Python comments to tell the wrapper what value `PBar.title` will have for each call. For example:
+When setting `titleComments` as `True`, we can use Python comments with the "bTitle:" prefix to tell the wrapper to take that as a the value `PBar.title` will have for each call. For example:
 ```py
 @taskWrapper(PBar(), locals(), titleComments=True)
 def myTasks():
-	getReq()	# Getting requests
-	processReq()	# Processing requests
-	prntText()	# Printing
-	testMgr()	# Testing
+	getReq()	#bTitle: Getting requests
+	processReq()	#bTitle: Processing requests
+	prntText()	#bTitle: Printing
+	testMgr()	#bTitle: Testing
 ```
 Each of those comments will be displayed on the progress bar.
 

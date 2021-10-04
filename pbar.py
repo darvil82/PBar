@@ -8,7 +8,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet", "taskWrapper")
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.5.0-1"
+__version__ = "1.5.0-2"
 
 from typing import Any, Optional, SupportsInt, TypeVar, Union, Callable
 from os import get_terminal_size as _get_terminal_size, system as _runsys
@@ -41,15 +41,6 @@ def _capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) 
 		return min
 	else:
 		return value
-
-
-def _getComment(string: str) -> Optional[str]:
-	"""Returns the comment got from the string supplied. Returns None if there is no comment."""
-	try:
-		cnt = string.index("#") + 1
-		return string[cnt:].strip()
-	except ValueError:
-		return
 
 
 def _convertClrs(clr: ColorSetEntry, type: str) -> Union[str, tuple, dict, None]:
@@ -1145,16 +1136,27 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRang
 
 	@pbarObj: PBar object to use.
 	@scope: Dictionary containing the scope local variables.
-	@titleComments: If True, comments on a statement will be treated as titles for the progress bar.
+	@titleComments: If True, comments on a statement starting with "#bTitle:" will be treated as titles for the progress bar.
 	@overwriteRange: If True, overwrites the range of the bar.
 	"""
+	if not isinstance(pbarObj, PBar):
+		raise TypeError(f"Type of object supplied ({type(pbarObj)}) is not PBar")
+
+	def getTitleComment(string: str) -> Optional[str]:
+		"""Returns the text after "#bTitle:" from the string supplied. Returns None if there is no comment."""
+		try:
+			index = string.rindex("#bTitle:")+8
+		except ValueError:
+			return
+		return string[index:].strip()
+
 	def wrapper(func):
 		lines = _srclines(func)[0][2:]	# Get the source lines of code
 
 		pbarObj.range = (0, len(lines)) if overwriteRange else pbarObj.range
 
 		for inst in lines:	# Iterate through every statement
-			instComment = _getComment(inst)
+			instComment = getTitleComment(inst)
 			if titleComments and instComment:	pbarObj.text = instComment
 			pbarObj.draw()
 			try:
