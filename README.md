@@ -192,7 +192,7 @@ Each of those comments will be displayed on the progress bar.
 
 
 ## Requirements
-Python 3.9+
+Python 3.10+
 
 
 ## Additional Credits
