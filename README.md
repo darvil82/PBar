@@ -16,7 +16,7 @@ from time import sleep
 
 
 mybar = pbar.PBar(
-	range=(0, 67),							# Range displayed as the progress
+	prange=(0, 67),							# Range displayed as the progress
 	text="Loading",							# Some text to be displayed
 	charset=pbar.CharSet.ROUNDED,			# Characters that the bar will use
 	size=(30, 1),							# Width and height
@@ -39,7 +39,7 @@ try:
 				"subtitle":	(255 - mybar.percentage*2, 100, 0),
 			}
 		}
-		mybar.step()			# Step over the range and draw bar
+		mybar.step()			# Step over the prange and draw bar
 	else:
 		mybar.text = "Done!"	# Change the text of the bar
 		mybar.colorset |= {
@@ -72,7 +72,7 @@ mybar = pbar.PBar()
 
 Note that the object constructor provides many arguments (all optional) for configuring the bar when constructing it:
 
-- **range**: This tuple will specify the range of two values to display in the progress bar.
+- **prange**: This tuple will specify the range of two values to display in the progress bar.
 
 
 - **text**: String to show in the progress bar.
@@ -127,14 +127,14 @@ Note that the object constructor provides many arguments (all optional) for conf
 
 	- Available formatting keys:
 		- `<percentage>`:	Percentage of the bar.
-		- `<range1>`:		First value of the range.
-		- `<range2>`:		Second value of the range.
+		- `<range1>`:		First value of the prange.
+		- `<range2>`:		Second value of the prange.
 		- `<text>`:			Text selected in the `text` property/arg.
 		- `<etime>`:		Elapsed time since the bar created.
 
 Do note that this arguments are also available as object properties:
 ```py
-mybar = pbar.PBar(range=(0, 10), formatset=pbar.FormatSet.TITLE_SUBTITLE)
+mybar = pbar.PBar(prange=(0, 10), formatset=pbar.FormatSet.TITLE_SUBTITLE)
 mybar.colorset = pbar.ColorSet.DARVIL
 mybar.text = "Doing stuff!"
 ```
@@ -142,17 +142,21 @@ mybar.text = "Doing stuff!"
 In order to control the way the bar behaves on the screen, use the next methods:
 
 - `PBar.draw()`:		Prints the progress bar on screen.
-- `PBar.step()`:		Add a specified step number to the first value in range of the bar, then draw the bar.
+- `PBar.step()`:		Add a specified step number to the first value in prange of the bar, then draw the bar.
 - `PBar.clear()`:	Clears the progress bar from the screen.
 
 The PBar object also counts the time that passed since the object constructed. This elapsed time can be displayed on the bar itself (by using FormatSets that use it), and can be obtained with the `PBar.etime` property, which returns a float.
 
 This elapsed time counter can be resetted by calling the `PBar.resetETime()` method.
 
+There are two **classmethods** available:
+- `PBar.fromConfig()`:	Return a PBar object created with the configuration of the PBar/dict object given.
+- `Pbar.fromFile()`:	Return a PBar object with it's `prange` got from the number of lines of a file.
+
 <br><hr>
 
 ## **taskWrapper function decorator**
-The `taskWrapper` decorator will automatically change the range of the progress bar depending on the number of function calls inside the decorated function. This will also call the `PBar.step()` method after each function call processed. Example:
+The `taskWrapper` decorator will automatically change the prange of the progress bar depending on the number of function calls inside the decorated function. This will also call the `PBar.step()` method after each function call processed. Example:
 ```py
 @taskWrapper(PBar(), locals())
 def myTasks():
@@ -161,13 +165,13 @@ def myTasks():
 	prntText()
 	testMgr()
 ```
-In this example, there are four function calls inside the decorated function. `taskWrapper` will set the `range` of the progress bar as `(0, 4)`. Then, after each of the functions finished processing, a `PBar.step()` call will be done.
+In this example, there are four function calls inside the decorated function. `taskWrapper` will set the `prange` of the progress bar as `(0, 4)`. Then, after each of the functions finished processing, a `PBar.step()` call will be done.
 
 Function arguments:
 - **pbarObj (required)**: PBar object to use.
 - **scope (required)**: Dictionary containing the scope local variables.
 - **titleComments**: If True, comments on a statement will be treated as titles for the progress bar.
-- **overwriteRange**: If True, overwrites the range of the bar.
+- **overwriteRange**: If True, overwrites the prange of the bar.
 
 When setting `titleComments` as `True`, we can use Python comments with the "bTitle:" prefix to tell the wrapper to take that as a the value `PBar.text` will have for each call. For example:
 ```py

@@ -8,12 +8,12 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet", "taskWrapper")
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.5.1@3.10"
+__version__ = "1.6.0@3.10"
 
 from io import TextIOWrapper
 from typing import IO, Any, SupportsInt, TypeVar, Callable, Union
 from os import get_terminal_size as _get_terminal_size, system as _runsys
-from time import time as _time
+from time import time as _time, sleep as _sleep
 from inspect import getsourcelines as _srclines
 
 
@@ -184,8 +184,7 @@ class _BaseSet(dict):
 	def __init__(self, newSet: dict) -> None:
 		if not newSet:
 			newSet = self.DEFAULT
-		elif not isinstance(newSet, dict):
-			raise TypeError(f"newSet type ({type(newSet)}) is not dict")
+		_isTypeOf(newSet, dict)
 
 		super().__init__(self._populate(self.EMPTY | newSet))
 
@@ -749,6 +748,7 @@ class PBar():
 	- PBar.clear()
 	- PBar.resetETime()
 	- PBar.fromConfig()
+	- PBar.fromFile()
 
 	---
 
@@ -756,7 +756,7 @@ class PBar():
 
 	- PBar.percentage
 	- PBar.text
-	- PBar.range
+	- PBar.prange
 	- PBar.length
 	- PBar.position
 	- PBar.charset
@@ -767,7 +767,7 @@ class PBar():
 	- PBar.config
 	"""
 	def __init__(self,
-			range: tuple[int, int] = (0, 1),
+			prange: tuple[int, int] = (0, 1),
 			text: str = None,
 			size: tuple[int, int] = (20, 1),
 			position: tuple[str | int, str | int] = ("center", "center"),
@@ -777,7 +777,7 @@ class PBar():
 		) -> None:
 		"""
 		### Detailed descriptions:
-		@range: This tuple will specify the range of two values to display in the progress bar.
+		@prange: This tuple will specify the range of two values to display in the progress bar.
 
 		---
 
@@ -838,8 +838,8 @@ class PBar():
 
 		- Available formatting keys:
 			- `<percentage>`:	Percentage of the bar.
-			- `<range1>`:		First value of the range.
-			- `<range2>`:		Second value of the range.
+			- `<range1>`:		First value of the prange.
+			- `<range2>`:		Second value of the prange.
 			- `<text>`:			Text selected in the `text` property/arg.
 			- `<etime>`:		Elapsed time since the bar created.
 		"""
@@ -847,7 +847,7 @@ class PBar():
 		self._enabled = True			# If disabled, the bar will never draw.
 		self._time = _time()			# The elapsed time since the bar created.
 
-		self._range = PBar._getRange(range)
+		self._range = PBar._getRange(prange)
 		self._text = FormatSet._rmPoisonChars(text) if text is not None else ""
 		self._formatset = FormatSet(formatset)
 		self._size = PBar._getSize(size)
@@ -877,11 +877,11 @@ class PBar():
 
 	def step(self, steps: int = 1, text=None):
 		"""
-		Add `steps` to the first value in range, then draw the bar.
-		@steps: Value to add to the first value in range.
+		Add `steps` to the first value in prange, then draw the bar.
+		@steps: Value to add to the first value in prange.
 		@text: Text to be displayed on the bar.
 		"""
-		self.range = (self._range[0] + steps, self._range[1])
+		self.prange = (self._range[0] + steps, self._range[1])
 		if text is not None: self.text = text
 		self.draw()
 
@@ -906,20 +906,15 @@ class PBar():
 
 
 	@classmethod
-	def fromRange(cls, rng: "range"):
-		_isTypeOf(rng, range)
-		return PBar((rng.start, rng.stop))
-
-
-	@classmethod
-	def fromFile(cls, fp: IO[str]):
+	def fromFile(cls, fp: IO[str]) -> "PBar":
+		"""Return a PBar object with it's `prange` got from the number of lines of a file."""
 		_isTypeOf(fp, TextIOWrapper)
 		return PBar((0, sum(1 for _ in fp)))
 
 
 	@property
 	def percentage(self):
-		"""Percentage of the progress of the current range."""
+		"""Percentage of the progress of the current `prange`."""
 		return int((self._range[0]*100) / self._range[1])
 
 
@@ -933,11 +928,11 @@ class PBar():
 
 
 	@property
-	def range(self) -> tuple[int, int]:
+	def prange(self) -> tuple[int, int]:
 		"""Range for the bar progress."""
 		return (self._range[0], self._range[1])
-	@range.setter
-	def range(self, range: tuple[int, int]):
+	@prange.setter
+	def prange(self, range: tuple[int, int]):
 		self._range = PBar._getRange(range)
 
 
@@ -1013,7 +1008,7 @@ class PBar():
 	def config(self) -> dict:
 		"""All the values of the progress bar stored in a dict."""
 		return {
-			"range":		self._range,
+			"prange":		self._range,
 			"text":			self._text,
 			"size":			self._size,
 			"position":		self._pos,
@@ -1024,9 +1019,8 @@ class PBar():
 		}
 	@config.setter
 	def config(self, config: dict[str, Any]):
-		if not isinstance(config, dict):
-			raise TypeError(f"config value type ({type(config)}) is not dictionary")
-		for key in {"range", "text", "size", "position", "charset", "colorset", "formatset", "enabled"}:
+		_isTypeOf(config, dict)
+		for key in {"prange", "text", "size", "position", "charset", "colorset", "formatset", "enabled"}:
 			# Iterate through every key in the dict and populate the config of the class with its values
 			if key not in config:
 				raise ValueError(f"config dict is missing the {key!r} key")
@@ -1046,8 +1040,7 @@ class PBar():
 		for index, value in enumerate(position):
 			if value == "center":
 				value = int(TERM_SIZE[index] / 2)
-			elif not isinstance(value, (int, float)):
-				raise TypeError(f"Type of value {value} ({type(value)}) is not int/float")
+			_isTypeOf(value, int, float)
 
 			if value < 0:
 				value = TERM_SIZE[index] + value
@@ -1150,17 +1143,16 @@ class PBar():
 
 def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRange = True) -> None:
 	"""
-	Use as a decorator. Takes a PBar object, sets its range depending on the quantity of
+	Use as a decorator. Takes a PBar object, sets its prange depending on the quantity of
 	statements inside the decorated function, and `steps` the bar over after every function statement.
 	Note: Multi-line expressions are not supported.
 
 	@pbarObj: PBar object to use.
 	@scope: Dictionary containing the scope local variables.
 	@titleComments: If True, comments on a statement starting with "#bTitle:" will be treated as titles for the progress bar.
-	@overwriteRange: If True, overwrites the range of the bar.
+	@overwriteRange: If True, overwrites the prange of the bar.
 	"""
-	if not isinstance(pbarObj, PBar):
-		raise TypeError(f"Type of object supplied ({type(pbarObj)}) is not PBar")
+	_isTypeOf(pbarObj, PBar)
 
 	def getTitleComment(string: str) -> str | None:
 		"""Returns the text after "#bTitle:" from the string supplied. Returns None if there is no comment."""
@@ -1173,7 +1165,7 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRang
 	def wrapper(func):
 		lines = _srclines(func)[0][2:]	# Get the source lines of code
 
-		pbarObj.range = (0, len(lines)) if overwriteRange else pbarObj.range
+		pbarObj.prange = (0, len(lines)) if overwriteRange else pbarObj.prange
 
 		for inst in lines:	# Iterate through every statement
 			instComment = getTitleComment(inst)
@@ -1186,3 +1178,12 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRang
 			pbarObj.step()
 
 	return wrapper
+
+
+def animate(pbarObj: PBar, rng: range, delay: float) -> None:
+	"""Animates the given PBar object by filling it by the range given, with a delay."""
+	steps = rng.step
+	pbarObj.prange = rng.start, rng.stop
+	for _ in rng:
+		pbarObj.step(steps)
+		_sleep(delay)
