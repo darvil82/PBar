@@ -10,7 +10,8 @@ __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet", "taskWrapper")
 __author__ = "David Losantos (DarviL)"
 __version__ = "1.5.1@3.10"
 
-from typing import Any, Optional, SupportsInt, TypeVar, Callable, Union
+from io import TextIOWrapper
+from typing import IO, Any, SupportsInt, TypeVar, Callable, Union
 from os import get_terminal_size as _get_terminal_size, system as _runsys
 from time import time as _time
 from inspect import getsourcelines as _srclines
@@ -71,12 +72,19 @@ def _convertClrs(clr: ColorSetEntry, type: str) -> str | tuple | dict | None:
 		return f"#{capped[0]:x}{capped[1]:x}{capped[2]:x}"
 
 
-def _chkSeqOfLen(obj: object, length: int):
-	"""Check if an object is a Sequence and has the length specified. If not, raises exceptions."""
+def _chkSeqOfLen(obj: Any, length: int) -> bool:
+	"""Check if an object is a Sequence and has the length specified. If fails, raises exceptions."""
 	if not isinstance(obj, (tuple, list)):
 		raise TypeError(f"Value {obj!r} ({type(obj)}) is not Sequence")
 	elif len(obj) != length:
 		raise ValueError(f"Sequence {obj} must have {length} items")
+	return True
+
+
+def _isTypeOf(obj: Any, *typ: Any) -> bool:
+	"""Check if an object is an instance of any of the other objects specified. If fails, raises exception."""
+	if not isinstance(obj, typ):
+		raise TypeError(f"Type of object supplied ({type(obj)}) is not {' or '.join(map(str, typ))}")
 	return True
 
 
@@ -897,6 +905,18 @@ class PBar():
 		return pb
 
 
+	@classmethod
+	def fromRange(cls, rng: "range"):
+		_isTypeOf(rng, range)
+		return PBar((rng.start, rng.stop))
+
+
+	@classmethod
+	def fromFile(cls, fp: IO[str]):
+		_isTypeOf(fp, TextIOWrapper)
+		return PBar((0, sum(1 for _ in fp)))
+
+
 	@property
 	def percentage(self):
 		"""Percentage of the progress of the current range."""
@@ -1128,7 +1148,7 @@ class PBar():
 
 
 
-def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRange = True):
+def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRange = True) -> None:
 	"""
 	Use as a decorator. Takes a PBar object, sets its range depending on the quantity of
 	statements inside the decorated function, and `steps` the bar over after every function statement.
