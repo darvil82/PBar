@@ -1,4 +1,4 @@
-#!/bin/env python3.9
+#!/bin/env python3.10
 
 import pbar
 from time import sleep
