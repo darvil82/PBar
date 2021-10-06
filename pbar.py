@@ -804,7 +804,7 @@ class PBar():
 		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom characters.
 		- Custom character set dictionary:
 
-				![image](https://user-images.githubusercontent.com/48654552/127887419-acee1b4f-de1b-4cc7-a1a6-1be75c7f97c9.png)
+				![image](https://user-images.githubusercontent.com/48654552/136127839-7e3d7f5c-44e9-4a8f-9407-84632fa40ed7.png)
 
 			Note: It is not needed to specify all the keys and values.
 
