@@ -6,7 +6,7 @@
 GitHub Repository:		https://github.com/DarviL82/PBar
 """
 
-__all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet", "taskWrapper")
+__all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet", "taskWrapper", "animate")
 __author__ = "David Losantos (DarviL)"
 __version__ = "1.6.0"
 
