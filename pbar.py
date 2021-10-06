@@ -6,9 +6,9 @@
 GitHub Repository:		https://github.com/DarviL82/PBar
 """
 
-__all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet", "taskWrapper")
+__all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet", "taskWrapper", "animate")
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.6.0@3.10"
+__version__ = "1.6.0"
 
 from io import TextIOWrapper
 from typing import IO, Any, SupportsInt, TypeVar, Callable, Union
