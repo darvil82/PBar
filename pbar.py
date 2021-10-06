@@ -1181,7 +1181,12 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRang
 
 
 def animate(pbarObj: PBar, rng: range, delay: float) -> None:
-	"""Animates the given PBar object by filling it by the range given, with a delay."""
+	"""
+	Animates the given PBar object by filling it by the range given, with a delay.
+	@pbarObj: PBar object to use.
+	@rng: range object to set for the bar.
+	@delay: Time in seconds between each time the bar draws.
+	"""
 	steps = rng.step
 	pbarObj.prange = rng.start, rng.stop
 	for _ in rng:
