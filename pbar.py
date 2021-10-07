@@ -73,13 +73,13 @@ def _convertClrs(clr: ColorSetEntry, type: str) -> Union[str, tuple, dict, None]
 
 def _chkSeqOfLen(obj: Any, length: int) -> bool:
 	"""Check if an object is a Sequence and has the length specified. If fails, raises exceptions."""
-	_isTypeOf(obj, tuple, list)
+	_isInstOf(obj, tuple, list)
 	if len(obj) != length:
 		raise ValueError(f"Sequence {obj!r} must have {length} items")
 	return True
 
 
-def _isTypeOf(obj: Any, *typ: Any, name: str = None) -> bool:
+def _isInstOf(obj: Any, *typ: Any, name: str = None) -> bool:
 	"""Check if an object is an instance of any of the other objects specified. If fails, raises exception."""
 	if not isinstance(obj, typ):
 		raise TypeError(
@@ -186,7 +186,7 @@ class _BaseSet(dict):
 	def __init__(self, newSet: dict) -> None:
 		if not newSet:
 			newSet = self.DEFAULT
-		_isTypeOf(newSet, dict, name="newSet")
+		_isInstOf(newSet, dict, name="newSet")
 
 		super().__init__(self._populate(self.EMPTY | newSet))
 
@@ -240,7 +240,10 @@ class CharSet(_BaseSet):
 	EMPTY: CharSetEntry = {
 		"empty":	" ",
 		"full":		" ",
-		"vert":		" ",
+		"vert":		{
+			"right":	" ",
+			"left":		" ",
+		},
 		"horiz":	" ",
 		"corner": {
 			"tleft":	" ",
@@ -266,7 +269,10 @@ class CharSet(_BaseSet):
 	BASIC: CharSetEntry = {
 		"empty":	".",
 		"full":		"#",
-		"vert":		"│"
+		"vert":		{
+			"left":		"[",
+			"right":	"]"
+		}
 	}
 
 	SLIM: CharSetEntry = {
@@ -367,7 +373,10 @@ class ColorSet(_BaseSet):
 	EMPTY: ColorSetEntry = {
 		"empty":	None,
 		"full":		None,
-		"vert":		None,
+		"vert":		{
+			"left":		None,
+			"right":	None
+		},
 		"horiz":	None,
 		"corner": {
 			"tleft":	None,
@@ -629,7 +638,10 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
 	width, height = _capValue(size[0], min=3) + 2, _capValue(size[1], min=0) + 1
 
-	charVert = parsedColorset["vert"] + charset["vert"]
+	charVert = (
+		parsedColorset["vert"]["left"] + charset["vert"]["left"],
+		parsedColorset["vert"]["right"] + charset["vert"]["right"]
+	)
 	charHoriz = charset["horiz"]
 	charCorner = (
 		parsedColorset["corner"]["tleft"] + charset["corner"]["tleft"],
@@ -648,9 +660,9 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 	for row in range(1, height):
 		endStr += (
 			VT100.pos((position), (0, row))
-			+ charVert
+			+ charVert[0]
 			+ (VT100.moveHoriz(width) if filled is None else filled[0]*width)
-			+ charVert
+			+ charVert[1]
 		)
 
 	endStr += (
@@ -806,7 +818,7 @@ class PBar():
 		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom characters.
 		- Custom character set dictionary:
 
-				![image](https://user-images.githubusercontent.com/48654552/136127839-7e3d7f5c-44e9-4a8f-9407-84632fa40ed7.png)
+				![image](https://user-images.githubusercontent.com/48654552/136381445-f5bed96a-eaa9-48e6-b182-e795f5a80994.png)
 
 			Note: It is not needed to specify all the keys and values.
 
@@ -819,7 +831,7 @@ class PBar():
 		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom colors.
 		- Custom color set dictionary:
 
-				![image](https://user-images.githubusercontent.com/48654552/134371850-1d858a6e-8003-40da-a5ff-f36bd06a5b07.png)
+				![image](https://user-images.githubusercontent.com/48654552/136381806-878536aa-9213-4b64-add1-739e64f598f9.png)
 
 			Note: It is not needed to specify all the keys and values.
 
@@ -910,7 +922,7 @@ class PBar():
 	@classmethod
 	def fromFile(cls, fp: IO[str]) -> "PBar":
 		"""Return a PBar object with it's `prange` got from the number of lines of a file."""
-		_isTypeOf(fp, _TextIOWrapper, name="fp")
+		_isInstOf(fp, _TextIOWrapper, name="fp")
 		val = PBar((0, len(fp.readlines())))
 		fp.seek(0)
 		return val
@@ -1023,7 +1035,7 @@ class PBar():
 		}
 	@config.setter
 	def config(self, config: dict[str, Any]):
-		_isTypeOf(config, dict, name="config")
+		_isInstOf(config, dict, name="config")
 		for key in {"prange", "text", "size", "position", "charset", "colorset", "formatset", "enabled"}:
 			# Iterate through every key in the dict and populate the config of the class with its values
 			if key not in config:
@@ -1044,7 +1056,7 @@ class PBar():
 		for index, value in enumerate(position):
 			if value == "center":
 				value = int(TERM_SIZE[index] / 2)
-			_isTypeOf(value, int, float, name="pos")
+			_isInstOf(value, int, float, name="pos")
 
 			if value < 0:
 				value = TERM_SIZE[index] + value
@@ -1156,7 +1168,7 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRang
 	@titleComments: If True, comments on a statement starting with "#bTitle:" will be treated as titles for the progress bar.
 	@overwriteRange: If True, overwrites the prange of the bar.
 	"""
-	_isTypeOf(pbarObj, PBar, name="pbarObj")
+	_isInstOf(pbarObj, PBar, name="pbarObj")
 
 	def getTitleComment(string: str) -> Optional[str]:
 		"""Returns the text after "#bTitle:" from the string supplied. Returns None if there is no comment."""
@@ -1196,3 +1208,38 @@ def animate(pbarObj: PBar, rng: range, delay: float) -> None:
 	for _ in rng:
 		pbarObj.step(steps)
 		_sleep(delay)
+
+
+def posHelper(position: Position, size: tuple[int, int]):
+	clr = "#700"
+
+	b = PBar(
+		position=position,
+		size=size,
+		formatset=FormatSet.EMPTY,
+		colorset={
+			"vert": clr,
+			"horiz": clr,
+			"corner": clr,
+		}
+	)
+
+	b.charset |= {
+		"full": "",
+		"empty": ""
+	}
+
+	rPos = b.position
+
+	print(
+		VT100.CLEAR_ALL+VT100.CLEAR_SCROLL
+		+ b._genBar()
+		+ VT100.color((255, 100, 0))
+		+ VT100.pos((0, rPos[1])) + "─"*rPos[0]		# X line
+		+ "".join(VT100.pos((rPos[0], x)) + "│" for x in range(rPos[1]))	# Y line
+		+ VT100.pos(rPos) + "█"		# center
+		+ VT100.CURSOR_HOME+VT100.RESET,
+		end=""
+	)
+
+	del b
