@@ -10,7 +10,7 @@ __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet", "taskWrapper", "
 __author__ = "David Losantos (DarviL)"
 __version__ = "1.6.0"
 
-from io import TextIOWrapper
+from io import TextIOWrapper as _TextIOWrapper
 from typing import Any, Optional, SupportsInt, TypeVar, Callable, Union, IO
 from os import get_terminal_size as _get_terminal_size, system as _runsys
 from time import time as _time, sleep as _sleep
@@ -35,7 +35,6 @@ Num = TypeVar("Num", int, float)
 
 def _capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) -> Num:
 	"""Clamp a value to a minimum and/or maximum value."""
-
 	if max is not None and value > max:
 		return max
 	elif min is not None and value < min:
@@ -74,17 +73,20 @@ def _convertClrs(clr: ColorSetEntry, type: str) -> Union[str, tuple, dict, None]
 
 def _chkSeqOfLen(obj: Any, length: int) -> bool:
 	"""Check if an object is a Sequence and has the length specified. If fails, raises exceptions."""
-	if not isinstance(obj, (tuple, list)):
-		raise TypeError(f"Value {obj!r} ({type(obj)}) is not Sequence")
-	elif len(obj) != length:
-		raise ValueError(f"Sequence {obj} must have {length} items")
+	_isTypeOf(obj, tuple, list)
+	if len(obj) != length:
+		raise ValueError(f"Sequence {obj!r} must have {length} items")
 	return True
 
 
-def _isTypeOf(obj: Any, *typ: Any) -> bool:
+def _isTypeOf(obj: Any, *typ: Any, name: str = None) -> bool:
 	"""Check if an object is an instance of any of the other objects specified. If fails, raises exception."""
 	if not isinstance(obj, typ):
-		raise TypeError(f"Type of object supplied ({type(obj)}) is not {' or '.join(map(str, typ))}")
+		raise TypeError(
+			(name or f"Value {VT100.color((255, 150, 0))}{obj!r}{VT100.RESET}")
+			+ " must be " + ' or '.join(VT100.color((0, 255, 0)) + x.__name__ + VT100.RESET for x in typ)
+			+ ", not " + VT100.color((255, 0, 0)) + obj.__class__.__name__ + VT100.RESET
+		)
 	return True
 
 
@@ -184,7 +186,7 @@ class _BaseSet(dict):
 	def __init__(self, newSet: dict) -> None:
 		if not newSet:
 			newSet = self.DEFAULT
-		_isTypeOf(newSet, dict)
+		_isTypeOf(newSet, dict, name="newSet")
 
 		super().__init__(self._populate(self.EMPTY | newSet))
 
@@ -908,8 +910,10 @@ class PBar():
 	@classmethod
 	def fromFile(cls, fp: IO[str]) -> "PBar":
 		"""Return a PBar object with it's `prange` got from the number of lines of a file."""
-		_isTypeOf(fp, TextIOWrapper)
-		return PBar((0, sum(1 for _ in fp)))
+		_isTypeOf(fp, _TextIOWrapper, name="fp")
+		val = PBar((0, len(fp.readlines())))
+		fp.seek(0)
+		return val
 
 
 	@property
@@ -1019,7 +1023,7 @@ class PBar():
 		}
 	@config.setter
 	def config(self, config: dict[str, Any]):
-		_isTypeOf(config, dict)
+		_isTypeOf(config, dict, name="config")
 		for key in {"prange", "text", "size", "position", "charset", "colorset", "formatset", "enabled"}:
 			# Iterate through every key in the dict and populate the config of the class with its values
 			if key not in config:
@@ -1040,7 +1044,7 @@ class PBar():
 		for index, value in enumerate(position):
 			if value == "center":
 				value = int(TERM_SIZE[index] / 2)
-			_isTypeOf(value, int, float)
+			_isTypeOf(value, int, float, name="pos")
 
 			if value < 0:
 				value = TERM_SIZE[index] + value
@@ -1152,7 +1156,7 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRang
 	@titleComments: If True, comments on a statement starting with "#bTitle:" will be treated as titles for the progress bar.
 	@overwriteRange: If True, overwrites the prange of the bar.
 	"""
-	_isTypeOf(pbarObj, PBar)
+	_isTypeOf(pbarObj, PBar, name="pbarObj")
 
 	def getTitleComment(string: str) -> Optional[str]:
 		"""Returns the text after "#bTitle:" from the string supplied. Returns None if there is no comment."""
