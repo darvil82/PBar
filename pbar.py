@@ -8,7 +8,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet", "taskWrapper", "animate")
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.6.0"
+__version__ = "1.7.0"
 
 from io import TextIOWrapper as _TextIOWrapper
 from typing import Any, Optional, SupportsInt, TypeVar, Callable, Union, IO
@@ -540,6 +540,14 @@ class FormatSet(_BaseSet):
 		"right":	"<text>: <percentage>% (<range1>/<range2>) [<etime>s]"
 	}
 
+	PLACEHOLDER: FormatSetEntry = {
+		"inside":	"inside",
+		"right":	"right",
+		"left":		"left",
+		"title":	"title",
+		"subtitle":	"subtitle"
+	}
+
 
 	def __init__(self, newSet: FormatSetEntry) -> None:
 		super().__init__(newSet)
@@ -636,7 +644,7 @@ class FormatSet(_BaseSet):
 
 def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet, parsedColorset: dict, filled: Optional[str] = " ") -> str:
 	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
-	width, height = _capValue(size[0], min=3) + 2, _capValue(size[1], min=0) + 1
+	width, height = size[0] + 2, size[1]
 
 	charVert = (
 		parsedColorset["vert"]["left"] + charset["vert"]["left"],
@@ -651,7 +659,7 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 	)
 
 	endStr: str = (
-		VT100.pos((position))
+		VT100.pos(position)
 		+ charCorner[0]
 		+ parsedColorset["horiz"] + charHoriz*width
 		+ charCorner[1]
@@ -659,14 +667,14 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 
 	for row in range(1, height):
 		endStr += (
-			VT100.pos((position), (0, row))
+			VT100.pos(position, (0, row))
 			+ charVert[0]
 			+ (VT100.moveHoriz(width) if filled is None else filled[0]*width)
 			+ charVert[1]
 		)
 
 	endStr += (
-		VT100.pos((position), (0, height))
+		VT100.pos(position, (0, height))
 		+ charCorner[2]
 		+ parsedColorset["horiz"] + charHoriz*width
 		+ charCorner[3]
@@ -680,7 +688,7 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: CharSet, parsedColorset: ColorSet,
 				   rangeValue: tuple[int, int]) -> str:
 	"""Generates the progress shape with a parsed colorset and a charset specified"""
-	width, height = _capValue(size[0], min=3), _capValue(size[1], min=0) + 1
+	width, height = size
 	SEGMENTS_FULL = int((_capValue(rangeValue[0], rangeValue[1], 0) / _capValue(rangeValue[1], min=1))*width)	# Number of character for the full part of the bar
 	SEGMENTS_EMPTY = width - SEGMENTS_FULL
 
@@ -698,46 +706,46 @@ def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: Ch
 
 def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset: dict[str, Union[dict, str]], formatset: FormatSet) -> str:
 	"""Generates all text for the bar"""
-	width, height = _capValue(size[0], min=3) + 3, _capValue(size[1], min=0) + 1
+	width, height = size
 
 	def stripText(string: str, maxlen: int):
 		"""Return a string stripped if the len of it is larger than the maxlen specified"""
 		maxlen = _capValue(maxlen, min=3)
 		return string[:maxlen-3] + "..." if len(string) > maxlen else string
 
-	txtMaxWidth = width - 1
+	txtMaxWidth = width + 2
 	txtSubtitle = stripText(formatset["subtitle"], txtMaxWidth)
-	txtInside = stripText(formatset["inside"], txtMaxWidth-4)
+	txtInside = stripText(formatset["inside"], txtMaxWidth - 4)
 	txtTitle = stripText(formatset["title"], txtMaxWidth)
 
 	textTitle = (
-		VT100.pos(position, (1, 0))
+		VT100.pos(position, (-1, 0))
 		+ parsedColorset["text"]["title"]
 		+ txtTitle
 	)
 
 	textSubtitle = (
-		VT100.pos(position, (width - len(txtSubtitle), height))
+		VT100.pos(position, (width - len(txtSubtitle) + 1, height))
 		+ parsedColorset["text"]["subtitle"]
 		+ txtSubtitle
 	)
 
 	textRight = (
-		VT100.pos(position, (width + 2, height/2))
+		VT100.pos(position, (width + 3, height/2))
 		+ parsedColorset["text"]["right"]
 		+ formatset["right"]
 		+ VT100.CLEAR_RIGHT
 	) if formatset["right"] else ""
 
 	textLeft = (
-		VT100.pos(position, (-len(formatset["left"]) - 1, height/2))
+		VT100.pos(position, (-len(formatset["left"]) - 3, height/2))
 		+ VT100.CLEAR_LEFT
 		+ parsedColorset["text"]["left"]
 		+ formatset["left"]
 	) if formatset["left"] else ""
 
 	txtInside = (
-		VT100.pos(position, (width/2 - len(txtInside)/2 + 1, height/2))
+		VT100.pos(position, (width/2 - len(txtInside)/2, height/2))
 		+ parsedColorset["text"]["inside"]
 		+ txtInside
 	)
@@ -1064,9 +1072,9 @@ class PBar():
 			if index == 0:
 				value = _capValue(value, TERM_SIZE[0] - self._size[0]/2 + 2, self._size[0] / 2 + 2)
 			else:
-				value = _capValue(value, TERM_SIZE[1] - self._size[1]/2, 1 + self._size[1]/2)
+				value = _capValue(value, TERM_SIZE[1] - self._size[1]/2, self._size[1]/2)
 
-			newpos.append(int(value))
+			newpos.append(int(value+1))
 		return tuple(newpos)
 
 
@@ -1074,8 +1082,8 @@ class PBar():
 	def _getSize(size: Optional[tuple[SupportsInt, SupportsInt]]) -> tuple[int, int]:
 		"""Get and process new length requested"""
 		_chkSeqOfLen(size, 2)
-		return (int(_capValue(size[0], min=0)),
-				int(_capValue(size[1], min=0)))
+		return (int(_capValue(size[0], min=5)),
+				int(_capValue(size[1], min=1)+1))
 
 
 	@staticmethod
@@ -1096,7 +1104,7 @@ class PBar():
 					pos[1] + int(size[1] / -2))
 
 		barShape = _genShape(
-			POSITION,
+			(POSITION[0] - 2, POSITION[1]),
 			size,
 			CharSet.EMPTY,
 			parsedColorSet
@@ -1109,12 +1117,7 @@ class PBar():
 			FormatSet.cleanedValues(self._formatset.parsedValues(self))
 		)
 
-		return (
-			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE
-			+ barText
-			+ barShape
-			+ VT100.CURSOR_LOAD + VT100.CURSOR_SHOW
-		)
+		return barText + barShape
 
 
 	def _genBar(self) -> str:
@@ -1126,12 +1129,12 @@ class PBar():
 
 		# Build all the parts of the progress bar
 		barShape = _genShape(
-			POSITION,
+			(POSITION[0] - 2, POSITION[1]),
 			self._size, self._charset, parsedColorSet
 		)
 
 		barContent = _genBarContent(
-			(POSITION[0] + 2, POSITION[1]),
+			POSITION,
 			self._size, self._charset, parsedColorSet, self._range
 		)
 
@@ -1140,19 +1143,19 @@ class PBar():
 			self._size, parsedColorSet, self._formatset.parsedValues(self)
 		)
 
-		return (
-			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE
-			+ barShape
-			+ barContent
-			+ barText
-			+ VT100.CURSOR_LOAD + VT100.CURSOR_SHOW
-		)
+		return barShape + barContent + barText
 
 
 	def _printStr(self, barString: str):
 		"""Prints string to stream"""
 		if not self._enabled: return
-		print(barString, flush=True, end="")
+		print(
+			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE
+			+ barString
+			+ VT100.CURSOR_LOAD + VT100.CURSOR_SHOW,
+			flush=True,
+			end=""
+		)
 
 
 
@@ -1210,36 +1213,38 @@ def animate(pbarObj: PBar, rng: range, delay: float) -> None:
 		_sleep(delay)
 
 
-def posHelper(position: Position, size: tuple[int, int]):
-	clr = "#700"
-
-	b = PBar(
+def barHelper(position: Position, size: tuple[int, int]):
+	"""
+	Draw a bar helper on screen.
+	@position: Position of the helper on the terminal.
+	@size: Size of the helper.
+	"""
+	b = PBar(	# we create a bar just to make stuff easier
 		position=position,
 		size=size,
 		formatset=FormatSet.EMPTY,
 		colorset={
-			"vert": clr,
-			"horiz": clr,
-			"corner": clr,
+			"vert": "#090",
+			"horiz": "#090",
+			"corner": "#090",
+			"text":	(255, 100, 0)
 		}
 	)
 
-	b.charset |= {
-		"full": "",
-		"empty": ""
-	}
-
 	rPos = b.position
+	b.charset |= {"full": "", "empty": ""}
+	b.formatset = {"subtitle": f"X:{rPos[0]} Y:{rPos[1]}"}
+
+	xLine = VT100.pos((0, rPos[1])) + "─"*rPos[0]
+	yLine = "".join(VT100.pos((rPos[0], x)) + "│" for x in range(rPos[1]))
+	center = VT100.pos(rPos) + "█"
 
 	print(
-		VT100.CLEAR_ALL+VT100.CLEAR_SCROLL
+		VT100.CLEAR_ALL + VT100.CLEAR_SCROLL
 		+ b._genBar()
-		+ VT100.color((255, 100, 0))
-		+ VT100.pos((0, rPos[1])) + "─"*rPos[0]		# X line
-		+ "".join(VT100.pos((rPos[0], x)) + "│" for x in range(rPos[1]))	# Y line
-		+ VT100.pos(rPos) + "█"		# center
-		+ VT100.CURSOR_HOME+VT100.RESET,
+		+ VT100.color((255, 100, 0)) + xLine + yLine + center
+		+ VT100.CURSOR_HOME + VT100.RESET,
 		end=""
 	)
 
-	del b
+	del b	# delete the bar we created
