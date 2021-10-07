@@ -8,8 +8,9 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet", "taskWrapper", "animate")
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.6.0-1"
+__version__ = "1.6.0"
 
+from io import TextIOWrapper
 from typing import Any, Optional, SupportsInt, TypeVar, Callable, Union, IO
 from os import get_terminal_size as _get_terminal_size, system as _runsys
 from time import time as _time, sleep as _sleep
@@ -905,11 +906,10 @@ class PBar():
 
 
 	@classmethod
-	def fromFile(cls, filename: str) -> "PBar":
+	def fromFile(cls, fp: IO[str]) -> "PBar":
 		"""Return a PBar object with it's `prange` got from the number of lines of a file."""
-		_isTypeOf(filename, str)
-		with open(filename, "r") as f:
-			return PBar((0, sum(1 for _ in f)))
+		_isTypeOf(fp, TextIOWrapper)
+		return PBar((0, sum(1 for _ in fp)))
 
 
 	@property
