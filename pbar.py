@@ -1248,7 +1248,7 @@ def barHelper(position: Position, size: tuple[int, int]) -> Position:
 				VT100.CLEAR_ALL
 				+ b._genBar()
 				+ VT100.color((255, 100, 0)) + xLine + yLine + center
-				+ VT100.CURSOR_HOME + VT100.INVERT + f"Press Ctrl-C to exit." + VT100.RESET,
+				+ VT100.CURSOR_HOME + VT100.INVERT + "Press Ctrl-C to exit." + VT100.RESET,
 				end=""
 			)
 			_sleep(0.01)
