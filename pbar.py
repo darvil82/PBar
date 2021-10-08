@@ -1240,9 +1240,9 @@ def barHelper(position: Position, size: tuple[int, int]) -> Position:
 			rPos = b.position
 			b.formatset = {"subtitle": f"X:{rPos[0]} Y:{rPos[1]}"}
 
-			xLine = VT100.pos((0, rPos[1])) + "─"*rPos[0]
-			yLine = "".join(VT100.pos((rPos[0], x)) + "│" for x in range(rPos[1]))
-			center = VT100.pos(rPos) + "█"
+			xLine = VT100.pos((0, rPos[1])) + "═"*rPos[0]
+			yLine = "".join(VT100.pos((rPos[0], x)) + "║" for x in range(rPos[1]))
+			center = VT100.pos(rPos) + "╝"
 
 			print(
 				VT100.CLEAR_ALL
