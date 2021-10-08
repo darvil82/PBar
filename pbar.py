@@ -6,9 +6,10 @@
 GitHub Repository:		https://github.com/DarviL82/PBar
 """
 
-__all__ = ("PBar", "VT100", "ColorSet", "CharSet", "FormatSet", "taskWrapper", "animate")
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.7.0"
+__version__ = "1.7.1"
+__all__ = ("PBar", "VT100", "ColorSet", "CharSet",
+		   "FormatSet", "taskWrapper", "animate", "barHelper")
 
 from io import TextIOWrapper as _TextIOWrapper
 from typing import Any, Optional, SupportsInt, TypeVar, Callable, Union, IO
@@ -240,7 +241,7 @@ class CharSet(_BaseSet):
 	EMPTY: CharSetEntry = {
 		"empty":	" ",
 		"full":		" ",
-		"vert":		{
+		"vert": {
 			"right":	" ",
 			"left":		" ",
 		},
@@ -269,7 +270,7 @@ class CharSet(_BaseSet):
 	BASIC: CharSetEntry = {
 		"empty":	".",
 		"full":		"#",
-		"vert":		{
+		"vert":	{
 			"left":		"[",
 			"right":	"]"
 		}
@@ -373,7 +374,7 @@ class ColorSet(_BaseSet):
 	EMPTY: ColorSetEntry = {
 		"empty":	None,
 		"full":		None,
-		"vert":		{
+		"vert":	{
 			"left":		None,
 			"right":	None
 		},
@@ -921,19 +922,17 @@ class PBar():
 
 	@classmethod
 	def fromConfig(cls, other: Union["PBar", dict]) -> "PBar":
-		"""Return a PBar object created with the configuration of the PBar/dict object given."""
-		pb = PBar()
+		"""Modify the configuration of the PBar/dict object given."""
+		pb = cls()
 		pb.config = other.config if isinstance(other, PBar) else other
 		return pb
 
 
-	@classmethod
-	def fromFile(cls, fp: IO[str]) -> "PBar":
-		"""Return a PBar object with it's `prange` got from the number of lines of a file."""
+	def prangeFromFile(self, fp: IO[str]):
+		"""Modify `prange` with the number of lines of a file."""
 		_isInstOf(fp, _TextIOWrapper, name="fp")
-		val = PBar((0, len(fp.readlines())))
+		self.prange = (0, len(fp.readlines()))
 		fp.seek(0)
-		return val
 
 
 	@property
@@ -1063,18 +1062,18 @@ class PBar():
 
 		for index, value in enumerate(position):
 			if value == "center":
-				value = int(TERM_SIZE[index] / 2)
+				value = int(TERM_SIZE[index]/2)+1
 			_isInstOf(value, int, float, name="pos")
 
 			if value < 0:
 				value = TERM_SIZE[index] + value
 
 			if index == 0:
-				value = _capValue(value, TERM_SIZE[0] - self._size[0]/2 + 2, self._size[0] / 2 + 2)
+				value = _capValue(value, TERM_SIZE[0] - self._size[0]/2 + 2, self._size[0]/2 + 2)
 			else:
 				value = _capValue(value, TERM_SIZE[1] - self._size[1]/2, self._size[1]/2)
 
-			newpos.append(int(value+1))
+			newpos.append(int(value))
 		return tuple(newpos)
 
 
@@ -1083,7 +1082,7 @@ class PBar():
 		"""Get and process new length requested"""
 		_chkSeqOfLen(size, 2)
 		return (int(_capValue(size[0], min=5)),
-				int(_capValue(size[1], min=1)+1))
+				int(_capValue(size[1], min=1)))
 
 
 	@staticmethod
@@ -1096,12 +1095,12 @@ class PBar():
 
 	def _genClearedBar(self, values: tuple[tuple[int, int], tuple[int, int]]) -> str:
 		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
-		size = values[1]
-		pos = values[0]
+		pos, size = values
 		parsedColorSet = ColorSet.parsedValues(ColorSet.EMPTY)
 
-		POSITION = (pos[0] + int(size[0] / -2),
-					pos[1] + int(size[1] / -2))
+		size = size[0], size[1] + 1
+		POSITION = (pos[0] + int(size[0]/-2),
+					pos[1] + int(size[1]/-2))
 
 		barShape = _genShape(
 			(POSITION[0] - 2, POSITION[1]),
@@ -1122,25 +1121,26 @@ class PBar():
 
 	def _genBar(self) -> str:
 		"""Generate the progress bar"""
-		POSITION = (self._pos[0] + int(self._size[0] / -2),
-					self._pos[1] + int(self._size[1] / -2))
+		size = self._size[0], self._size[1] + 1
+		POSITION = (self._pos[0] + int(size[0]/-2),
+					self._pos[1] + int(size[1]/-2))
 
 		parsedColorSet = self._colorset.parsedValues()
 
 		# Build all the parts of the progress bar
 		barShape = _genShape(
 			(POSITION[0] - 2, POSITION[1]),
-			self._size, self._charset, parsedColorSet
+			size, self._charset, parsedColorSet
 		)
 
 		barContent = _genBarContent(
 			POSITION,
-			self._size, self._charset, parsedColorSet, self._range
+			size, self._charset, parsedColorSet, self._range
 		)
 
 		barText = _genBarText(
 			POSITION,
-			self._size, parsedColorSet, self._formatset.parsedValues(self)
+			size, parsedColorSet, self._formatset.parsedValues(self)
 		)
 
 		return barShape + barContent + barText
@@ -1213,14 +1213,14 @@ def animate(pbarObj: PBar, rng: range, delay: float) -> None:
 		_sleep(delay)
 
 
-def barHelper(position: Position, size: tuple[int, int]):
+def barHelper(position: Position, size: tuple[int, int]) -> Position:
 	"""
-	Draw a bar helper on screen.
+	Draw a bar helper on screen indefinitely until the user exits.
+	Returns the position of the bar helper.
 	@position: Position of the helper on the terminal.
 	@size: Size of the helper.
 	"""
 	b = PBar(	# we create a bar just to make stuff easier
-		position=position,
 		size=size,
 		formatset=FormatSet.EMPTY,
 		colorset={
@@ -1231,20 +1231,30 @@ def barHelper(position: Position, size: tuple[int, int]):
 		}
 	)
 
-	rPos = b.position
 	b.charset |= {"full": "", "empty": ""}
-	b.formatset = {"subtitle": f"X:{rPos[0]} Y:{rPos[1]}"}
+	print(VT100.BUFFER_NEW)
 
-	xLine = VT100.pos((0, rPos[1])) + "─"*rPos[0]
-	yLine = "".join(VT100.pos((rPos[0], x)) + "│" for x in range(rPos[1]))
-	center = VT100.pos(rPos) + "█"
+	try:
+		while True:
+			b.position = position
+			rPos = b.position
+			b.formatset = {"subtitle": f"X:{rPos[0]} Y:{rPos[1]}"}
 
-	print(
-		VT100.CLEAR_ALL + VT100.CLEAR_SCROLL
-		+ b._genBar()
-		+ VT100.color((255, 100, 0)) + xLine + yLine + center
-		+ VT100.CURSOR_HOME + VT100.RESET,
-		end=""
-	)
+			xLine = VT100.pos((0, rPos[1])) + "─"*rPos[0]
+			yLine = "".join(VT100.pos((rPos[0], x)) + "│" for x in range(rPos[1]))
+			center = VT100.pos(rPos) + "█"
 
+			print(
+				VT100.CLEAR_ALL + VT100.CLEAR_SCROLL
+				+ b._genBar()
+				+ VT100.color((255, 100, 0)) + xLine + yLine + center
+				+ VT100.CURSOR_HOME + "Press Ctrl-C to exit.",
+				end=""
+			)
+			_sleep(0.01)
+	except KeyboardInterrupt:
+		pass
+
+	print(VT100.BUFFER_OLD, end="")
 	del b	# delete the bar we created
+	return rPos
