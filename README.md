@@ -1,5 +1,9 @@
 <img width=50% src="resources/logo.png">
 
+<a target="_blank" href="https://github.com/DarviL82/PBar/pulls">
+	<img src="https://img.shields.io/badge/contributions-welcome-brightgreen?style=flat-square">
+</a>
+
 ---
 
 ### PBar is a small work in progress Python module to display customizable progress bars on the terminal easily. Contributions are welcome!
@@ -16,11 +20,11 @@ from time import sleep
 
 
 mybar = pbar.PBar(
-	prange=(0, 67),							# Range displayed as the progress
-	text="Loading",							# Some text to be displayed
+	prange=(0, 67),					# Range displayed as the progress
+	text="Loading",					# Some text to be displayed
 	charset=pbar.CharSet.ROUNDED,			# Characters that the bar will use
-	size=(30, 1),							# Width and height
-	formatset=pbar.FormatSet.TITLE_SUBTITLE	# Text that will be displayed on the different places
+	size=(30, 1),					# Width and height
+	formatset=pbar.FormatSet.TITLE_SUBTITLE		# Text that will be displayed on the different places
 
 )
 
@@ -31,7 +35,7 @@ print("Printing bar... ", end="")
 try:
 	while mybar.percentage < 100:
 		sleep(0.1)
-		mybar.colorset |= {		# Merge with our own dict
+		mybar.colorset |= {	# Merge with our own dict
 			"full":		(0, mybar.percentage*2, 100),
 			"empty":	(255 - mybar.percentage*2, 100, 0),
 			"text":	{
@@ -39,7 +43,7 @@ try:
 				"subtitle":	(255 - mybar.percentage*2, 100, 0),
 			}
 		}
-		mybar.step()			# Step over the prange and draw bar
+		mybar.step()		# Step over the prange and draw bar
 	else:
 		mybar.text = "Done!"	# Change the text of the bar
 		mybar.colorset |= {
@@ -55,7 +59,7 @@ mybar.draw()
 sleep(1)
 mybar.clear()
 
-print("Finished!")				# The cursor stays at the same position
+print("Finished!")		# The cursor stays at the same position
 ```
 </details>
 
@@ -95,7 +99,23 @@ Note that the object constructor provides many arguments (all optional) for conf
 	- Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom characters.
 	- Custom character set dictionary:
 
-		![image](https://user-images.githubusercontent.com/48654552/136127839-7e3d7f5c-44e9-4a8f-9407-84632fa40ed7.png)
+		```py
+		CharSetEntry = {
+			"empty":	" ",
+			"full":		" ",
+			"vert": {
+				"right":	" ",
+				"left":		" ",
+			},
+			"horiz":	" ",
+			"corner": {
+				"tleft":	" ",
+				"tright":	" ",
+				"bleft":	" ",
+				"bright":	" "
+			}
+		}
+		```
 
 		Note: It is not needed to specify all the keys and values.
 
@@ -107,7 +127,30 @@ Note that the object constructor provides many arguments (all optional) for conf
 	- Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom colors.
 	- Custom color set dictionary:
 
-		![image](https://user-images.githubusercontent.com/48654552/134371850-1d858a6e-8003-40da-a5ff-f36bd06a5b07.png)
+		```py
+		ColorSetEntry = {
+			"empty":	None,
+			"full":		None,
+			"vert":	{
+				"left":		None,
+				"right":	None
+			},
+			"horiz":	None,
+			"corner": {
+				"tleft":	None,
+				"tright":	None,
+				"bleft":	None,
+				"bright":	None,
+			},
+			"text":	{
+				"inside":	None,
+				"right":	None,
+				"left":		None,
+				"title":	None,
+				"subtitle":	None
+			}
+		}
+		```
 
 		Note: It is not needed to specify all the keys and values.
 
@@ -121,7 +164,15 @@ Note that the object constructor provides many arguments (all optional) for conf
 	- Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom formatting.
 	- Custom formatset dictionary:
 
-		![image](https://user-images.githubusercontent.com/48654552/134372064-2abd9fab-37dd-4334-8d30-26e2f0967313.png)
+		```py
+		FormatSetEntry = {
+			"inside":	"",
+			"right":	"",
+			"left":		"",
+			"title":	"",
+			"subtitle":	""
+		}
+		```
 
 		Note: It is not needed to specify all the keys and values.
 
