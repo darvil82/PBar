@@ -7,7 +7,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 """
 
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.7.1"
+__version__ = "1.7.1-1"
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet",
 		   "FormatSet", "taskWrapper", "animate", "barHelper")
 
@@ -771,7 +771,7 @@ class PBar():
 	- PBar.clear()
 	- PBar.resetETime()
 	- PBar.fromConfig()
-	- PBar.fromFile()
+	- PBar.prangeFromFile()
 
 	---
 
@@ -922,7 +922,7 @@ class PBar():
 
 	@classmethod
 	def fromConfig(cls, other: Union["PBar", dict]) -> "PBar":
-		"""Modify the configuration of the PBar/dict object given."""
+		"""Return a PBar object with the new configuration given from another PBar or dict."""
 		pb = cls()
 		pb.config = other.config if isinstance(other, PBar) else other
 		return pb
@@ -1069,9 +1069,9 @@ class PBar():
 				value = TERM_SIZE[index] + value
 
 			if index == 0:
-				value = _capValue(value, TERM_SIZE[0] - self._size[0]/2 + 2, self._size[0]/2 + 2)
+				value = _capValue(value, TERM_SIZE[0] - self._size[0]/2 - 1, self._size[0]/2 + 3)
 			else:
-				value = _capValue(value, TERM_SIZE[1] - self._size[1]/2, self._size[1]/2)
+				value = _capValue(value, TERM_SIZE[1] - self._size[1]/2, self._size[1]/2 + 2)
 
 			newpos.append(int(value))
 		return tuple(newpos)
@@ -1176,7 +1176,7 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRang
 	def getTitleComment(string: str) -> Optional[str]:
 		"""Returns the text after "#bTitle:" from the string supplied. Returns None if there is no comment."""
 		try:
-			index = string.rindex("#bTitle:")+8
+			index = string.rindex("#bTitle:") + 8	# lol
 		except ValueError:
 			return
 		return string[index:].strip()
@@ -1227,12 +1227,12 @@ def barHelper(position: Position, size: tuple[int, int]) -> Position:
 			"vert": "#090",
 			"horiz": "#090",
 			"corner": "#090",
-			"text":	(255, 100, 0)
+			"text":	(255, 100, 0),
+			"empty": "#090"
 		}
 	)
 
-	b.charset |= {"full": "", "empty": ""}
-	print(VT100.BUFFER_NEW)
+	print(VT100.BUFFER_NEW + VT100.CURSOR_HIDE)
 
 	try:
 		while True:
@@ -1245,16 +1245,16 @@ def barHelper(position: Position, size: tuple[int, int]) -> Position:
 			center = VT100.pos(rPos) + "█"
 
 			print(
-				VT100.CLEAR_ALL + VT100.CLEAR_SCROLL
+				VT100.CLEAR_ALL
 				+ b._genBar()
 				+ VT100.color((255, 100, 0)) + xLine + yLine + center
-				+ VT100.CURSOR_HOME + "Press Ctrl-C to exit.",
+				+ VT100.CURSOR_HOME + VT100.INVERT + f"Press Ctrl-C to exit." + VT100.RESET,
 				end=""
 			)
 			_sleep(0.01)
 	except KeyboardInterrupt:
 		pass
 
-	print(VT100.BUFFER_OLD, end="")
+	print(VT100.BUFFER_OLD + VT100.CURSOR_SHOW, end="")
 	del b	# delete the bar we created
 	return rPos
