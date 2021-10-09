@@ -200,9 +200,9 @@ The PBar object also counts the time that passed since the object constructed. T
 
 This elapsed time counter can be resetted by calling the `PBar.resetETime()` method.
 
-There are two **classmethods** available:
+There's a **classmethod** available:
 - `PBar.fromConfig()`:	Return a PBar object created with the configuration of the PBar/dict object given.
-- `Pbar.fromFile()`:	Modify `prange` with the number of lines of a file.
+
 
 <br><hr>
 
