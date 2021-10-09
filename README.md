@@ -91,7 +91,7 @@ Note that the object constructor provides many arguments (all optional) for conf
 
 	- If an axis value is `center`, the bar will be positioned at the center of the terminal on that axis.
 	- Negative values will position the bar at the other side of the terminal.
-
+	- `pbar.barHelper()` can be useful for deciding the position.
 
 - **charset**: Set of characters to use when drawing the progress bar.
 
