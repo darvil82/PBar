@@ -76,7 +76,9 @@ mybar = pbar.PBar()
 
 Note that the object constructor provides many arguments (all optional) for configuring the bar when constructing it:
 
-- **prange**: This tuple will specify the range of two values to display in the progress bar.
+- **prange**: This tuple will specify the range of two values to display in the progress bar. 
+
+  	- `PBar.prangeFromFile()` will get the range from the number of lines of a file.
 
 
 - **text**: String to show in the progress bar.
