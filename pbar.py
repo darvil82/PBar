@@ -7,7 +7,7 @@ GitHub Repository:		https://github.com/DarviL82/PBar
 """
 
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.7.8"
+__version__ = "1.7.9"
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet",
 		   "FormatSet", "taskWrapper", "animate", "barHelper")
 
@@ -69,7 +69,7 @@ def _convertClrs(clr: ColorSetEntry, type: str) -> str | tuple | dict | None:
 		if not isinstance(clr, (tuple, list)) or len(clr) != 3: return clr
 
 		capped = tuple(_capValue(value, 255, 0) for value in clr)
-		return f"#{capped[0]:x}{capped[1]:x}{capped[2]:x}"
+		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
 
 
 def _chkSeqOfLen(obj: Any, length: int) -> bool:
@@ -243,9 +243,12 @@ class CharSet(_BaseSet):
 		"full":		" ",
 		"vert": {
 			"right":	" ",
-			"left":		" ",
+			"left":		" "
 		},
-		"horiz":	" ",
+		"horiz": {
+			"top":		" ",
+			"bottom":	" "
+		},
 		"corner": {
 			"tleft":	" ",
 			"tright":	" ",
@@ -378,7 +381,10 @@ class ColorSet(_BaseSet):
 			"left":		None,
 			"right":	None
 		},
-		"horiz":	None,
+		"horiz": {
+			"top":		None,
+			"bottom":	None
+		},
 		"corner": {
 			"tleft":	None,
 			"tright":	None,
@@ -397,55 +403,55 @@ class ColorSet(_BaseSet):
 	DEFAULT = EMPTY
 
 	GREEN_RED: ColorSetEntry = {
-		"empty":	(255, 0, 0),
-		"full":		(0, 255, 0)
+		"empty":	"#f00",
+		"full":		"#0f0"
 	}
 
 	DARVIL: ColorSetEntry = {
-		"empty":	(0, 103, 194),
-		"full":		(15, 219, 162),
-		"vert":		(247, 111, 152),
-		"horiz":	(247, 111, 152),
-		"corner":	(247, 111, 152),
-		"text":	{
-			"right":	(15, 219, 162),
-			"title":	(247, 111, 152),
-			"subtitle":	(247, 111, 152),
-			"left":		(15, 219, 162),
-			"inside":	(15, 219, 162)
+		'empty':	'#0067c2',
+		'full':		'#0fdba2',
+		'vert':		'#f76f98',
+		'horiz':	'#f76f98',
+		'corner':	'#f76f98',
+		'text': {
+			'right':	'#0fdba2',
+			'title':	'#f76f98',
+			'subtitle':	'#f76f98',
+			'left':		'#0fdba2',
+			'inside':	'#0fdba2'
 		}
 	}
 
 	ERROR: ColorSetEntry = {
-		"empty":	(100, 0, 0),
-		"full":		(255, 0, 0),
-		"vert":		(255, 100, 100),
-		"horiz":	(255, 100, 100),
-		"corner":	(255, 100, 100),
-		"text":		(255, 100, 100)
+		'empty':	'#640000',
+		'full':		'#ff0000',
+		'vert':		'#ff6464',
+		'horiz':	'#ff6464',
+		'corner':	'#ff6464',
+		'text':		'#ff6464'
 	}
 
 	YELLOW: ColorSetEntry = {
-		'full':		(232, 205, 0),
-		'empty':	(167, 114, 39),
-		'horiz':	(218, 183, 123),
-		'vert':		(218, 183, 123),
-		'corner':	(218, 183, 123),
-		'text':		(218, 183, 123)
+		'full':		"#e8cd00",
+		'empty':	"#a77227",
+		'horiz':	"#dab77b",
+		'vert':		"#dab77b",
+		'corner':	"#dab77b",
+		'text':		"#dab77b"
 	}
 
 	FLAG_ES: ColorSetEntry = {
-		'corner':	(199, 3, 24),
-		'horiz':	(199, 3, 24),
-		'vert':		(255, 197, 0),
-		'full':		(255, 197, 0),
-		'empty':	(154, 118, 0),
+		'corner':	"#c70318",
+		'horiz':	"#c70318",
+		'vert':		"#ffc500",
+		'full':		"#ffc500",
+		'empty':	"#9a7600",
 		'text':	{
-			"inside":	(255, 197, 0),
-			"right":	(255, 197, 0),
-			"left":		(255, 197, 0),
-			"title":	(199, 3, 24),
-			"subtitle":	(199, 3, 24)
+			"inside":	"#ffc500",
+			"right":	"#ffc500",
+			"left":		"#ffc500",
+			"title":	"#c70318",
+			"subtitle":	"#c70318"
 		}
 	}
 
@@ -650,7 +656,10 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 		parsedColorset["vert"]["left"] + charset["vert"]["left"],
 		parsedColorset["vert"]["right"] + charset["vert"]["right"]
 	)
-	charHoriz = charset["horiz"]
+	charHoriz = (
+		charset["horiz"]["top"],
+		charset["horiz"]["bottom"],
+	)
 	charCorner = (
 		parsedColorset["corner"]["tleft"] + charset["corner"]["tleft"],
 		parsedColorset["corner"]["tright"] + charset["corner"]["tright"],
@@ -661,7 +670,7 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 	endStr: str = (
 		VT100.pos(position)
 		+ charCorner[0]
-		+ parsedColorset["horiz"] + charHoriz*width
+		+ parsedColorset["horiz"]["top"] + charHoriz[0]*width
 		+ charCorner[1]
 	)
 
@@ -676,7 +685,7 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 	endStr += (
 		VT100.pos(position, (0, height))
 		+ charCorner[2]
-		+ parsedColorset["horiz"] + charHoriz*width
+		+ parsedColorset["horiz"]["bottom"] + charHoriz[1]*width
 		+ charCorner[3]
 	)
 
