@@ -170,7 +170,7 @@ class VT100:
 
 
 
-class UnknownSetKeyError(BaseException):
+class UnknownSetKeyError(Exception):
 	"""A key supplied in a dictionary is unknown for the set class that will use it"""
 	def __init__(self, key, setcls) -> None:
 		msg = f"Unknown key {key!r} for {setcls.__class__.__name__!r}"
@@ -473,7 +473,7 @@ class ColorSet(_BaseSet):
 
 
 
-class UnknownFormattingKeyError(BaseException):
+class UnknownFormattingKeyError(Exception):
 	"""Unknown formatting key used in a formatset string"""
 	def __init__(self, string, indices) -> None:
 		start, end = indices
@@ -486,7 +486,7 @@ class UnknownFormattingKeyError(BaseException):
 		)
 
 
-class UnexpectedEndOfStringError(BaseException):
+class UnexpectedEndOfStringError(Exception):
 	"""Unexpected end of string when parsing a formatting key"""
 	def __init__(self, string) -> None:
 		super().__init__(
