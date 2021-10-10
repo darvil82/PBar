@@ -12,7 +12,7 @@ __all__ = ("PBar", "VT100", "ColorSet", "CharSet",
 		   "FormatSet", "taskWrapper", "animate", "barHelper")
 
 from io import TextIOWrapper as _TextIOWrapper
-from typing import Any, SupportsInt, TypeVar, Callable, Union, IO
+from typing import Any, Optional, SupportsInt, TypeVar, Callable, Union, IO
 from os import get_terminal_size as _get_terminal_size, system as _runsys
 from time import time as _time, sleep as _sleep
 from inspect import getsourcelines as _srclines
@@ -24,17 +24,17 @@ _runsys("")		# We need to do this, otherwise Windows won't display special VT100
 _IGNORE_CHARS = "\x1b\n\r\b\a\f\v"
 
 # Type Aliases
-Color = tuple[int, int, int] | str | None
+Color = Optional[Union[tuple[int, int, int], str, None]]
 ColorSetEntry = dict[str, Union["ColorSetEntry", Color]]
 CharSetEntry = dict[str, Union["CharSetEntry", str]]
 FormatSetEntry = dict[str, Union["FormatSetEntry", str]]
-Position = tuple[str | int, str | int]
+Position = tuple[Union[str, int], Union[str, int]]
 
 
 
 Num = TypeVar("Num", int, float)
 
-def _capValue(value: Num, max: Num | None = None, min: Num | None = None) -> Num:
+def _capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) -> Num:
 	"""Clamp a value to a minimum and/or maximum value."""
 	if max is not None and value > max:
 		return max
@@ -44,7 +44,7 @@ def _capValue(value: Num, max: Num | None = None, min: Num | None = None) -> Num
 		return value
 
 
-def _convertClrs(clr: ColorSetEntry, type: str) -> str | tuple | dict | None:
+def _convertClrs(clr: ColorSetEntry, type: str) -> Union[str, tuple, dict, None]:
 	"""Convert color values to HEX and vice-versa
 	@clr:	Color value to convert.
 	@type:	Type of conversion to do ('RGB' or 'HEX')"""
@@ -97,7 +97,7 @@ class VT100:
 	"""Class for using VT100 sequences a bit easier"""
 
 	@staticmethod
-	def pos(pos: tuple[SupportsInt, SupportsInt] | None, offset: tuple[SupportsInt, SupportsInt] = (0, 0)):
+	def pos(pos: Optional[tuple[SupportsInt, SupportsInt]], offset: tuple[SupportsInt, SupportsInt] = (0, 0)):
 		"""Position of the cursor on the terminal.
 		@pos: This tuple can contain either ints, or strings with the value `center` to specify the center of the terminal.
 		@offset: Offset applied to `pos`. (Can be negative)
@@ -111,7 +111,7 @@ class VT100:
 
 
 	@staticmethod
-	def color(rgb: tuple[int, int, int] | None, bg: bool = False):
+	def color(rgb: Optional[tuple[int, int, int]], bg: bool = False):
 		"""Color of the cursor.
 		@rgb:	Tuple with three values from 0 to 255. (RED GREEN BLUE)
 		@bg:	This color will be displayed on the background"""
@@ -215,7 +215,7 @@ class _BaseSet(dict):
 		return newSet
 
 
-	def iterValues(self, val: dict[dict, tuple[list[Any] | None, dict | None]], func: Callable) -> dict:		# !thanks MithicSpirit. Still doesnt work with dicts inside dicts.
+	def iterValues(self, val: dict[dict, tuple[Optional[list[Any]], Optional[dict]]], func: Callable) -> dict:		# !thanks MithicSpirit. Still doesnt work with dicts inside dicts.
 		"""
 		Return dict with all values in it used as args for a function that will return a new value.
 		@val: This represents the dictionary which contains a key for the dict to process, and a tuple containing
@@ -460,7 +460,7 @@ class ColorSet(_BaseSet):
 		super().__init__(_convertClrs(newSet, "RGB"))	# Convert all hex values to rgb tuples
 
 
-	def parsedValues(self, bg = False) -> dict[str, dict | str]:
+	def parsedValues(self, bg = False) -> dict[str, Union[dict, str]]:
 		"""Convert all values in the ColorSet to parsed color sequences"""
 		# newset = {key: ((value, bg), None) for key, value in self.items()}
 		# return ColorSet(self.iterValues(newset, VT100.color))
@@ -599,19 +599,20 @@ class FormatSet(_BaseSet):
 			if foundOpen:
 				# Found '<'. Now we add every char to tempStr until we find a '>'.
 				if char == ">":
-					match tempStr:
-						case "percentage":
-							endStr += str(cls.percentage)
-						case "range1":
-							endStr += str(cls._range[0])
-						case "range2":
-							endStr += str(cls._range[1])
-						case "etime":
-							endStr += str(cls.etime)
-						case "text":
-							if cls._text:	endStr += FormatSet._rmPoisonChars(cls._text)
-						case _:
-							raise UnknownFormattingKeyError(text, (index - len(tempStr), index))
+					# Found '>'. Now just add the formatting keys.
+					if tempStr == "percentage":
+						endStr += str(cls.percentage)
+					elif tempStr == "range1":
+						endStr += str(cls._range[0])
+					elif tempStr == "range2":
+						endStr += str(cls._range[1])
+					elif tempStr == "etime":
+						endStr += str(cls.etime)
+
+					elif tempStr == "text":
+						if cls._text:	endStr += FormatSet._rmPoisonChars(cls._text)
+					else:
+						raise UnknownFormattingKeyError(text, (index - len(tempStr), index))
 
 					foundOpen = False
 					tempStr = ""
@@ -648,7 +649,7 @@ class FormatSet(_BaseSet):
 
 
 
-def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet, parsedColorset: dict, filled: str | None = " ") -> str:
+def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet, parsedColorset: dict, filled: Optional[str] = " ") -> str:
 	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
 	width, height = size[0] + 2, size[1]
 
@@ -713,7 +714,7 @@ def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: Ch
 
 
 
-def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset: dict[str, dict | str], formatset: FormatSet) -> str:
+def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset: dict[str, Union[dict, str]], formatset: FormatSet) -> str:
 	"""Generates all text for the bar"""
 	width, height = size
 
@@ -801,10 +802,10 @@ class PBar():
 			prange: tuple[int, int] = (0, 1),
 			text: str = None,
 			size: tuple[int, int] = (20, 1),
-			position: tuple[str | int, str | int] = ("center", "center"),
-			charset: CharSetEntry | None = None,
-			colorset: ColorSetEntry | None = None,
-			formatset: FormatSetEntry | None = None
+			position: tuple[Union[str, int], Union[str, int]] = ("center", "center"),
+			charset: Optional[CharSetEntry] = None,
+			colorset: Optional[ColorSetEntry] = None,
+			formatset: Optional[FormatSetEntry] = None
 		) -> None:
 		"""
 		### Detailed descriptions:
@@ -1086,7 +1087,7 @@ class PBar():
 
 
 	@staticmethod
-	def _getSize(size: tuple[SupportsInt, SupportsInt] | None) -> tuple[int, int]:
+	def _getSize(size: Optional[tuple[SupportsInt, SupportsInt]]) -> tuple[int, int]:
 		"""Get and process new length requested"""
 		_chkSeqOfLen(size, 2)
 		return (int(_capValue(size[0], min=5)),
@@ -1181,7 +1182,7 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRang
 	"""
 	_isInstOf(pbarObj, PBar, name="pbarObj")
 
-	def getTitleComment(string: str) -> str | None:
+	def getTitleComment(string: str) -> Optional[str]:
 		"""Returns the text after "#bTitle:" from the string supplied. Returns None if there is no comment."""
 		try:
 			index = string.rindex("#bTitle:") + 8	# lol
