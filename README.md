@@ -76,7 +76,7 @@ mybar = pbar.PBar()
 
 Note that the object constructor provides many arguments (all optional) for configuring the bar when constructing it:
 
-- **prange**: This tuple will specify the range of two values to display in the progress bar. 
+- **prange**: This tuple will specify the range of two values to display in the progress bar.
 
   	- `PBar.prangeFromFile()` will get the range from the number of lines of a file.
 
@@ -107,9 +107,12 @@ Note that the object constructor provides many arguments (all optional) for conf
 			"full":		" ",
 			"vert": {
 				"right":	" ",
-				"left":		" ",
+				"left":		" "
 			},
-			"horiz":	" ",
+			"horiz": {
+				"top":		" ",
+				"bottom":	" "
+			},
 			"corner": {
 				"tleft":	" ",
 				"tright":	" ",
@@ -137,12 +140,15 @@ Note that the object constructor provides many arguments (all optional) for conf
 				"left":		None,
 				"right":	None
 			},
-			"horiz":	None,
+			"horiz": {
+				"top":		None,
+				"bottom":	None
+			},
 			"corner": {
 				"tleft":	None,
 				"tright":	None,
 				"bleft":	None,
-				"bright":	None,
+				"bright":	None
 			},
 			"text":	{
 				"inside":	None,
@@ -249,7 +255,7 @@ Each of those comments will be displayed on the progress bar.
 
 
 ## Requirements
-Python 3.10+
+Python 3.9+
 
 
 ## Additional Credits

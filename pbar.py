@@ -1,13 +1,13 @@
 """
 ![logo_small](https://user-images.githubusercontent.com/48654552/134991429-1109ad1d-92fa-423f-8ce1-3b777471cb3d.png)
 
-### PBar module for displaying custom progress bars for Python 3.10+
+### PBar module for displaying custom progress bars for Python 3.9+
 
-GitHub Repository:		https://github.com/DarviL82/PBar
+[GitHub Repository](https://github.com/DarviL82/PBar)
 """
 
 __author__ = "David Losantos (DarviL)"
-__version__ = "1.7.9"
+__version__ = "1.8.0"
 __all__ = ("PBar", "VT100", "ColorSet", "CharSet",
 		   "FormatSet", "taskWrapper", "animate", "barHelper")
 
@@ -834,11 +834,6 @@ class PBar():
 		the characters used in some charsets.
 
 		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom characters.
-		- Custom character set dictionary:
-
-				![image](https://user-images.githubusercontent.com/48654552/136381445-f5bed96a-eaa9-48e6-b182-e795f5a80994.png)
-
-			Note: It is not needed to specify all the keys and values.
 
 		---
 
@@ -847,13 +842,6 @@ class PBar():
 		To use one of the included sets, use any of the constant values in `pbar.ColorSet`.
 
 		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom colors.
-		- Custom color set dictionary:
-
-				![image](https://user-images.githubusercontent.com/48654552/136381806-878536aa-9213-4b64-add1-739e64f598f9.png)
-
-			Note: It is not needed to specify all the keys and values.
-
-			Note: The colors can also be specified as HEX in a string.
 
 		---
 
@@ -862,18 +850,12 @@ class PBar():
 		To use one of the included sets, use any of the constant values in `pbar.FormatSet`.
 
 		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom formatting.
-		- Custom formatset dictionary:
 
-				![image](https://user-images.githubusercontent.com/48654552/134372064-2abd9fab-37dd-4334-8d30-26e2f0967313.png)
+		---
 
-			Note: It is not needed to specify all the keys and values.
+		### Help
 
-		- Available formatting keys:
-			- `<percentage>`:	Percentage of the bar.
-			- `<range1>`:		First value of the prange.
-			- `<range2>`:		Second value of the prange.
-			- `<text>`:			Text selected in the `text` property/arg.
-			- `<etime>`:		Elapsed time since the bar created.
+		The [GitHub Repository](https://github.com/DarviL82/PBar) contains more help about all the properties.
 		"""
 		self._requiresClear = False		# This controls if the bar needs to clear its old position before drawing.
 		self._enabled = True			# If disabled, the bar will never draw.
