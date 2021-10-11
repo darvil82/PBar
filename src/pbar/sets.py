@@ -22,13 +22,7 @@ class UnknownSetKeyError(Exception):
 
 class _BaseSet(dict):
 	"""Base class for all the customizable sets for the bar (colorset, charset, formatset)"""
-
-	EMPTY: dict = {}
-	DEFAULT: dict = {}
-
 	def __init__(self, newSet: dict) -> None:
-		if not newSet:
-			newSet = self.DEFAULT
 		isInstOf(newSet, dict, name="newSet")
 
 		super().__init__(self._populate(self.EMPTY | newSet))
@@ -183,9 +177,22 @@ class CharSet(_BaseSet):
 		"empty":	"🙽"
 	}
 
+	DOUBLE: CharSetEntry = {
+		"empty":	"░",
+		"full":		"█",
+		"vert":		"║",
+		"horiz":	"═",
+		"corner": {
+			"tleft":	"╔",
+			"tright":	"╗",
+			"bleft":	"╚",
+			"bright":	"╝"
+		}
+	}
+
 
 	def __init__(self, newSet: CharSetEntry) -> None:
-		super().__init__(newSet)
+		super().__init__(newSet or self.DEFAULT)
 		self = CharSet._strip(self)
 
 
@@ -242,31 +249,33 @@ class ColorSet(_BaseSet):
 		}
 	}
 
-	DEFAULT = EMPTY
-
-	GREEN_RED: ColorSetEntry = {
-		"empty":	"#f00",
-		"full":		"#0f0"
+	DEFAULT: ColorSetEntry = {
+		"full":		"#15F28D",
+		"empty":	"#FF4D4D",
+		"horiz":	"white",
+		"vert":		"white",
+		"corner":	"white",
+		"text":		"white"
 	}
 
 	DARVIL: ColorSetEntry = {
 		'empty':	'#0067c2',
-		'full':		'#0fdba2',
+		'full':		'springGreen',
 		'vert':		'#f76f98',
 		'horiz':	'#f76f98',
 		'corner':	'#f76f98',
 		'text': {
-			'right':	'#0fdba2',
+			'right':	'springGreen',
 			'title':	'#f76f98',
 			'subtitle':	'#f76f98',
-			'left':		'#0fdba2',
-			'inside':	'#0fdba2'
+			'left':		'springGreen',
+			'inside':	'springGreen'
 		}
 	}
 
 	ERROR: ColorSetEntry = {
-		'empty':	'#640000',
-		'full':		'#ff0000',
+		'empty':	'darkRed',
+		'full':		'red',
 		'vert':		'#ff6464',
 		'horiz':	'#ff6464',
 		'corner':	'#ff6464',
@@ -274,7 +283,7 @@ class ColorSet(_BaseSet):
 	}
 
 	YELLOW: ColorSetEntry = {
-		'full':		"#e8cd00",
+		'full':		"yellow",
 		'empty':	"#a77227",
 		'horiz':	"#dab77b",
 		'vert':		"#dab77b",
@@ -283,23 +292,23 @@ class ColorSet(_BaseSet):
 	}
 
 	FLAG_ES: ColorSetEntry = {
-		'corner':	"#c70318",
-		'horiz':	"#c70318",
-		'vert':		"#ffc500",
-		'full':		"#ffc500",
+		'corner':	"red",
+		'horiz':	"red",
+		'vert':		"yellow",
+		'full':		"yellow",
 		'empty':	"#9a7600",
 		'text':	{
-			"inside":	"#ffc500",
-			"right":	"#ffc500",
-			"left":		"#ffc500",
-			"title":	"#c70318",
-			"subtitle":	"#c70318"
+			"inside":	"yellow",
+			"right":	"yellow",
+			"left":		"yellow",
+			"title":	"red",
+			"subtitle":	"red"
 		}
 	}
 
 
 	def __init__(self, newSet: ColorSetEntry) -> None:
-		super().__init__(convertClrs(newSet, "RGB"))	# Convert all hex values to rgb tuples
+		super().__init__(convertClrs(newSet or self.DEFAULT, "RGB"))	# Convert all hex values to rgb tuples
 
 
 	def parsedValues(self, bg = False) -> dict[str, Union[dict, str]]:
@@ -399,7 +408,7 @@ class FormatSet(_BaseSet):
 
 
 	def __init__(self, newSet: FormatSetEntry) -> None:
-		super().__init__(newSet)
+		super().__init__(newSet or self.DEFAULT)
 
 
 	@staticmethod

@@ -7,59 +7,18 @@
 
 ### PBar is a small work in progress Python package to display customizable progress bars on the terminal easily. Contributions are welcome!
 
-https://user-images.githubusercontent.com/48654552/134776865-c7516cf1-0c66-44da-ae2c-f2cbedd2527c.mp4
+
+
+https://user-images.githubusercontent.com/48654552/136842704-53542e3a-2953-4d73-8057-3a3349b84a04.mp4
 
 
 <details>
-	<summary><b>See the code of this example</b></summary>
+	<summary><b> More examples <b></summary>
 
-```py
-import pbar
-from time import sleep
+https://user-images.githubusercontent.com/48654552/134776865-c7516cf1-0c66-44da-ae2c-f2cbedd2527c.mp4
 
+Source available [here.](https://github.com/DarviL82/PBar/blob/main/resources/examples/anim.py)
 
-mybar = pbar.PBar(
-	prange=(0, 67),					# Range displayed as the progress
-	text="Loading",					# Some text to be displayed
-	charset=pbar.CharSet.ROUNDED,			# Characters that the bar will use
-	size=(30, 1),					# Width and height
-	formatset=pbar.FormatSet.TITLE_SUBTITLE		# Text that will be displayed on the different places
-
-)
-
-
-print("Printing bar... ", end="")
-
-
-try:
-	while mybar.percentage < 100:
-		sleep(0.1)
-		mybar.colorset |= {	# Merge with our own dict
-			"full":		(0, mybar.percentage*2, 100),
-			"empty":	(255 - mybar.percentage*2, 100, 0),
-			"text":	{
-				"title":	(0, mybar.percentage*2, 100),
-				"subtitle":	(255 - mybar.percentage*2, 100, 0),
-			}
-		}
-		mybar.step()		# Step over the prange and draw bar
-	else:
-		mybar.text = "Done!"	# Change the text of the bar
-		mybar.colorset |= {
-			"text":		(0, 255, 0)
-		}
-
-except KeyboardInterrupt:
-	mybar.text = "Interrupted!"
-	mybar.colorset = pbar.ColorSet.ERROR
-
-
-mybar.draw()
-sleep(1)
-mybar.clear()
-
-print("Finished!")		# The cursor stays at the same position
-```
 </details>
 
 <br><br>
@@ -161,7 +120,7 @@ Note that the object constructor provides many arguments (all optional) for conf
 
 		Note: It is not needed to specify all the keys and values.
 
-		Note: The colors can also be specified as HEX in a string.
+		Note: The colors can also be specified as a string with a HEX value (`#1af` | `#a0b1c2`), or an HTML color name (`red`, `yellow`, `turquoise`, etc...).
 
 
 - **formatset**: Formatting used when displaying the strings in different places around the bar.
