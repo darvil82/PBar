@@ -131,5 +131,5 @@ dmypy.json
 
 
 # stuff
-buildpkg.sh
 test.py
+buildpkg.sh
