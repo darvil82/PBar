@@ -51,6 +51,8 @@ def convertClrs(clr: dict[Any, Union[str, tuple]], type: str) -> Union[str, tupl
 	elif isinstance(clr, str):
 		color = clr.lower()
 		if color in _HTML_COLOR_NAMES:	color = _HTML_COLOR_NAMES[color]
+	else:
+		color = clr
 
 	if type == "RGB":
 		if not isinstance(color, str) or not color.startswith("#"):
