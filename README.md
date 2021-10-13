@@ -13,7 +13,7 @@ https://user-images.githubusercontent.com/48654552/136842704-53542e3a-2953-4d73-
 
 
 <details>
-	<summary><b> More examples <b></summary>
+	<summary><b> More examples </b></summary>
 
 https://user-images.githubusercontent.com/48654552/134776865-c7516cf1-0c66-44da-ae2c-f2cbedd2527c.mp4
 
