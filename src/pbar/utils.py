@@ -74,15 +74,18 @@ def convertClrs(clr: dict[Any, Union[str, tuple]], type: str) -> Union[str, tupl
 		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
 
 
-def chkSeqOfLen(obj: Any, length: int) -> bool:
+def chkSeqOfLen(obj: Any, length: int, name: str = None) -> bool:
 	"""Check if an object is a Sequence and has the length specified. If fails, raises exceptions."""
-	isInstOf(obj, tuple, list)
+	chkInstOf(obj, tuple, list)
 	if len(obj) != length:
-		raise ValueError(f"Sequence {obj!r} must have {length} items")
+		raise ValueError(
+			(name or f"Sequence {VT100.color((255, 150, 0))}{obj!r}{VT100.RESET}")
+			+ " must have " + VT100.color((0, 255, 0)) + str(length) + VT100.RESET + " items"
+		)
 	return True
 
 
-def isInstOf(obj: Any, *typ: Any, name: str = None) -> bool:
+def chkInstOf(obj: Any, *typ: Any, name: str = None) -> bool:
 	"""Check if an object is an instance of any of the other objects specified. If fails, raises exception."""
 	if not isinstance(obj, typ):
 		raise TypeError(

@@ -23,7 +23,7 @@ class UnknownSetKeyError(Exception):
 class _BaseSet(dict):
 	"""Base class for all the customizable sets for the bar (colorset, charset, formatset)"""
 	def __init__(self, newSet: dict) -> None:
-		isInstOf(newSet, dict, name="newSet")
+		chkInstOf(newSet, dict, name="newSet")
 
 		super().__init__(self._populate(self.EMPTY | newSet))
 
