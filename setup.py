@@ -1,11 +1,12 @@
 import setuptools
+from src.pbar import __version__ as prjVersion
 
 with open("README.md", "r", encoding="utf-8") as fh:
 	long_description = fh.read()
 
 setuptools.setup(
 	name="PBar2",
-	version="1.10.0post1",
+	version=prjVersion,
 	author="David Losantos (DarviL82)",
 	author_email="davidlosantos89@gmail.com",
 	description="Display customizable progress bars on the terminal easily.",
