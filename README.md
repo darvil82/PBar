@@ -144,8 +144,8 @@ Note that the object constructor provides many arguments (all optional) for conf
 
 	- Available formatting keys:
 		- `<percentage>`:	Percentage of the bar.
-		- `<range1>`:		First value of the prange.
-		- `<range2>`:		Second value of the prange.
+		- `<prange1>`:		First value of the prange.
+		- `<prange2>`:		Second value of the prange.
 		- `<text>`:			Text selected in the `text` property/arg.
 		- `<etime>`:		Elapsed time since the bar created.
 

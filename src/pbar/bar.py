@@ -6,6 +6,7 @@ from inspect import getsourcelines as _srclines
 
 from . sets import CharSet, ColorSet, FormatSet, CharSetEntry, FormatSetEntry, ColorSetEntry
 from . utils import *
+from . cond import Cond
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -166,7 +167,8 @@ class PBar():
 			position: tuple[Union[str, int], Union[str, int]] = ("center", "center"),
 			charset: Optional[CharSetEntry] = None,
 			colorset: Optional[ColorSetEntry] = None,
-			formatset: Optional[FormatSetEntry] = None
+			formatset: Optional[FormatSetEntry] = None,
+			conditions: Optional[list[Cond]] = None
 		) -> None:
 		"""
 		### Detailed descriptions:
@@ -229,6 +231,7 @@ class PBar():
 		self._charset = CharSet(charset)
 		self._colorset = ColorSet(colorset)
 		self._pos = self._getPos(position)
+		self.conditions = conditions if isInstOf(conditions, tuple, list) else ()
 
 		self._oldValues = [self._pos, self._size]	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
@@ -445,6 +448,11 @@ class PBar():
 				int(capValue(range[1], min=1)))
 
 
+	def _chkConds(self) -> None:
+		for cond in self.conditions:
+			cond.check(self)
+
+
 	def _genClearedBar(self, values: tuple[tuple[int, int], tuple[int, int]]) -> str:
 		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
 		pos, size = values
@@ -473,6 +481,7 @@ class PBar():
 
 	def _genBar(self) -> str:
 		"""Generate the progress bar"""
+		if self.conditions:	self._chkConds()
 		size = self._size[0], self._size[1] + 1
 		POSITION = (self._pos[0] + int(size[0]/-2),
 					self._pos[1] + int(size[1]/-2))
