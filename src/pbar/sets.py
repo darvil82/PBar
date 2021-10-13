@@ -23,7 +23,7 @@ class UnknownSetKeyError(Exception):
 class _BaseSet(dict):
 	"""Base class for all the customizable sets for the bar (colorset, charset, formatset)"""
 	def __init__(self, newSet: dict) -> None:
-		isInstOf(newSet, dict, name="newSet")
+		chkInstOf(newSet, dict, name="newSet")
 
 		super().__init__(self._populate(self.EMPTY | newSet))
 
@@ -326,14 +326,11 @@ class ColorSet(_BaseSet):
 
 class UnknownFormattingKeyError(Exception):
 	"""Unknown formatting key used in a formatset string"""
-	def __init__(self, string, indices) -> None:
-		start, end = indices
-		value = string[start:end]
+	def __init__(self, string) -> None:
 		super().__init__(
-			f"Unknown formatting key {value!r} ('"
-			+ string[:start]
-			+ VT100.color((150, 0, 0), True) + string[start:end] + VT100.RESET
-			+ string[end:] + "')"
+			"Unknown formatting key '"
+			+ VT100.BOLD + VT100.color((150, 0, 0), True) + string
+			+ VT100.RESET + "'"
 		)
 
 
@@ -366,12 +363,12 @@ class FormatSet(_BaseSet):
 	DESCRIPTIVE: FormatSetEntry = {
 		"right":	"E. Time: <etime>s.",
 		"title":	"<text>",
-		"subtitle":	"<range1> of <range2>",
+		"subtitle":	"<prange1> of <prange2>",
 		"inside":	"<percentage>%"
 	}
 
 	LEFT_RIGHT: FormatSetEntry = {
-		"left":		"<range1>/<range2>",
+		"left":		"<prange1>/<prange2>",
 		"right":	"<text>: <percentage>%"
 	}
 
@@ -381,7 +378,7 @@ class FormatSet(_BaseSet):
 
 	SIMPLE: FormatSetEntry = {
 		"title":	"<text>",
-		"subtitle":	"<range1>/<range2>"
+		"subtitle":	"<prange1>/<prange2>"
 	}
 
 	E_TIME: FormatSetEntry = {
@@ -390,12 +387,12 @@ class FormatSet(_BaseSet):
 	}
 
 	TITLE_SUBTITLE: FormatSetEntry = {
-		"title":	"<text> (<range1>/<range2>)",
+		"title":	"<text> (<prange1>/<prange2>)",
 		"subtitle":	"<percentage>%, (<etime>s)"
 	}
 
 	CLASSIC: FormatSetEntry = {
-		"right":	"<text>: <percentage>% (<range1>/<range2>) [<etime>s]"
+		"right":	"<text>: <percentage>% (<prange1>/<prange2>) [<etime>s]"
 	}
 
 	PLACEHOLDER: FormatSetEntry = {
@@ -421,6 +418,22 @@ class FormatSet(_BaseSet):
 					char = "    "	# Convert tabs to spaces because otherwise we can't tell the length of the string properly
 				endStr += char
 		return endStr
+
+
+	@staticmethod
+	def _getBarAttrs(cls: "bar.PBar", string: str):
+		if string == "percentage":
+			return cls.percentage
+		elif string == "prange1":
+			return cls._range[0]
+		elif string == "prange2":
+			return cls._range[1]
+		elif string == "etime":
+			return cls.etime
+		elif string == "text":
+			return FormatSet._rmPoisonChars(cls._text) if cls._text else ""
+		else:
+			raise UnknownFormattingKeyError(string)
 
 
 	@staticmethod
@@ -451,19 +464,9 @@ class FormatSet(_BaseSet):
 				# Found '<'. Now we add every char to tempStr until we find a '>'.
 				if char == ">":
 					# Found '>'. Now just add the formatting keys.
-					if tempStr == "percentage":
-						endStr += str(cls.percentage)
-					elif tempStr == "range1":
-						endStr += str(cls._range[0])
-					elif tempStr == "range2":
-						endStr += str(cls._range[1])
-					elif tempStr == "etime":
-						endStr += str(cls.etime)
-
-					elif tempStr == "text":
-						if cls._text:	endStr += FormatSet._rmPoisonChars(cls._text)
-					else:
+					if (newValue := FormatSet._getBarAttrs(cls, tempStr)) is None:
 						raise UnknownFormattingKeyError(text, (index - len(tempStr), index))
+					else: endStr += str(newValue)
 
 					foundOpen = False
 					tempStr = ""

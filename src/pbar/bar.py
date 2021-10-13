@@ -6,6 +6,7 @@ from inspect import getsourcelines as _srclines
 
 from . sets import CharSet, ColorSet, FormatSet, CharSetEntry, FormatSetEntry, ColorSetEntry
 from . utils import *
+from . cond import Cond
 
 
 _runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
@@ -157,6 +158,7 @@ class PBar():
 	- PBar.formatset
 	- PBar.enabled
 	- PBar.etime
+	- PBar.conditions
 	- PBar.config
 	"""
 	def __init__(self,
@@ -166,7 +168,8 @@ class PBar():
 			position: tuple[Union[str, int], Union[str, int]] = ("center", "center"),
 			charset: Optional[CharSetEntry] = None,
 			colorset: Optional[ColorSetEntry] = None,
-			formatset: Optional[FormatSetEntry] = None
+			formatset: Optional[FormatSetEntry] = None,
+			conditions: Optional[Union[list[Cond], Cond]] = None
 		) -> None:
 		"""
 		### Detailed descriptions:
@@ -214,6 +217,13 @@ class PBar():
 
 		---
 
+		@conditions: One or more conditions to check before each time the bar draws.
+		If one succeeds, the specified customization sets will be applied to the bar.
+
+		To create a condition, use `pbar.Cond`.
+
+		---
+
 		### Help
 
 		The [GitHub Repository](https://github.com/DarviL82/PBar) contains more help about all the properties.
@@ -229,6 +239,7 @@ class PBar():
 		self._charset = CharSet(charset)
 		self._colorset = ColorSet(colorset)
 		self._pos = self._getPos(position)
+		self._conditions = PBar._getConds(conditions)
 
 		self._oldValues = [self._pos, self._size]	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
@@ -282,7 +293,7 @@ class PBar():
 
 	def prangeFromFile(self, fp: IO[str]):
 		"""Modify `prange` with the number of lines of a file."""
-		isInstOf(fp, _TextIOWrapper, name="fp")
+		chkInstOf(fp, _TextIOWrapper, name="fp")
 		self.prange = (0, len(fp.readlines()))
 		fp.seek(0)
 
@@ -380,6 +391,16 @@ class PBar():
 
 
 	@property
+	def conditions(self) -> tuple:
+		"""Conditions for the bar."""
+		return self._conditions
+	@conditions.setter
+	def conditions(self, conditions: list[Cond]):
+		chkInstOf(conditions, tuple, list, name="conditions")
+		self._conditions = PBar._getConds(conditions)
+
+
+	@property
 	def config(self) -> dict:
 		"""All the values of the progress bar stored in a dict."""
 		return {
@@ -390,12 +411,13 @@ class PBar():
 			"charset":		self._charset,
 			"colorset":		convertClrs(self._colorset, "HEX"),
 			"formatset":	self._formatset,
+			"conditions":	self._conditions,
 			"enabled":		self._enabled
 		}
 	@config.setter
 	def config(self, config: dict[str, Any]):
-		isInstOf(config, dict, name="config")
-		for key in {"prange", "text", "size", "position", "charset", "colorset", "formatset", "enabled"}:
+		chkInstOf(config, dict, name="config")
+		for key in {"prange", "text", "size", "position", "charset", "colorset", "formatset", "conditions", "enabled"}:
 			# Iterate through every key in the dict and populate the config of the class with its values
 			if key not in config:
 				raise ValueError(f"config dict is missing the {key!r} key")
@@ -415,7 +437,7 @@ class PBar():
 		for index, value in enumerate(position):
 			if value == "center":
 				value = int(TERM_SIZE[index]/2)+1
-			isInstOf(value, int, float, name="pos")
+			chkInstOf(value, int, float, name="pos")
 
 			if value < 0:
 				value = TERM_SIZE[index] + value
@@ -443,6 +465,25 @@ class PBar():
 		chkSeqOfLen(range, 2)
 		return (int(capValue(range[0], range[1], 0)),
 				int(capValue(range[1], min=1)))
+
+
+	def _chkConds(self) -> None:
+		for cond in self._conditions:
+			if not cond.test(self):
+				continue
+			if cond.newSets[0]:	self.charset = cond.newSets[0]
+			if cond.newSets[1]:	self.colorset = cond.newSets[1]
+			if cond.newSets[2]:	self.formatset = cond.newSets[2]
+
+
+	@staticmethod
+	def _getConds(conditions: Union[list[Cond], Cond]) -> list[Cond]:
+		if isinstance(conditions, (tuple, list)):
+			return conditions
+		elif isinstance(conditions, Cond):
+			return (conditions, )
+		else:
+			return ()
 
 
 	def _genClearedBar(self, values: tuple[tuple[int, int], tuple[int, int]]) -> str:
@@ -473,6 +514,7 @@ class PBar():
 
 	def _genBar(self) -> str:
 		"""Generate the progress bar"""
+		if self._conditions:	self._chkConds()
 		size = self._size[0], self._size[1] + 1
 		POSITION = (self._pos[0] + int(size[0]/-2),
 					self._pos[1] + int(size[1]/-2))
@@ -523,7 +565,7 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRang
 	@titleComments: If True, comments on a statement starting with "#bTitle:" will be treated as titles for the progress bar.
 	@overwriteRange: If True, overwrites the prange of the bar.
 	"""
-	isInstOf(pbarObj, PBar, name="pbarObj")
+	chkInstOf(pbarObj, PBar, name="pbarObj")
 
 	def getTitleComment(string: str) -> Optional[str]:
 		"""Returns the text after "#bTitle:" from the string supplied. Returns None if there is no comment."""

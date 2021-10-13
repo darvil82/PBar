@@ -1,4 +1,4 @@
-from typing import TypeVar, Optional, Union, Any, SupportsInt
+from typing import SupportsFloat, TypeVar, Optional, Union, Any, SupportsInt
 
 
 _HTML_COLOR_NAMES: dict = {		# thanks to https://stackoverflow.com/a/1573141/14546524
@@ -74,15 +74,18 @@ def convertClrs(clr: dict[Any, Union[str, tuple]], type: str) -> Union[str, tupl
 		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
 
 
-def chkSeqOfLen(obj: Any, length: int) -> bool:
+def chkSeqOfLen(obj: Any, length: int, name: str = None) -> bool:
 	"""Check if an object is a Sequence and has the length specified. If fails, raises exceptions."""
-	isInstOf(obj, tuple, list)
+	chkInstOf(obj, tuple, list)
 	if len(obj) != length:
-		raise ValueError(f"Sequence {obj!r} must have {length} items")
+		raise ValueError(
+			(name or f"Sequence {VT100.color((255, 150, 0))}{obj!r}{VT100.RESET}")
+			+ " must have " + VT100.color((0, 255, 0)) + str(length) + VT100.RESET + " items"
+		)
 	return True
 
 
-def isInstOf(obj: Any, *typ: Any, name: str = None) -> bool:
+def chkInstOf(obj: Any, *typ: Any, name: str = None) -> bool:
 	"""Check if an object is an instance of any of the other objects specified. If fails, raises exception."""
 	if not isinstance(obj, typ):
 		raise TypeError(
@@ -90,6 +93,15 @@ def isInstOf(obj: Any, *typ: Any, name: str = None) -> bool:
 			+ " must be " + ' or '.join(VT100.color((0, 255, 0)) + x.__name__ + VT100.RESET for x in typ)
 			+ ", not " + VT100.color((255, 0, 0)) + obj.__class__.__name__ + VT100.RESET
 		)
+	return True
+
+
+def isNum(obj: SupportsFloat) -> bool:
+	"""Return True if `obj` can be casted to float."""
+	try:
+		float(obj)
+	except ValueError:
+		return False
 	return True
 
 
