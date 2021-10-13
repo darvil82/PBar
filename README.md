@@ -152,14 +152,17 @@ Note that the object constructor provides many arguments (all optional) for conf
 - **conditions:** One or more conditions to check before each time the bar draws. If one succeeds, the specified customization sets will be applied to the bar.
 
 	- To create a condition, use `pbar.Cond`.
-	- Examples:
+	- Example:
 	```py
-	condHalf = Cond("percentage >= 50", colorset=ColorSet.DARVIL)
+	>>> Cond("percentage >= 50", colorset=ColorSet.DARVIL)
 
-	condError = Cond("text == 'error'", colorset=ColorSet.ERROR, formatset=FormatSet.TITLE_SUBTITLE)
-
-	mybar = PBar(conditions=(condHalf, condError))
+	>>> Cond("text == 'error'", colorset=ColorSet.ERROR, formatset=FormatSet.TITLE_SUBTITLE)
 	```
+	In this example, the bar will change it's colors to the ones defined in the ColorSet `DARVIL` if
+	the percentage reaches a value equal or greater than 50. Also, as soon as it's `text` property
+	has a value of `"error"`, the condition will change it's colorset and formatset.
+
+<br>
 
 Do note that this arguments are also available as object properties:
 ```py
@@ -180,6 +183,26 @@ This elapsed time counter can be resetted by calling the `PBar.resetETime()` met
 
 There's a **classmethod** available:
 - `PBar.fromConfig()`:	Return a PBar object created with the configuration of the PBar/dict object given.
+
+
+<br><hr>
+
+## **Cond Object**
+Apply different customization sets to a bar if the condition supplied succeeds.
+The condition string must be composed of three values separated by spaces:
+
+1. Attribute key (Formatting keys for `pbar.FormatSet`)
+2. Comparison operator (`==`, `!=`, `>`, `<`, `>=`, `<=`)
+3. Value
+
+#### Example:
+```py
+condHalf = Cond("percentage >= 50", colorset=ColorSet.DARVIL)
+
+condError = Cond("text == 'error'", colorset=ColorSet.ERROR, formatset=FormatSet.TITLE_SUBTITLE)
+
+mybar = PBar(conditions=(condHalf, condError))
+```
 
 
 <br><hr>
