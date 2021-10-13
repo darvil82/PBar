@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="PBar2",
-    version="1.10.0",
+    version="1.10.0post1",
     author="David Losantos (DarviL82)",
     author_email="davidlosantos89@gmail.com",
     description="Display customizable progress bars on the terminal easily.",
@@ -13,7 +13,8 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/DarviL82/PBar",
     project_urls={
-        "Bug Tracker": "https://github.com/DarviL82/PBar/issues",
+        "Tracker": "https://github.com/DarviL82/PBar/issues",
+		"Documentation": "https://github.com/DarviL82/PBar/wiki"
     },
     classifiers=[
         "Programming Language :: Python :: 3",

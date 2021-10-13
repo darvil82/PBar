@@ -4,6 +4,7 @@
 ### PBar package for displaying custom progress bars for Python 3.9+
 
 - [GitHub Repository](https://github.com/DarviL82/PBar)
+- [Wiki](https://github.com/DarviL82/PBar/wiki)
 - [PyPI](https://pypi.org/manage/project/pbar2)
 """
 
