@@ -158,6 +158,7 @@ class PBar():
 	- PBar.formatset
 	- PBar.enabled
 	- PBar.etime
+	- PBar.conditions
 	- PBar.config
 	"""
 	def __init__(self,
@@ -168,7 +169,7 @@ class PBar():
 			charset: Optional[CharSetEntry] = None,
 			colorset: Optional[ColorSetEntry] = None,
 			formatset: Optional[FormatSetEntry] = None,
-			conditions: Optional[list[Cond]] = None
+			conditions: Optional[Union[list[Cond], Cond]] = None
 		) -> None:
 		"""
 		### Detailed descriptions:
@@ -216,6 +217,13 @@ class PBar():
 
 		---
 
+		@conditions: One or more conditions to check before each time the bar draws.
+		If one succeeds, the specified customization sets will be applied to the bar.
+
+		To create a condition, use `pbar.Cond`.
+
+		---
+
 		### Help
 
 		The [GitHub Repository](https://github.com/DarviL82/PBar) contains more help about all the properties.
@@ -231,7 +239,7 @@ class PBar():
 		self._charset = CharSet(charset)
 		self._colorset = ColorSet(colorset)
 		self._pos = self._getPos(position)
-		self._conditions = conditions if chkInstOf(conditions, tuple, list, name="conditions") else ()
+		self._conditions = PBar._getConds(conditions)
 
 		self._oldValues = [self._pos, self._size]	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
@@ -389,7 +397,7 @@ class PBar():
 	@conditions.setter
 	def conditions(self, conditions: list[Cond]):
 		chkInstOf(conditions, tuple, list, name="conditions")
-		self._conditions = conditions
+		self._conditions = PBar._getConds(conditions)
 
 
 	@property
@@ -466,6 +474,16 @@ class PBar():
 			if cond.newSets[0]:	self.charset = cond.newSets[0]
 			if cond.newSets[1]:	self.colorset = cond.newSets[1]
 			if cond.newSets[2]:	self.formatset = cond.newSets[2]
+
+
+	@staticmethod
+	def _getConds(conditions: Union[list[Cond], Cond]) -> list[Cond]:
+		if isinstance(conditions, (tuple, list)):
+			return conditions
+		elif isinstance(conditions, Cond):
+			return (conditions, )
+		else:
+			return ()
 
 
 	def _genClearedBar(self, values: tuple[tuple[int, int], tuple[int, int]]) -> str:

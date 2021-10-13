@@ -33,8 +33,7 @@ class Cond:
 		"""
 		vs = strSplit(condition)
 		chkSeqOfLen(vs, 3, "condition")
-		self.attribute = vs[0]
-		self.operator = vs[1]
+		self.attribute, self.operator = vs[0:2]
 		self.value = float(vs[2]) if vs[2].isnumeric() else vs[2]
 		self.newSets = (charset, colorset, formatset)
 

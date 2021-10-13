@@ -149,6 +149,18 @@ Note that the object constructor provides many arguments (all optional) for conf
 		- `<text>`:			Text selected in the `text` property/arg.
 		- `<etime>`:		Elapsed time since the bar created.
 
+- **conditions:** One or more conditions to check before each time the bar draws. If one succeeds, the specified customization sets will be applied to the bar.
+
+	- To create a condition, use `pbar.Cond`.
+	- Examples:
+	```py
+	condHalf = Cond("percentage >= 50", colorset=ColorSet.DARVIL)
+
+	condError = Cond("text == 'error'", colorset=ColorSet.ERROR, formatset=FormatSet.TITLE_SUBTITLE)
+
+	mybar = PBar(conditions=(condHalf, condError))
+	```
+
 Do note that this arguments are also available as object properties:
 ```py
 mybar = pbar.PBar(prange=(0, 10), formatset=pbar.FormatSet.TITLE_SUBTITLE)

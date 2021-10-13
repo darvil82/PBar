@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="PBar2",
-    version="1.9.1",
+    version="1.10.0",
     author="David Losantos (DarviL82)",
     author_email="davidlosantos89@gmail.com",
     description="Display customizable progress bars on the terminal easily.",
