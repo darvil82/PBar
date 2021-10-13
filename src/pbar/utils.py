@@ -1,4 +1,4 @@
-from typing import TypeVar, Optional, Union, Any, SupportsInt
+from typing import SupportsFloat, TypeVar, Optional, Union, Any, SupportsInt
 
 
 _HTML_COLOR_NAMES: dict = {		# thanks to https://stackoverflow.com/a/1573141/14546524
@@ -93,6 +93,15 @@ def chkInstOf(obj: Any, *typ: Any, name: str = None) -> bool:
 			+ " must be " + ' or '.join(VT100.color((0, 255, 0)) + x.__name__ + VT100.RESET for x in typ)
 			+ ", not " + VT100.color((255, 0, 0)) + obj.__class__.__name__ + VT100.RESET
 		)
+	return True
+
+
+def isNum(obj: SupportsFloat) -> bool:
+	"""Return True if `obj` can be casted to float."""
+	try:
+		float(obj)
+	except ValueError:
+		return False
 	return True
 
 
