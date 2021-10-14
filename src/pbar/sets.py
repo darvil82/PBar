@@ -315,6 +315,29 @@ class ColorSet(_BaseSet):
 		}
 	}
 
+	FLAG_LESBIAN: ColorSetEntry = {		# Author: ShygalCoco
+		"empty":        "#777",
+		"full":         "#fff",
+		"vert":			"#fff",
+		"horiz": {
+			"top":      "#ff9879",
+			"bottom":   "#e57bb9"
+		},
+		"corner": {
+			"tleft":    "#ff9879",
+			"tright":   "#ff9879",
+			"bleft":    "#e57bb9",
+			"bright":   "#e57bb9"
+		},
+		"text": {
+			"inside":   "#fff",
+			"right":    "#fff",
+			"left":     "#fff",
+			"title":    "#ff9879",
+			"subtitle": "#e57bb9"
+		}
+	}
+
 
 	def __init__(self, newSet: ColorSetEntry) -> None:
 		super().__init__(convertClrs(newSet or self.DEFAULT, "RGB"))	# Convert all hex values to rgb tuples
