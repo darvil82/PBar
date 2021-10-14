@@ -395,8 +395,7 @@ class PBar():
 		"""Conditions for the bar."""
 		return self._conditions
 	@conditions.setter
-	def conditions(self, conditions: list[Cond]):
-		chkInstOf(conditions, tuple, list, name="conditions")
+	def conditions(self, conditions: Optional[Union[list[Cond], Cond]]):
 		self._conditions = PBar._getConds(conditions)
 
 
