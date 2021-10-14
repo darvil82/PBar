@@ -273,13 +273,22 @@ class ColorSet(_BaseSet):
 		}
 	}
 
-	ERROR: ColorSetEntry = {
+	RED: ColorSetEntry = {
 		'empty':	'darkRed',
 		'full':		'red',
 		'vert':		'#ff6464',
 		'horiz':	'#ff6464',
 		'corner':	'#ff6464',
 		'text':		'#ff6464'
+	}
+
+	GREEN: ColorSetEntry = {
+		"full":		"lime",
+		"empty":	"green",
+		"horiz":	"paleGreen",
+		"corner":	"paleGreen",
+		"vert":		"paleGreen",
+		"text":		"lime"
 	}
 
 	YELLOW: ColorSetEntry = {
