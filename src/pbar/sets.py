@@ -16,7 +16,7 @@ class UnknownSetKeyError(Exception):
 	"""A key supplied in a dictionary is unknown for the set class that will use it"""
 	def __init__(self, key, setcls) -> None:
 		msg = f"Unknown key {key!r} for {setcls.__class__.__name__!r}"
-		clsKeys = "', '".join(setcls.EMPTY.keys())
+		clsKeys = "', '".join(setcls.EMPTY)
 		super().__init__(f"{msg}. Available valid keys: '{clsKeys}'.")
 
 
@@ -36,13 +36,13 @@ class _BaseSet(dict):
 		"""Return a new set with all the necessary keys for drawing the bar, making sure that no keys are missing."""
 		newSet = {}
 		for key, currentValue in currentSet.items():
-			if key not in self.EMPTY.keys():
+			if key not in self.EMPTY:
 				raise UnknownSetKeyError(key, self)
 			else:
 				defaultSetValue = self.EMPTY[key]
 
 			if not isinstance(currentValue, dict) and isinstance(defaultSetValue, dict):
-				newSet[key] = {subkey: currentValue for subkey in defaultSetValue.keys()}
+				newSet[key] = {subkey: currentValue for subkey in defaultSetValue}
 			elif isinstance(currentValue, dict):
 				newSet[key] = defaultSetValue | currentValue
 			else:
@@ -343,7 +343,7 @@ class ColorSet(_BaseSet):
 		super().__init__(convertClrs(newSet or self.DEFAULT, "RGB"))	# Convert all hex values to rgb tuples
 
 
-	def parsedValues(self, bg = False) -> dict[str, Union[dict, str]]:
+	def parsedValues(self, bg=False) -> dict[str, Union[dict, str]]:
 		"""Convert all values in the ColorSet to parsed color sequences"""
 		# newset = {key: ((value, bg), None) for key, value in self.items()}
 		# return ColorSet(self.iterValues(newset, VT100.color))

@@ -31,7 +31,7 @@ _HTML_COLOR_NAMES: dict = {		# thanks to https://stackoverflow.com/a/1573141/145
 
 Num = TypeVar("Num", int, float)
 
-def capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) -> Num:
+def capValue(value: Num, max: Optional[Num]=None, min: Optional[Num]=None) -> Num:
 	"""Clamp a value to a minimum and/or maximum value."""
 	if max is not None and value > max:
 		return max
@@ -42,10 +42,11 @@ def capValue(value: Num, max: Optional[Num] = None, min: Optional[Num] = None) -
 
 
 def convertClrs(clr: dict[Any, Union[str, tuple]], type: str) -> Union[str, tuple, dict, None]:
-	"""Convert color values to HEX and vice-versa
+	"""
+	Convert color values to HEX and vice-versa
 	@clr:	Color value to convert.
-	@type:	Type of conversion to do ('RGB' or 'HEX')"""
-
+	@type:	Type of conversion to do ('RGB' or 'HEX')
+	"""
 	if isinstance(clr, dict):
 		return {key: convertClrs(value, type) for key, value in clr.items()}
 	elif isinstance(clr, str):
@@ -74,8 +75,11 @@ def convertClrs(clr: dict[Any, Union[str, tuple]], type: str) -> Union[str, tupl
 		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
 
 
-def chkSeqOfLen(obj: Any, length: int, name: str = None) -> bool:
-	"""Check if an object is a Sequence and has the length specified. If fails, raises exceptions."""
+def chkSeqOfLen(obj: Any, length: int, name: str=None) -> bool:
+	"""
+	Check if an object is a Sequence and has the length specified.
+	If fails, raises exception (`Sequence obj | name must have len items`).
+	"""
 	chkInstOf(obj, tuple, list)
 	if len(obj) != length:
 		raise ValueError(
@@ -85,8 +89,11 @@ def chkSeqOfLen(obj: Any, length: int, name: str = None) -> bool:
 	return True
 
 
-def chkInstOf(obj: Any, *typ: Any, name: str = None) -> bool:
-	"""Check if an object is an instance of any of the other objects specified. If fails, raises exception."""
+def chkInstOf(obj: Any, *typ: Any, name: str=None) -> bool:
+	"""
+	Check if an object is an instance of any of the other objects specified.
+	If fails, raises exception (`Value | name must be *typ, not obj`).
+	"""
 	if not isinstance(obj, typ):
 		raise TypeError(
 			(name or f"Value {VT100.color((255, 150, 0))}{obj!r}{VT100.RESET}")
@@ -109,10 +116,11 @@ def isNum(obj: SupportsFloat) -> bool:
 
 class VT100:
 	"""Class for using VT100 sequences a bit easier"""
-
 	@staticmethod
-	def pos(pos: Optional[tuple[SupportsInt, SupportsInt]], offset: tuple[SupportsInt, SupportsInt] = (0, 0)):
-		"""Position of the cursor on the terminal.
+	def pos(pos: Optional[tuple[SupportsInt, SupportsInt]],
+			offset: tuple[SupportsInt, SupportsInt]=(0, 0)) -> str:
+		"""
+		Position of the cursor on the terminal.
 		@pos: This tuple can contain either ints, or strings with the value `center` to specify the center of the terminal.
 		@offset: Offset applied to `pos`. (Can be negative)
 		"""
@@ -125,11 +133,12 @@ class VT100:
 
 
 	@staticmethod
-	def color(rgb: Optional[tuple[int, int, int]], bg: bool = False):
-		"""Color of the cursor.
+	def color(rgb: Optional[tuple[int, int, int]], bg: bool=False) -> str:
+		"""
+		Color of the cursor.
 		@rgb:	Tuple with three values from 0 to 255. (RED GREEN BLUE)
-		@bg:	This color will be displayed on the background"""
-
+		@bg:	This color will be displayed on the background
+		"""
 		if not isinstance(rgb, (tuple, list)):
 			return VT100.RESET
 		elif len(rgb) != 3:
@@ -142,17 +151,26 @@ class VT100:
 
 
 	@staticmethod
-	def moveHoriz(dist: SupportsInt):
+	def moveHoriz(dist: SupportsInt) -> str:
 		"""Move the cursor horizontally `dist` characters (supports negative numbers)."""
 		dist = int(dist)
 		return f"\x1b[{abs(dist)}{'D' if dist < 0 else 'C'}"
 
 
 	@staticmethod
-	def moveVert(dist: SupportsInt):
+	def moveVert(dist: SupportsInt) -> str:
 		"""Move the cursor vertically `dist` lines (supports negative numbers)."""
 		dist = int(dist)
 		return f"\x1b[{abs(dist)}{'A' if dist < 0 else 'B'}"
+
+
+	@staticmethod
+	def clear() -> str:
+		"""
+		Shortcut for `VT100.CLEAR_ALL`, `VT100.CLEAR_SCROLL` and `VT100.CURSOR_HOME`.
+		(Functionally the same as the `clear` command.)
+		"""
+		return VT100.CURSOR_HOME + VT100.CLEAR_SCROLL + VT100.CLEAR_ALL
 
 
 	# simple sequences that dont require parsing

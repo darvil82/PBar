@@ -4,13 +4,13 @@ from . utils import chkSeqOfLen, isNum
 from . import bar
 from . sets import ColorSetEntry, FormatSetEntry, CharSetEntry, FormatSet
 
-_EQU = "=="
-_NEQ = "!="
-_GTR = ">"
-_LSS = "<"
-_GEQ = ">="
-_LEQ = "<="
-_IN = "<-"
+_OP_EQU = "=="
+_OP_NEQ = "!="
+_OP_GTR = ">"
+_OP_LSS = "<"
+_OP_GEQ = ">="
+_OP_LEQ = "<="
+_OP_IN = "<-"
 
 
 class Cond:
@@ -45,7 +45,8 @@ class Cond:
 
 
 	def __repr__(self) -> str:
-		return f"{self.__class__.__name__}('{self.attribute} {self.operator} {self.value}', {self.newSets})"
+		"""Returns `Cond('attrib operator value', *newSets)`"""
+		return (f"{self.__class__.__name__}('{self.attribute} {self.operator} {self.value}', {self.newSets})")
 
 
 	def test(self, cls: "bar.PBar") -> bool:
@@ -54,19 +55,19 @@ class Cond:
 		val = FormatSet._getBarAttrs(cls, self.attribute)
 		val = val.lower() if isinstance(val, str) else val
 
-		if op == _EQU:
+		if op == _OP_EQU:
 			return val == self.value
-		elif op == _NEQ:
+		elif op == _OP_NEQ:
 			return val != self.value
-		elif op == _GTR:
+		elif op == _OP_GTR:
 			return val > self.value
-		elif op == _LSS:
+		elif op == _OP_LSS:
 			return val < self.value
-		elif op == _GEQ:
+		elif op == _OP_GEQ:
 			return val >= self.value
-		elif op == _LEQ:
+		elif op == _OP_LEQ:
 			return val <= self.value
-		elif op == _IN:
+		elif op == _OP_IN:
 			return self.value in val
 		else:
 			raise RuntimeError(f"Invalid operator {op!r}")

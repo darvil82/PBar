@@ -15,7 +15,8 @@ _runsys("")		# We need to do this, otherwise Windows won't display special VT100
 Position = tuple[Union[str, int], Union[str, int]]
 
 
-def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet, parsedColorset: dict, filled: Optional[str] = " ") -> str:
+def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet,
+			  parsedColorset: dict,filled: Optional[str] = " ") -> str:
 	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
 	width, height = size[0] + 2, size[1]
 
@@ -59,8 +60,8 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 	return endStr
 
 
-def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: CharSet, parsedColorset: ColorSet,
-				   rangeValue: tuple[int, int]) -> str:
+def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: CharSet,
+				   parsedColorset: ColorSet, rangeValue: tuple[int, int]) -> str:
 	"""Generates the progress shape with a parsed colorset and a charset specified"""
 	width, height = size
 	SEGMENTS_FULL = int((capValue(rangeValue[0], rangeValue[1], 0) / capValue(rangeValue[1], min=1))*width)	# Number of character for the full part of the bar
@@ -76,7 +77,8 @@ def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: Ch
 		) for row in range(1, height))
 
 
-def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset: dict[str, Union[dict, str]], formatset: FormatSet) -> str:
+def _genBarText(position: tuple[int, int], size: tuple[int, int],
+				parsedColorset: dict[str, Union[dict, str]], formatset: FormatSet) -> str:
 	"""Generates all text for the bar"""
 	width, height = size
 
@@ -128,48 +130,12 @@ def _genBarText(position: tuple[int, int], size: tuple[int, int], parsedColorset
 
 
 class PBar():
-	"""
-	# PBar - Progress bar
-
-	Object for managing a progress bar.
-
-	---
-
-	## Methods
-
-	- PBar.draw()
-	- PBar.step()
-	- PBar.clear()
-	- PBar.resetETime()
-	- PBar.fromConfig()
-	- PBar.prangeFromFile()
-
-	---
-
-	## Properties
-
-	- PBar.percentage
-	- PBar.text
-	- PBar.prange
-	- PBar.length
-	- PBar.position
-	- PBar.charset
-	- PBar.colorset
-	- PBar.formatset
-	- PBar.enabled
-	- PBar.etime
-	- PBar.conditions
-	- PBar.config
-	"""
+	"""Object for managing a progress bar."""
 	def __init__(self,
-			prange: tuple[int, int] = (0, 1),
-			text: str = None,
-			size: tuple[int, int] = (20, 1),
-			position: tuple[Union[str, int], Union[str, int]] = ("center", "center"),
-			charset: Optional[CharSetEntry] = None,
-			colorset: Optional[ColorSetEntry] = None,
-			formatset: Optional[FormatSetEntry] = None,
-			conditions: Optional[Union[list[Cond], Cond]] = None
+			prange: tuple[int, int]=(0, 1), text: str=None, size: tuple[int, int]=(20, 1),
+			position: tuple[Union[str, int], Union[str, int]]=("center", "center"),
+			charset: Optional[CharSetEntry]=None, colorset: Optional[ColorSetEntry]=None,
+			formatset: Optional[FormatSetEntry]=None, conditions: Optional[Union[list[Cond], Cond]]=None
 		) -> None:
 		"""
 		### Detailed descriptions:
@@ -221,12 +187,6 @@ class PBar():
 		If one succeeds, the specified customization sets will be applied to the bar.
 
 		To create a condition, use `pbar.Cond`.
-
-		---
-
-		### Help
-
-		The [GitHub Repository](https://github.com/DarviL82/PBar) contains more help about all the properties.
 		"""
 		self._requiresClear = False		# This controls if the bar needs to clear its old position before drawing.
 		self._enabled = True			# If disabled, the bar will never draw.
@@ -249,7 +209,6 @@ class PBar():
 
 	def draw(self):
 		"""Print the progress bar on screen."""
-
 		if self._requiresClear:
 			# Clear the bar at the old position and length
 			self._printStr(self._genClearedBar(self._oldValues))
@@ -261,7 +220,7 @@ class PBar():
 		self._requiresClear = False
 
 
-	def step(self, steps: int = 1, text=None):
+	def step(self, steps: int=1, text=None):
 		"""
 		Add `steps` to the first value in prange, then draw the bar.
 		@steps: Value to add to the first value in prange.
@@ -451,7 +410,7 @@ class PBar():
 
 
 	@staticmethod
-	def _getSize(size: Optional[tuple[SupportsInt, SupportsInt]]) -> tuple[int, int]:
+	def _getSize(size: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
 		"""Get and process new length requested"""
 		chkSeqOfLen(size, 2)
 		return (int(capValue(size[0], min=5)),
@@ -466,6 +425,16 @@ class PBar():
 				int(capValue(range[1], min=1)))
 
 
+	@staticmethod
+	def _getConds(conditions: Union[list[Cond], Cond]) -> list[Cond]:
+		if isinstance(conditions, (tuple, list)):
+			return conditions
+		elif isinstance(conditions, Cond):
+			return (conditions, )
+		else:
+			return ()
+
+
 	def _chkConds(self) -> None:
 		for cond in self._conditions:
 			if not cond.test(self):
@@ -475,14 +444,6 @@ class PBar():
 			if cond.newSets[2]:	self.formatset = cond.newSets[2]
 
 
-	@staticmethod
-	def _getConds(conditions: Union[list[Cond], Cond]) -> list[Cond]:
-		if isinstance(conditions, (tuple, list)):
-			return conditions
-		elif isinstance(conditions, Cond):
-			return (conditions, )
-		else:
-			return ()
 
 
 	def _genClearedBar(self, values: tuple[tuple[int, int], tuple[int, int]]) -> str:
@@ -553,7 +514,7 @@ class PBar():
 
 
 
-def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRange = True) -> None:
+def taskWrapper(pbarObj: PBar, scope: dict, titleComments=False, overwriteRange=True) -> None:
 	"""
 	Use as a decorator. Takes a PBar object, sets its prange depending on the quantity of
 	statements inside the decorated function, and `steps` the bar over after every function statement.
@@ -592,7 +553,7 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments = False, overwriteRang
 	return wrapper
 
 
-def animate(pbarObj: PBar, rng: range, delay: float = 0.1) -> None:
+def animate(pbarObj: PBar, rng: range, delay: float=0.1) -> None:
 	"""
 	Animates the given PBar object by filling it by the range given, with a delay.
 	@pbarObj: PBar object to use.
@@ -606,7 +567,8 @@ def animate(pbarObj: PBar, rng: range, delay: float = 0.1) -> None:
 		_sleep(delay)
 
 
-def barHelper(position: Position, size: tuple[int, int]) -> Position:
+def barHelper(position: Position=("center", "center"),
+			  size: tuple[int, int]=(20, 1)) -> Position:
 	"""
 	Draw a bar helper on screen indefinitely until the user exits.
 	Returns the position of the bar helper.
