@@ -16,7 +16,7 @@ Position = tuple[Union[str, int], Union[str, int]]
 
 
 def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet,
-			  parsedColorset: dict,filled: Optional[str] = " ") -> str:
+			  parsedColorset: dict, filled: Optional[str] = " ") -> str:
 	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
 	width, height = size[0] + 2, size[1]
 
