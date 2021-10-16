@@ -361,10 +361,9 @@ class UnknownFormattingKeyError(Exception):
 	def __init__(self, string) -> None:
 		super().__init__(
 			"Unknown formatting key '"
-			+ VT100.BOLD + VT100.color((150, 0, 0), True) + string
+			+ VT100.BOLD + VT100.color((255, 0, 0)) + string
 			+ VT100.RESET + "'"
 		)
-
 
 class UnexpectedEndOfStringError(Exception):
 	"""Unexpected end of string when parsing a formatting key"""
@@ -497,7 +496,7 @@ class FormatSet(_BaseSet):
 				if char == ">":
 					# Found '>'. Now just add the formatting keys.
 					if (newValue := FormatSet._getBarAttrs(cls, tempStr)) is None:
-						raise UnknownFormattingKeyError(text, (index - len(tempStr), index))
+						raise UnknownFormattingKeyError(text)
 					else: endStr += str(newValue)
 
 					foundOpen = False

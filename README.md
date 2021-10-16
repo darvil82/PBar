@@ -19,6 +19,11 @@ https://user-images.githubusercontent.com/48654552/134776865-c7516cf1-0c66-44da-
 
 Source available [here.](https://github.com/DarviL82/PBar/blob/main/resources/examples/anim.py)
 
+
+https://user-images.githubusercontent.com/48654552/137568056-aafa1ba1-35c2-4ecd-84f8-99ca0093cab5.mp4
+
+Source available [here.](https://github.com/DarviL82/PBar/blob/main/resources/examples/conds.py)
+
 </details>
 
 <br>
