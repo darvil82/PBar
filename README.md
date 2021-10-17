@@ -37,17 +37,21 @@ Python 3.9+
 
 
 ## Installation
-PBar is available in the Python Package Index:
+### Pip
+PBar is available on the *Python Package Index*:
 
 `pip install pbar2`
 
-You can also install this package through GitHub:
+You can also install this package through *GitHub* with pip:
 
 `pip install git+https://github.com/DarviL82/PBar`
 
 For uninstalling:
 
 `pip uninstall pbar2`
+
+### AUR
+There is also an [*Arch User Repository package*](https://aur.archlinux.org/packages/python-pbar/) made by **MithicSpirit**.
 
 
 ## Additional Credits
