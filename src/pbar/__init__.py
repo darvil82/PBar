@@ -13,6 +13,7 @@ __version__ = "1.11.1"
 from . bar import PBar, animate, taskWrapper, barHelper
 from . sets import CharSet, FormatSet, ColorSet
 from . cond import Cond
+from . utils import Term
 
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░

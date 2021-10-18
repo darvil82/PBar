@@ -1,4 +1,5 @@
 from typing import SupportsFloat, TypeVar, Optional, Union, Any, SupportsInt
+from os import get_terminal_size as _getTermSize
 
 
 _HTML_COLOR_NAMES: dict = {		# thanks to https://stackoverflow.com/a/1573141/14546524
@@ -83,8 +84,8 @@ def chkSeqOfLen(obj: Any, length: int, name: str=None) -> bool:
 	chkInstOf(obj, tuple, list)
 	if len(obj) != length:
 		raise ValueError(
-			(name or f"Sequence {VT100.color((255, 150, 0))}{obj!r}{VT100.RESET}")
-			+ " must have " + VT100.color((0, 255, 0)) + str(length) + VT100.RESET + " items"
+			(name or f"Sequence {Term.color((255, 150, 0))}{obj!r}{Term.RESET}")
+			+ " must have " + Term.color((0, 255, 0)) + str(length) + Term.RESET + " items"
 		)
 	return True
 
@@ -96,9 +97,9 @@ def chkInstOf(obj: Any, *typ: Any, name: str=None) -> bool:
 	"""
 	if not isinstance(obj, typ):
 		raise TypeError(
-			(name or f"Value {VT100.color((255, 150, 0))}{obj!r}{VT100.RESET}")
-			+ " must be " + ' or '.join(VT100.color((0, 255, 0)) + x.__name__ + VT100.RESET for x in typ)
-			+ ", not " + VT100.color((255, 0, 0)) + obj.__class__.__name__ + VT100.RESET
+			(name or f"Value {Term.color((255, 150, 0))}{obj!r}{Term.RESET}")
+			+ " must be " + ' or '.join(Term.color((0, 255, 0)) + x.__name__ + Term.RESET for x in typ)
+			+ ", not " + Term.color((255, 0, 0)) + obj.__class__.__name__ + Term.RESET
 		)
 	return True
 
@@ -114,8 +115,14 @@ def isNum(obj: SupportsFloat) -> bool:
 
 
 
-class VT100:
-	"""Class for using VT100 sequences a bit easier"""
+class Term:
+	"""Class for using terminal sequences a bit easier"""
+
+	@staticmethod
+	def size() -> tuple[int, int]:
+		"""Get size of the terminal. Columns and rows."""
+		return _getTermSize()
+
 	@staticmethod
 	def pos(pos: Optional[tuple[SupportsInt, SupportsInt]],
 			offset: tuple[SupportsInt, SupportsInt]=(0, 0)) -> str:
@@ -140,7 +147,7 @@ class VT100:
 		@bg:	This color will be displayed on the background
 		"""
 		if not isinstance(rgb, (tuple, list)):
-			return VT100.RESET
+			return Term.RESET
 		elif len(rgb) != 3:
 			raise ValueError("Sequence must have 3 items")
 
@@ -167,10 +174,28 @@ class VT100:
 	@staticmethod
 	def clear() -> str:
 		"""
-		Shortcut for `VT100.CLEAR_ALL`, `VT100.CLEAR_SCROLL` and `VT100.CURSOR_HOME`.
+		Shortcut for `Term.CLEAR_ALL`, `Term.CLEAR_SCROLL` and `Term.CURSOR_HOME`.
 		(Functionally the same as the `clear` command.)
 		"""
-		return VT100.CURSOR_HOME + VT100.CLEAR_SCROLL + VT100.CLEAR_ALL
+		return Term.CURSOR_HOME + Term.CLEAR_ALL + Term.CLEAR_SCROLL
+
+
+	@staticmethod
+	def margin(top: SupportsInt=None, bottom: SupportsInt=None) -> str:
+		"""Sets the top and bottom margins of the terminal. Use `None` for default margins."""
+		return (
+			Term.CURSOR_SAVE
+			+ f"\x1b[{(top + 1) if top else ''};{(Term.size()[1] - bottom) if bottom else ''}r"
+			+ Term.CURSOR_LOAD
+		)
+
+
+	@staticmethod
+	def scroll(dist: SupportsInt) -> str:
+		"""Scrolls the terminal buffer `dist` lines (supports negative numbers)."""
+		dist = int(dist)
+		return f"\x1b[{abs(dist)}{'T' if dist < 0 else 'S'}"
+
 
 
 	# simple sequences that dont require parsing

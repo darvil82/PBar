@@ -1,6 +1,6 @@
 from io import TextIOWrapper as _TextIOWrapper
-from typing import Any, Optional, SupportsInt, Union, IO
-from os import get_terminal_size as _get_terminal_size, system as _runsys
+from typing import Any, Literal, Optional, SupportsInt, Union, IO
+from os import system as _runsys
 from time import time as _time, sleep as _sleep
 from inspect import getsourcelines as _srclines
 
@@ -36,7 +36,7 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 	)
 
 	endStr: str = (
-		VT100.pos(position)
+		Term.pos(position)
 		+ charCorner[0]
 		+ parsedColorset["horiz"]["top"] + charHoriz[0]*width
 		+ charCorner[1]
@@ -44,14 +44,14 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 
 	for row in range(1, height):
 		endStr += (
-			VT100.pos(position, (0, row))
+			Term.pos(position, (0, row))
 			+ charVert[0]
-			+ (VT100.moveHoriz(width) if filled is None else filled[0]*width)
+			+ (Term.moveHoriz(width) if filled is None else filled[0]*width)
 			+ charVert[1]
 		)
 
 	endStr += (
-		VT100.pos(position, (0, height))
+		Term.pos(position, (0, height))
 		+ charCorner[2]
 		+ parsedColorset["horiz"]["bottom"] + charHoriz[1]*width
 		+ charCorner[3]
@@ -71,7 +71,7 @@ def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: Ch
 	charEmpty = charset["empty"]
 
 	return "".join((
-			VT100.pos((position), (0, row))
+			Term.pos((position), (0, row))
 			+ parsedColorset["full"] + charFull*SEGMENTS_FULL
 			+ parsedColorset["empty"] + charEmpty*SEGMENTS_EMPTY
 		) for row in range(1, height))
@@ -93,33 +93,33 @@ def _genBarText(position: tuple[int, int], size: tuple[int, int],
 	txtTitle = stripText(formatset["title"], txtMaxWidth)
 
 	textTitle = (
-		VT100.pos(position, (-1, 0))
+		Term.pos(position, (-1, 0))
 		+ parsedColorset["text"]["title"]
 		+ txtTitle
 	)
 
 	textSubtitle = (
-		VT100.pos(position, (width - len(txtSubtitle) + 1, height))
+		Term.pos(position, (width - len(txtSubtitle) + 1, height))
 		+ parsedColorset["text"]["subtitle"]
 		+ txtSubtitle
 	)
 
 	textRight = (
-		VT100.pos(position, (width + 3, height/2))
+		Term.pos(position, (width + 3, height/2))
 		+ parsedColorset["text"]["right"]
 		+ formatset["right"]
-		+ VT100.CLEAR_RIGHT
+		+ Term.CLEAR_RIGHT
 	) if formatset["right"] else ""
 
 	textLeft = (
-		VT100.pos(position, (-len(formatset["left"]) - 3, height/2))
-		+ VT100.CLEAR_LEFT
+		Term.pos(position, (-len(formatset["left"]) - 3, height/2))
+		+ Term.CLEAR_LEFT
 		+ parsedColorset["text"]["left"]
 		+ formatset["left"]
 	) if formatset["left"] else ""
 
 	txtInside = (
-		VT100.pos(position, (width/2 - len(txtInside)/2, height/2))
+		Term.pos(position, (width/2 - len(txtInside)/2, height/2))
 		+ parsedColorset["text"]["inside"]
 		+ txtInside
 	)
@@ -191,6 +191,7 @@ class PBar():
 		self._requiresClear = False		# This controls if the bar needs to clear its old position before drawing.
 		self._enabled = True			# If disabled, the bar will never draw.
 		self._time = _time()			# The elapsed time since the bar created.
+		self._isOnScreen = False		# Is the bar on screen?
 
 		self._range = PBar._getRange(prange)
 		self._text = FormatSet._rmPoisonChars(text) if text is not None else ""
@@ -389,7 +390,7 @@ class PBar():
 		"""Get and process new position requested"""
 		chkSeqOfLen(position, 2)
 
-		TERM_SIZE: tuple[int, int] = _get_terminal_size()
+		TERM_SIZE: tuple[int, int] = Term.size()
 		newpos = []
 
 		for index, value in enumerate(position):
@@ -403,7 +404,7 @@ class PBar():
 			if index == 0:
 				value = capValue(value, TERM_SIZE[0] - self._size[0]/2 - 1, self._size[0]/2 + 3)
 			else:
-				value = capValue(value, TERM_SIZE[1] - self._size[1]/2, self._size[1]/2 + 2)
+				value = capValue(value, TERM_SIZE[1] - self._size[1]/2 - 1, self._size[1]/2 + 2)
 
 			newpos.append(int(value))
 		return tuple(newpos)
@@ -428,6 +429,7 @@ class PBar():
 	@staticmethod
 	def _getConds(conditions: Union[list[Cond], Cond]) -> list[Cond]:
 		if isinstance(conditions, (tuple, list)):
+			for item in conditions:	chkInstOf(item, Cond)
 			return conditions
 		elif isinstance(conditions, Cond):
 			return (conditions, )
@@ -448,6 +450,7 @@ class PBar():
 
 	def _genClearedBar(self, values: tuple[tuple[int, int], tuple[int, int]]) -> str:
 		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
+		if not self._isOnScreen:	return ""
 		pos, size = values
 		parsedColorSet = ColorSet.parsedValues(ColorSet.EMPTY)
 
@@ -469,6 +472,7 @@ class PBar():
 			FormatSet.cleanedValues(self._formatset.parsedValues(self))
 		)
 
+		self._isOnScreen = False
 		return barText + barShape
 
 
@@ -497,6 +501,7 @@ class PBar():
 			size, parsedColorSet, self._formatset.parsedValues(self)
 		)
 
+		self._isOnScreen = True
 		return barShape + barContent + barText
 
 
@@ -504,9 +509,9 @@ class PBar():
 		"""Prints string to stream"""
 		if not self._enabled: return
 		print(
-			VT100.CURSOR_SAVE + VT100.CURSOR_HIDE
+			Term.CURSOR_SAVE + Term.CURSOR_HIDE
 			+ barString
-			+ VT100.CURSOR_LOAD + VT100.CURSOR_SHOW,
+			+ Term.CURSOR_LOAD + Term.CURSOR_SHOW,
 			flush=True,
 			end=""
 		)
@@ -514,18 +519,18 @@ class PBar():
 
 
 
-def taskWrapper(pbarObj: PBar, scope: dict, titleComments=False, overwriteRange=True) -> None:
+def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=True) -> None:
 	"""
 	Use as a decorator. Takes a PBar object, sets its prange depending on the quantity of
 	statements inside the decorated function, and `steps` the bar over after every function statement.
 	Note: Multi-line expressions are not supported.
 
-	@pbarObj: PBar object to use.
+	@barObj: PBar object to use.
 	@scope: Dictionary containing the scope local variables.
 	@titleComments: If True, comments on a statement starting with "#bTitle:" will be treated as titles for the progress bar.
 	@overwriteRange: If True, overwrites the prange of the bar.
 	"""
-	chkInstOf(pbarObj, PBar, name="pbarObj")
+	chkInstOf(barObj, PBar, name="pbarObj")
 
 	def getTitleComment(string: str) -> Optional[str]:
 		"""Returns the text after "#bTitle:" from the string supplied. Returns None if there is no comment."""
@@ -539,32 +544,32 @@ def taskWrapper(pbarObj: PBar, scope: dict, titleComments=False, overwriteRange=
 		lines = _srclines(func)[0][2:]	# Get the source lines of code
 
 		def wrapper2():
-			pbarObj.prange = (0, len(lines)) if overwriteRange else pbarObj.prange
+			barObj.prange = (0, len(lines)) if overwriteRange else barObj.prange
 
 			for inst in lines:	# Iterate through every statement
 				instComment = getTitleComment(inst)
-				if titleComments and instComment:	pbarObj.text = instComment
-				pbarObj.draw()
+				if titleComments and instComment:	barObj.text = instComment
+				barObj.draw()
 				try:
 					eval(inst, scope)	# yep, this uses evil()
 				except SyntaxError:
 					raise RuntimeError("Multi-line expressions are not supported inside functions decorated with taskWrapper")
-				pbarObj.step()
+				barObj.step()
 		return wrapper2
 	return wrapper
 
 
-def animate(pbarObj: PBar, rng: range, delay: float=0.1) -> None:
+def animate(barObj: PBar, rng: range, delay: float=0.1) -> None:
 	"""
 	Animates the given PBar object by filling it by the range given, with a delay.
-	@pbarObj: PBar object to use.
+	@barObj: PBar object to use.
 	@rng: range object to set for the bar.
 	@delay: Time in seconds between each time the bar draws.
 	"""
 	steps = rng.step
-	pbarObj.prange = rng.start, rng.stop
+	barObj.prange = rng.start, rng.stop
 	for _ in rng:
-		pbarObj.step(steps)
+		barObj.step(steps)
 		_sleep(delay)
 
 
@@ -588,7 +593,7 @@ def barHelper(position: Position=("center", "center"),
 		}
 	)
 
-	print(VT100.BUFFER_NEW + VT100.CURSOR_HIDE)
+	print(Term.BUFFER_NEW + Term.CURSOR_HIDE)
 
 	try:
 		while True:
@@ -596,21 +601,72 @@ def barHelper(position: Position=("center", "center"),
 			rPos = b.position
 			b.formatset = {"subtitle": f"X:{rPos[0]} Y:{rPos[1]}"}
 
-			xLine = VT100.pos((0, rPos[1])) + "═"*rPos[0]
-			yLine = "".join(VT100.pos((rPos[0], x)) + "║" for x in range(rPos[1]))
-			center = VT100.pos(rPos) + "╝"
+			xLine = Term.pos((0, rPos[1])) + "═"*rPos[0]
+			yLine = "".join(Term.pos((rPos[0], x)) + "║" for x in range(rPos[1]))
+			center = Term.pos(rPos) + "╝"
 
 			print(
-				VT100.CLEAR_ALL
+				Term.CLEAR_ALL
 				+ b._genBar()
-				+ VT100.color((255, 100, 0)) + xLine + yLine + center
-				+ VT100.CURSOR_HOME + VT100.INVERT + "Press Ctrl-C to exit." + VT100.RESET,
+				+ Term.color((255, 100, 0)) + xLine + yLine + center
+				+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET,
 				end=""
 			)
 			_sleep(0.01)
 	except KeyboardInterrupt:
 		pass
 
-	print(VT100.BUFFER_OLD + VT100.CURSOR_SHOW, end="")
+	print(Term.BUFFER_OLD + Term.CURSOR_SHOW, end="")
 	del b	# delete the bar we created
 	return rPos
+
+
+
+
+class Sticky:
+	"""Context manager for displaying a sticky bar at the top or bottom of the terminal."""
+	def __init__(self, barObj: PBar,
+				 position: Union[Literal["top"], Literal["bottom"]]="bottom",
+				 full: bool=True) -> None:
+		"""@position: Select the position where the bar will be placed. `'top'` or `'bottom'`."""
+		self._bar = barObj
+		self._bwidth, self._bheight = barObj.size
+		self._oldValues = barObj.size, barObj.position
+		self._pos = position
+		self._full = full
+
+
+	def update(self):
+		pass
+
+
+	def __enter__(self):
+		posX = "center" if self._full else self._bar.position[0]
+		scrollNum = self._bheight + 2
+
+		if self._pos == "top":
+			print(
+				Term.scroll(-scrollNum) + Term.moveVert(scrollNum)
+				+ Term.margin(top=scrollNum),
+				end=""
+			)
+			self._bar.position = (posX, 1)
+		else:
+			scrollNum += 1
+			print(
+				Term.scroll(scrollNum) + Term.moveVert(-scrollNum)
+				+ Term.margin(bottom=scrollNum),
+				end=""
+			)
+			self._bar.position = (posX, -1)
+		self.update()
+
+		self._bar.size = ((Term.size()[0] - 4) if self._full else self._bwidth, self._bheight)
+		return self
+
+
+	def __exit__(self, type, value, traceback):
+		print(Term.margin(), end="")
+		self._bar.clear()
+		self._bar.size, self._bar.position = self._oldValues
+		del self

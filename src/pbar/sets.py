@@ -346,10 +346,10 @@ class ColorSet(_BaseSet):
 	def parsedValues(self, bg=False) -> dict[str, Union[dict, str]]:
 		"""Convert all values in the ColorSet to parsed color sequences"""
 		# newset = {key: ((value, bg), None) for key, value in self.items()}
-		# return ColorSet(self.iterValues(newset, VT100.color))
+		# return ColorSet(self.iterValues(newset, Term.color))
 		return {
 			key: ColorSet.parsedValues(value, bg)
-			if isinstance(value, dict) else VT100.color(value, bg)
+			if isinstance(value, dict) else Term.color(value, bg)
 			for key, value in self.items()
 		}
 
@@ -361,8 +361,8 @@ class UnknownFormattingKeyError(Exception):
 	def __init__(self, string) -> None:
 		super().__init__(
 			"Unknown formatting key '"
-			+ VT100.BOLD + VT100.color((255, 0, 0)) + string
-			+ VT100.RESET + "'"
+			+ Term.BOLD + Term.color((255, 0, 0)) + string
+			+ Term.RESET + "'"
 		)
 
 class UnexpectedEndOfStringError(Exception):
@@ -370,8 +370,8 @@ class UnexpectedEndOfStringError(Exception):
 	def __init__(self, string) -> None:
 		super().__init__(
 			f"Unexpected end of string ('{string}"
-			+ VT100.color((150, 0, 0), True)
-			+ VT100.BOLD + "◄ Expected '>'" + VT100.RESET + "')"
+			+ Term.color((150, 0, 0), True)
+			+ Term.BOLD + "◄ Expected '>'" + Term.RESET + "')"
 		)
 
 
@@ -507,7 +507,7 @@ class FormatSet(_BaseSet):
 			elif char == "<":
 				foundOpen = True
 			# elif char == " ":
-			# 	endStr += VT100.moveHoriz(1)	# ?: Maybe in a future
+			# 	endStr += Term.moveHoriz(1)	# ?: Maybe in a future
 			else:
 				# It is just a normal character that doesn't belong to any formatting key, so just append it to the end string.
 				endStr += char
