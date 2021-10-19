@@ -1,5 +1,5 @@
 from io import TextIOWrapper as _TextIOWrapper
-from typing import Any, Literal, Optional, SupportsInt, Union, IO
+from typing import Any, Optional, SupportsInt, Union, IO
 from os import system as _runsys
 from time import time as _time, sleep as _sleep
 from inspect import getsourcelines as _srclines
@@ -35,29 +35,29 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 		parsedColorset["corner"]["bright"] + charset["corner"]["bright"]
 	)
 
-	endStr: str = (
+
+	top: str = (
 		Term.pos(position)
 		+ charCorner[0]
 		+ parsedColorset["horiz"]["top"] + charHoriz[0]*width
 		+ charCorner[1]
 	)
 
-	for row in range(1, height):
-		endStr += (
-			Term.pos(position, (0, row))
-			+ charVert[0]
-			+ (Term.moveHoriz(width) if filled is None else filled[0]*width)
-			+ charVert[1]
-		)
+	mid: str = "".join((
+		Term.pos(position, (0, row))
+		+ charVert[0]
+		+ (Term.moveHoriz(width) if filled is None else filled[0]*width)
+		+ charVert[1]
+	) for row in range(1, height))
 
-	endStr += (
+	bottom: str = (
 		Term.pos(position, (0, height))
 		+ charCorner[2]
 		+ parsedColorset["horiz"]["bottom"] + charHoriz[1]*width
 		+ charCorner[3]
 	)
 
-	return endStr
+	return top + mid + bottom
 
 
 def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: CharSet,

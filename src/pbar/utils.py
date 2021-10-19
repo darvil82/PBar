@@ -197,6 +197,16 @@ class Term:
 		return f"\x1b[{abs(dist)}{'T' if dist < 0 else 'S'}"
 
 
+	@staticmethod
+	def fill(char: str) -> str:
+		"""Fill the terminal screen with the character specified."""
+		ts = Term.size()
+		return (
+			Term.CURSOR_HOME
+			+ "".join(Term.pos((0, row)) + char[0]*ts[0] for row in range(ts[1] + 1))
+		)
+
+
 
 	# simple sequences that dont require parsing
 	RESET =			"\x1b[0m"
