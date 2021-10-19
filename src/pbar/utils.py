@@ -1,6 +1,12 @@
 from typing import SupportsFloat, TypeVar, Optional, Union, Any, SupportsInt
 from os import get_terminal_size as _getTermSize
 
+__all__ = (
+	"capValue", "convertClrs", "chkInstOf",
+	"chkSeqOfLen", "isNum", "Term"
+)
+
+
 
 _HTML_COLOR_NAMES: dict = {		# thanks to https://stackoverflow.com/a/1573141/14546524
 	"aliceblue":"#f0f8ff", "antiquewhite":"#faebd7", "aqua":"#00ffff", "aquamarine":"#7fffd4", "azure":"#f0ffff",
@@ -85,7 +91,8 @@ def chkSeqOfLen(obj: Any, length: int, name: str=None) -> bool:
 	if len(obj) != length:
 		raise ValueError(
 			(name or f"Sequence {Term.color((255, 150, 0))}{obj!r}{Term.RESET}")
-			+ " must have " + Term.color((0, 255, 0)) + str(length) + Term.RESET + " items"
+			+ " must have " + Term.color((0, 255, 0)) + str(length) + Term.RESET + " items, "
+			+ "not " + Term.color((255, 0, 0)) + str(len(obj))
 		)
 	return True
 
