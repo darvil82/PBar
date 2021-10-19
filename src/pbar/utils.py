@@ -207,7 +207,6 @@ class Term:
 		)
 
 
-
 	# simple sequences that dont require parsing
 	RESET =			"\x1b[0m"
 	INVERT =		"\x1b[7m"
