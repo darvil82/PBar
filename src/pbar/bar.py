@@ -566,6 +566,7 @@ def animate(barObj: PBar, rng: range, delay: float=0.1) -> None:
 	@rng: range object to set for the bar.
 	@delay: Time in seconds between each time the bar draws.
 	"""
+	chkInstOf(rng, range, name="rng")
 	steps = rng.step
 	barObj.prange = rng.start, rng.stop
 	for _ in rng:
