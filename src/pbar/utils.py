@@ -135,7 +135,7 @@ class Term:
 			offset: tuple[SupportsInt, SupportsInt]=(0, 0)) -> str:
 		"""
 		Position of the cursor on the terminal.
-		@pos: This tuple can contain either ints, or strings with the value `center` to specify the center of the terminal.
+		@pos: Tuple containing the X and Y position values.
 		@offset: Offset applied to `pos`. (Can be negative)
 		"""
 		chkSeqOfLen(pos, 2)
