@@ -1,15 +1,17 @@
-from io import TextIOWrapper as _TextIOWrapper
+from io import TextIOWrapper
 from typing import Any, Optional, SupportsInt, Union, IO
-from os import system as _runsys
-from time import time as _time, sleep as _sleep
-from inspect import getsourcelines as _srclines
+from os import system as runsys, isatty
+from time import time as epochTime, sleep
+from inspect import getsourcelines
 
 from . sets import CharSet, ColorSet, FormatSet, CharSetEntry, FormatSetEntry, ColorSetEntry
 from . utils import *
 from . cond import Cond
 
 
-_runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
+if not isatty(0):	# check if we are running in a tty
+	raise RuntimeError("pbar requires a terminal emulator to work properly")
+runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
 
 
 Position = tuple[Union[str, int], Union[str, int]]
@@ -190,7 +192,7 @@ class PBar():
 		"""
 		self._requiresClear = False		# This controls if the bar needs to clear its old position before drawing.
 		self._enabled = True			# If disabled, the bar will never draw.
-		self._time = _time()			# The elapsed time since the bar created.
+		self._time = epochTime()			# The elapsed time since the bar created.
 		self._isOnScreen = False		# Is the bar on screen?
 
 		self._range = PBar._getRange(prange)
@@ -240,7 +242,7 @@ class PBar():
 
 	def resetETime(self):
 		"""Reset the elapsed time counter."""
-		self._time = _time()	# Just set _time to the current time.
+		self._time = epochTime()	# Just set _time to the current time.
 
 
 	@classmethod
@@ -253,7 +255,7 @@ class PBar():
 
 	def prangeFromFile(self, fp: IO[str]):
 		"""Modify `prange` with the number of lines of a file."""
-		chkInstOf(fp, _TextIOWrapper, name="fp")
+		chkInstOf(fp, TextIOWrapper, name="fp")
 		self.prange = (0, len(fp.readlines()))
 		fp.seek(0)
 
@@ -347,7 +349,7 @@ class PBar():
 	@property
 	def etime(self) -> float:
 		"""Time elapsed since the bar created."""
-		return round(_time() - self._time, 2)
+		return round(epochTime() - self._time, 2)
 
 
 	@property
@@ -396,6 +398,8 @@ class PBar():
 		for index, value in enumerate(position):
 			if value == "center":
 				value = int(TERM_SIZE[index]/2)+1
+			elif value == "relative":
+				value = Term.getPos()[index]
 			chkInstOf(value, int, float, name="pos")
 
 			if value < 0:
@@ -541,7 +545,7 @@ def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=T
 		return string[index:].strip()
 
 	def wrapper(func):
-		lines = _srclines(func)[0][2:]	# Get the source lines of code
+		lines = getsourcelines(func)[0][2:]	# Get the source lines of code
 
 		def wrapper2():
 			barObj.prange = (0, len(lines)) if overwriteRange else barObj.prange
@@ -571,7 +575,7 @@ def animate(barObj: PBar, rng: range, delay: float=0.1) -> None:
 	barObj.prange = rng.start, rng.stop
 	for _ in rng:
 		barObj.step(steps)
-		_sleep(delay)
+		sleep(delay)
 
 
 def barHelper(position: Position=("center", "center"),
@@ -613,7 +617,7 @@ def barHelper(position: Position=("center", "center"),
 				+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET,
 				end=""
 			)
-			_sleep(0.01)
+			sleep(0.01)
 	except KeyboardInterrupt:
 		pass
 

@@ -1,5 +1,5 @@
 from typing import SupportsFloat, TypeVar, Optional, Union, Any, SupportsInt
-from os import get_terminal_size as _getTermSize
+from os import get_terminal_size
 
 __all__ = (
 	"capValue", "convertClrs", "chkInstOf",
@@ -124,11 +124,10 @@ def isNum(obj: SupportsFloat) -> bool:
 
 class Term:
 	"""Class for using terminal sequences a bit easier"""
-
 	@staticmethod
 	def size() -> tuple[int, int]:
 		"""Get size of the terminal. Columns and rows."""
-		return _getTermSize()
+		return get_terminal_size()
 
 	@staticmethod
 	def pos(pos: Optional[tuple[SupportsInt, SupportsInt]],
@@ -172,10 +171,17 @@ class Term:
 
 
 	@staticmethod
-	def moveVert(dist: SupportsInt) -> str:
-		"""Move the cursor vertically `dist` lines (supports negative numbers)."""
+	def moveVert(dist: SupportsInt, cr: bool=False) -> str:
+		"""
+		Move the cursor vertically `dist` lines (supports negative numbers).
+		@cr: Do a carriage return too.
+		"""
 		dist = int(dist)
-		return f"\x1b[{abs(dist)}{'A' if dist < 0 else 'B'}"
+		return (
+			f"\x1b[{abs(dist)}{'A' if dist < 0 else 'B'}"
+			if not cr else
+			f"\x1b[{abs(dist)}{'F' if dist < 0 else 'E'}"
+		)
 
 
 	@staticmethod
@@ -214,16 +220,83 @@ class Term:
 		)
 
 
+	@staticmethod
+	def formatString(string: str) -> str:
+		"""
+		Add format to the string supplied by wrapping text with special characters:
+
+		- `*`:	Bold.
+		- `_`: Italic.
+		- `~`: Strikethrough.
+		- `-`: Underline.
+		- `´`: Blink.
+		- `|`: Invert.
+		- `#`: Dim.
+		- `@`: Invisible.
+
+		Note: Some of this sequences might not work properly on some terminal emulators.
+
+		Note: When disabling `Dim`, bold will also be disabled.
+		"""
+		invert = underline = dim = sthrough = invisible = bold = italic = blink = False
+		ignoreChar = False
+		endStr = ""
+		for char in string:
+			if char == "\\":
+				ignoreChar = True
+				continue
+			if ignoreChar:
+				endStr += char
+				continue
+
+			if char == "*":	# bold
+				char = Term.NO_BOLD if bold else Term.BOLD
+				bold = not bold
+			elif char == "_":	# italic
+				char = Term.NO_ITALIC if italic else Term.ITALIC
+				italic = not italic
+			elif char == "~":	# strikethrough
+				char = Term.NO_STHROUGH if sthrough else Term.STHROUGH
+				sthrough = not sthrough
+			elif char == "-":	# underline
+				char = Term.NO_UNDERLINE if underline else Term.UNDERLINE
+			elif char == "´":	# blink
+				char = Term.NO_BLINK if blink else Term.BLINK
+				blink = not blink
+			elif char == "|":	# invert
+				char = Term.NO_INVERT if invert else Term.INVERT
+				invert = not invert
+			elif char == "#":	# dim
+				char = Term.NO_DIM if dim else Term.DIM
+				dim = not dim
+			elif char == "@":	# invisible
+				char = Term.NO_INVISIBLE if invisible else Term.INVISIBLE
+				invisible = not invisible
+			endStr += char
+		return endStr
+
+
 	# simple sequences that dont require parsing
-	RESET: str =		"\x1b[0m"
+	# text formatting
 	INVERT: str =		"\x1b[7m"
 	NO_INVERT: str =	"\x1b[27m"
+	UNDERLINE: str =	"\x1b[4m"
+	NO_UNDERLINE: str =	"\x1b[24m"
+	DIM: str =			"\x1b[2m"
+	NO_DIM: str =		"\x1b[22m"
+	STHROUGH: str = 	"\x1b[9m"
+	NO_STHROUGH: str = 	"\x1b[29m"
+	INVISIBLE: str =	"\x1b[8m"
+	NO_INVISIBLE: str =	"\x1b[28m"
 	BOLD: str =			"\x1b[1m"
-	NO_BOLD: str =		"\x1b[21m"
+	NO_BOLD: str =		"\x1b[22m"
 	ITALIC: str =		"\x1b[3m"
 	NO_ITALIC: str =	"\x1b[23m"
 	BLINK: str =		"\x1b[5m"
 	NO_BLINK: str =		"\x1b[25m"
+	RESET: str =		"\x1b[0m"
+
+	# special
 	CLEAR_LINE: str =	"\x1b[2K"
 	CLEAR_RIGHT: str =	"\x1b[0K"
 	CLEAR_LEFT: str =	"\x1b[1K"
@@ -236,6 +309,4 @@ class Term:
 	CURSOR_LOAD: str =	"\x1b8"
 	BUFFER_NEW: str =	"\x1b[?1049h"
 	BUFFER_OLD: str =	"\x1b[?1049l"
-	UNDERLINE: str =	"\x1b[4m"
-	NO_UNDERLINE: str =	"\x1b[24m"
 	CURSOR_HOME: str =	"\x1b[H"
