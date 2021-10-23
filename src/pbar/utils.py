@@ -260,6 +260,7 @@ class Term:
 				sthrough = not sthrough
 			elif char == "-":	# underline
 				char = Term.NO_UNDERLINE if underline else Term.UNDERLINE
+				underline = not underline
 			elif char == "´":	# blink
 				char = Term.NO_BLINK if blink else Term.BLINK
 				blink = not blink
