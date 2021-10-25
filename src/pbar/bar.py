@@ -1,5 +1,5 @@
 from io import TextIOWrapper
-from typing import Any, Optional, SupportsInt, Union, IO
+from typing import Any, Callable, Optional, SupportsInt, Union, IO
 from os import system as runsys, isatty
 from time import time as epochTime, sleep
 from inspect import getsourcelines
@@ -525,7 +525,7 @@ class PBar():
 
 
 
-def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=True) -> function:
+def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=True) -> Callable:
 	"""
 	Use as a decorator. Takes a PBar object, sets its prange depending on the quantity of
 	statements inside the decorated function, and `steps` the bar over after every function statement.
