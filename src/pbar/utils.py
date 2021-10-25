@@ -251,6 +251,7 @@ class Term:
 				continue
 			if ignoreChar:
 				endStr += char
+				ignoreChar = False
 				continue
 
 			if char == "*":	# bold
