@@ -48,7 +48,7 @@ def capValue(value: Num, max: Optional[Num]=None, min: Optional[Num]=None) -> Nu
 		return value
 
 
-def convertClrs(clr: dict[Any, Union[str, tuple]], type: str) -> Union[str, tuple, dict, None]:
+def convertClrs(clr: Union[dict[Any, Union[str, tuple]], str, tuple], type: str) -> Union[str, tuple, dict, None]:
 	"""
 	Convert color values to HEX and vice-versa
 	@clr:	Color value to convert.
@@ -80,6 +80,8 @@ def convertClrs(clr: dict[Any, Union[str, tuple]], type: str) -> Union[str, tupl
 
 		capped = tuple(capValue(value, 255, 0) for value in color)
 		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
+	else:
+		return ""
 
 
 def chkSeqOfLen(obj: Any, length: int, name: str=None) -> bool:
@@ -130,7 +132,7 @@ class Term:
 		return get_terminal_size()
 
 	@staticmethod
-	def pos(pos: Optional[tuple[SupportsInt, SupportsInt]],
+	def pos(pos: tuple[SupportsInt, SupportsInt],
 			offset: tuple[SupportsInt, SupportsInt]=(0, 0)) -> str:
 		"""
 		Position of the cursor on the terminal.
@@ -140,7 +142,7 @@ class Term:
 		chkSeqOfLen(pos, 2)
 
 		position = (int(pos[0]) + int(offset[0]),
-					int(pos[1] + int(offset[1])))
+					int(pos[1]) + int(offset[1]))
 
 		return f"\x1b[{position[1]};{position[0]}f"
 
@@ -198,7 +200,7 @@ class Term:
 		"""Sets the top and bottom margins of the terminal. Use `None` for default margins."""
 		return (
 			Term.CURSOR_SAVE
-			+ f"\x1b[{(top + 1) if top else ''};{(Term.size()[1] - bottom) if bottom else ''}r"
+			+ f"\x1b[{(int(top) + 1) if top else ''};{(Term.size()[1] - int(bottom)) if bottom else ''}r"
 			+ Term.CURSOR_LOAD
 		)
 

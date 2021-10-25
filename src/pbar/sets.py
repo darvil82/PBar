@@ -4,9 +4,9 @@ from . import bar
 
 
 Color = Optional[Union[tuple[int, int, int], str, None]]
-ColorSetEntry = dict[str, Union["ColorSetEntry", Color]]
-CharSetEntry = dict[str, Union["CharSetEntry", str]]
-FormatSetEntry = dict[str, Union["FormatSetEntry", str]]
+ColorSetEntry = dict[str, Union["ColorSetEntry", Color]]	# type: ignore
+CharSetEntry = dict[str, Union["CharSetEntry", str]]		# type: ignore
+FormatSetEntry = dict[str, Union["FormatSetEntry", str]]	# type: ignore
 
 
 _IGNORE_CHARS = "\x1b\n\r\b\a\f\v"
@@ -22,6 +22,8 @@ class UnknownSetKeyError(Exception):
 
 class _BaseSet(dict):
 	"""Base class for all the customizable sets for the bar (colorset, charset, formatset)"""
+	EMPTY: dict = {}
+
 	def __init__(self, newSet: dict) -> None:
 		chkInstOf(newSet, dict, name="newSet")
 

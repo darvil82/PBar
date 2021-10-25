@@ -411,23 +411,25 @@ class PBar():
 				value = capValue(value, TERM_SIZE[1] - self._size[1]/2 - 1, self._size[1]/2 + 2)
 
 			newpos.append(int(value))
-		return tuple(newpos)
+		return (newpos[0], newpos[1])
 
 
 	@staticmethod
 	def _getSize(size: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
 		"""Get and process new length requested"""
 		chkSeqOfLen(size, 2)
-		return (int(capValue(size[0], min=5)),
-				int(capValue(size[1], min=1)))
+		width, height = map(int, size)
+		return (capValue(int(width), min=5),
+				capValue(int(height), min=1))
 
 
 	@staticmethod
 	def _getRange(range: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
 		"""Return a capped range"""
 		chkSeqOfLen(range, 2)
-		return (int(capValue(range[0], range[1], 0)),
-				int(capValue(range[1], min=1)))
+		start, stop = map(int, range)
+		return (capValue(start, stop, 0),
+				capValue(stop, min=1))
 
 
 	@staticmethod
@@ -523,7 +525,7 @@ class PBar():
 
 
 
-def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=True) -> None:
+def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=True) -> function:
 	"""
 	Use as a decorator. Takes a PBar object, sets its prange depending on the quantity of
 	statements inside the decorated function, and `steps` the bar over after every function statement.
@@ -541,7 +543,7 @@ def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=T
 		try:
 			index = string.rindex("#bTitle:") + 8	# lol
 		except ValueError:
-			return
+			return ""
 		return string[index:].strip()
 
 	def wrapper(func):

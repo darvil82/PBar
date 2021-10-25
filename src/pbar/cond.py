@@ -81,3 +81,5 @@ class Cond:
 			return val <= self._value
 		elif op == _OP_IN:
 			return self._value in val
+		else:
+			return False
