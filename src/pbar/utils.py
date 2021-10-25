@@ -129,7 +129,7 @@ class Term:
 	@staticmethod
 	def size() -> tuple[int, int]:
 		"""Get size of the terminal. Columns and rows."""
-		return get_terminal_size()
+		return tuple(get_terminal_size())
 
 	@staticmethod
 	def pos(pos: tuple[SupportsInt, SupportsInt],
@@ -223,11 +223,11 @@ class Term:
 
 
 	@staticmethod
-	def formatString(string: str) -> str:
+	def formatString(string: str, reset: bool=True) -> str:  # sourcery no-metrics
 		"""
 		Add format to the string supplied by wrapping text with special characters:
 
-		- `*`:	Bold.
+		- `*`: Bold.
 		- `_`: Italic.
 		- `~`: Strikethrough.
 		- `-`: Underline.
@@ -239,6 +239,8 @@ class Term:
 		Note: Some of this sequences might not work properly on some terminal emulators.
 
 		Note: When disabling `Dim`, bold will also be disabled.
+
+		@reset: Will formatting be resetted at the end?
 		"""
 		invert = underline = dim = sthrough = invisible = bold = italic = blink = False
 		ignoreChar = False
@@ -276,7 +278,7 @@ class Term:
 				char = Term.NO_INVISIBLE if invisible else Term.INVISIBLE
 				invisible = not invisible
 			endStr += char
-		return endStr
+		return endStr + (Term.RESET if reset else "")
 
 
 	# simple sequences that dont require parsing
