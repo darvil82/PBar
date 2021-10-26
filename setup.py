@@ -1,5 +1,8 @@
 import setuptools
-from src.pbar import __version__ as prjVersion
+try:
+	from src.pbar import __version__ as prjVersion	# get project version
+except RuntimeError:
+	prjVersion = "dev"
 
 with open("README.md", "r", encoding="utf-8") as fh:
 	long_description = fh.read()
