@@ -22,15 +22,15 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
 	width, height = size[0] + 2, size[1]
 
-	charVert = (
+	charVert = (	# Vertical characters, normally "|" at both sides.
 		parsedColorset["vert"]["left"] + charset["vert"]["left"],
 		parsedColorset["vert"]["right"] + charset["vert"]["right"]
 	)
-	charHoriz = (
+	charHoriz = (	# Horizontal characters, normally "-" at top and bottom.
 		charset["horiz"]["top"],
 		charset["horiz"]["bottom"],
 	)
-	charCorner = (
+	charCorner = (	# Corners of the shape at all four sides
 		parsedColorset["corner"]["tleft"] + charset["corner"]["tleft"],
 		parsedColorset["corner"]["tright"] + charset["corner"]["tright"],
 		parsedColorset["corner"]["bleft"] + charset["corner"]["bleft"],
@@ -45,7 +45,7 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 		+ charCorner[1]
 	)
 
-	mid: str = "".join((
+	mid: str = "".join((	# generate all the rows of the bar. If filled is None, we just make the cursor jump
 		Term.pos(position, (0, row))
 		+ charVert[0]
 		+ (Term.moveHoriz(width) if filled is None else filled[0]*width)
@@ -67,12 +67,12 @@ def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: Ch
 	"""Generates the progress shape with a parsed colorset and a charset specified"""
 	width, height = size
 	SEGMENTS_FULL = int((capValue(rangeValue[0], rangeValue[1], 0) / capValue(rangeValue[1], min=1))*width)	# Number of character for the full part of the bar
-	SEGMENTS_EMPTY = width - SEGMENTS_FULL
+	SEGMENTS_EMPTY = width - SEGMENTS_FULL	# number of characters for the empty part of the bar
 
-	charFull = charset["full"]
-	charEmpty = charset["empty"]
+	charFull = charset["full"]	# character that represets the full part of the bar
+	charEmpty = charset["empty"]	# character that represents the empty part of the bar
 
-	return "".join((
+	return "".join((	# duplicate the bar content each row of the bar (height)
 			Term.pos((position), (0, row))
 			+ parsedColorset["full"] + charFull*SEGMENTS_FULL
 			+ parsedColorset["empty"] + charEmpty*SEGMENTS_EMPTY
@@ -89,11 +89,13 @@ def _genBarText(position: tuple[int, int], size: tuple[int, int],
 		maxlen = capValue(maxlen, min=3)
 		return string[:maxlen-3] + "..." if len(string) > maxlen else string
 
+	# set the max number of characters that a string should have on each part of the bar
 	txtMaxWidth = width + 2
 	txtSubtitle = stripText(formatset["subtitle"], txtMaxWidth)
 	txtInside = stripText(formatset["inside"], txtMaxWidth - 4)
 	txtTitle = stripText(formatset["title"], txtMaxWidth)
 
+	# position each text on its correct position relative to the bar
 	textTitle = (
 		Term.pos(position, (-1, 0))
 		+ parsedColorset["text"]["title"]
@@ -398,13 +400,12 @@ class PBar():
 		for index, value in enumerate(position):
 			if value == "center":
 				value = int(TERM_SIZE[index]/2)+1
-			elif value == "relative":
-				value = Term.getPos()[index]
 			chkInstOf(value, int, float, name="pos")
 
-			if value < 0:
+			if value < 0:	# if negative value, return Term size - value
 				value = TERM_SIZE[index] + value
 
+			# set maximun and minimun positions
 			if index == 0:
 				value = capValue(value, TERM_SIZE[0] - self._size[0]/2 - 1, self._size[0]/2 + 3)
 			else:
@@ -445,7 +446,7 @@ class PBar():
 
 	def _chkConds(self) -> None:
 		for cond in self._conditions:
-			if not cond.test(self):
+			if not cond.test(self):	# if a condition succeeds, apply its newsets
 				continue
 			if cond.newSets[0]:	self.charset = cond.newSets[0]
 			if cond.newSets[1]:	self.colorset = cond.newSets[1]
@@ -518,7 +519,7 @@ class PBar():
 			Term.CURSOR_SAVE + Term.CURSOR_HIDE
 			+ barString
 			+ Term.CURSOR_LOAD + Term.CURSOR_SHOW,
-			flush=True,
+			flush=True,	# flush file to make sure the bar draws
 			end=""
 		)
 
@@ -541,20 +542,20 @@ def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=T
 	def getTitleComment(string: str) -> Optional[str]:
 		"""Returns the text after "#bTitle:" from the string supplied. Returns None if there is no comment."""
 		try:
-			index = string.rindex("#bTitle:") + 8	# lol
+			index = string.rindex("#bTitle:") + 8	# we just get the index of this string by adding 8 to get the comment
 		except ValueError:
-			return ""
+			return None
 		return string[index:].strip()
 
 	def wrapper(func):
-		lines = getsourcelines(func)[0][2:]	# Get the source lines of code
+		lines = getsourcelines(func)[0][2:]	# Get the source lines of code of the decorated function
 
-		def wrapper2():
+		def wrapper2():	# this is the function that the decorated func will 'convert' into
 			barObj.prange = (0, len(lines)) if overwriteRange else barObj.prange
 
-			for inst in lines:	# Iterate through every statement
+			for inst in lines:	# Iterate through every line in the source code of the decorated function
 				instComment = getTitleComment(inst)
-				if titleComments and instComment:	barObj.text = instComment
+				if titleComments and instComment:	barObj.text = instComment	# set text of the bar as the comment after #bTitle: (if any)
 				barObj.draw()
 				try:
 					eval(inst, scope)	# yep, this uses evil()
@@ -595,12 +596,12 @@ def barHelper(position: Position=("center", "center"),
 			"vert": "#090",
 			"horiz": "#090",
 			"corner": "#090",
-			"text":	(255, 100, 0),
+			"text":	"#ff6400",
 			"empty": "#090"
 		}
 	)
 
-	print(Term.BUFFER_NEW + Term.CURSOR_HIDE)
+	print(Term.BUFFER_NEW + Term.CURSOR_HIDE)	# create new console buffer and hide the cursor
 
 	try:
 		while True:
@@ -614,8 +615,8 @@ def barHelper(position: Position=("center", "center"),
 
 			print(
 				Term.CLEAR_ALL
-				+ b._genBar()
-				+ Term.color((255, 100, 0)) + xLine + yLine + center
+				+ b._genBar()	# the bar itself
+				+ Term.color((255, 100, 0)) + xLine + yLine + center	# x and y lines
 				+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET,
 				end=""
 			)
@@ -623,6 +624,6 @@ def barHelper(position: Position=("center", "center"),
 	except KeyboardInterrupt:
 		pass
 
-	print(Term.BUFFER_OLD + Term.CURSOR_SHOW, end="")
+	print(Term.BUFFER_OLD + Term.CURSOR_SHOW, end="")	# return to old state
 	del b	# delete the bar we created
-	return rPos
+	return rPos	# return the latest position of the helper

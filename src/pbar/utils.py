@@ -54,11 +54,11 @@ def convertClrs(clr: Union[dict[Any, Union[str, tuple]], str, tuple], type: str)
 	@clr:	Color value to convert.
 	@type:	Type of conversion to do ('RGB' or 'HEX')
 	"""
-	if isinstance(clr, dict):
+	if isinstance(clr, dict):	# its a dict, call itself with the value
 		return {key: convertClrs(value, type) for key, value in clr.items()}
 	elif isinstance(clr, str):
 		color = clr.lower()
-		if color in _HTML_COLOR_NAMES:	color = _HTML_COLOR_NAMES[color]
+		if color in _HTML_COLOR_NAMES:	color = _HTML_COLOR_NAMES[color]	# check if its a html color name
 	else:
 		color = clr
 
@@ -69,7 +69,7 @@ def convertClrs(clr: Union[dict[Any, Union[str, tuple]], str, tuple], type: str)
 		clrs = color.lstrip("#")
 
 		if len(clrs) == 3:
-			clrs = "".join(c*2 for c in clrs)
+			clrs = "".join(c*2 for c in clrs)	# if size of hex color is 3, just duplicate chars to make it 6
 
 		try:
 			return tuple(int(clrs[i:i+2], 16) for i in (0, 2, 4))
@@ -199,7 +199,7 @@ class Term:
 	def margin(top: SupportsInt=None, bottom: SupportsInt=None) -> str:
 		"""Sets the top and bottom margins of the terminal. Use `None` for default margins."""
 		return (
-			Term.CURSOR_SAVE
+			Term.CURSOR_SAVE	# we save and load the cursor because the margins sequence resets the position to 0, 0
 			+ f"\x1b[{(int(top) + 1) if top else ''};{(Term.size()[1] - int(bottom)) if bottom else ''}r"
 			+ Term.CURSOR_LOAD
 		)
@@ -246,6 +246,7 @@ class Term:
 		ignoreChar = False
 		endStr = ""
 		for char in string:
+			# skip a character if backslashes are used
 			if char == "\\":
 				ignoreChar = True
 				continue
@@ -254,6 +255,7 @@ class Term:
 				ignoreChar = False
 				continue
 
+			# simply add escape characters depending on the state of each format
 			if char == "*":	# bold
 				char = Term.NO_BOLD if bold else Term.BOLD
 				bold = not bold
