@@ -7,6 +7,7 @@ from inspect import getsourcelines
 from . sets import CharSet, ColorSet, FormatSet, CharSetEntry, FormatSetEntry, ColorSetEntry
 from . utils import *
 from . cond import Cond
+from . gen import BarContent
 
 
 if not isatty(0):	# check if we are running in a tty
@@ -65,18 +66,11 @@ def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet
 def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: CharSet,
 				   parsedColorset: ColorSet, rangeValue: tuple[int, int]) -> str:
 	"""Generates the progress shape with a parsed colorset and a charset specified"""
-	width, height = size
-	SEGMENTS_FULL = int((capValue(rangeValue[0], rangeValue[1], 0) / capValue(rangeValue[1], min=1))*width)	# Number of character for the full part of the bar
-	SEGMENTS_EMPTY = width - SEGMENTS_FULL	# number of characters for the empty part of the bar
-
-	charFull = charset["full"]	# character that represets the full part of the bar
-	charEmpty = charset["empty"]	# character that represents the empty part of the bar
-
-	return "".join((	# duplicate the bar content each row of the bar (height)
-			Term.pos((position), (0, row))
-			+ parsedColorset["full"] + charFull*SEGMENTS_FULL
-			+ parsedColorset["empty"] + charEmpty*SEGMENTS_EMPTY
-		) for row in range(1, height))
+	test = BarContent(BarContent.VERTICAL, "bottom")
+	return test.getStr(
+		position, size, (charset["full"], charset["empty"]), parsedColorset,
+		rangeValue
+	)
 
 
 def _genBarText(position: tuple[int, int], size: tuple[int, int],
