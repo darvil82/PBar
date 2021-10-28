@@ -1,8 +1,6 @@
-from typing import Optional, Union
+from typing import Callable, Optional, Union
 
-from . sets import ColorSetEntry
 from . utils import capValue, Term
-from . sets import CharSet, ColorSet, FormatSet
 
 
 class BarContent:
@@ -13,28 +11,35 @@ class BarContent:
 		self.mode = mode
 		self.gfrom = gfrom
 
-	def getStr(self, position: tuple[int, int], size: tuple[int, int], chars: tuple[str, str],
-			   parsedColorset: ColorSetEntry, prange: tuple[int, int]) -> str:
+	def getStr(self, position: tuple[int, int], size: tuple[int, int], charset: tuple[str, str],
+			   parsedColorset, prange: tuple[int, int]) -> str:
 		if self.mode == BarContent.HORIZONTAL:
-			return self._genHoriz(
-				position,size, chars,
-				parsedColorset, prange
-			)
+			genFunc: Callable = self._genHoriz
 		elif self.mode == BarContent.VERTICAL:
-			return self._genVert(
-				position,size, chars,
-				parsedColorset, prange
-			)
+			genFunc: Callable = self._genVert
 		else:
 			raise RuntimeError(f"unknown mode {self.mode}")
 
+		chars = charset["full"], charset["empty"]
 
-	def _genHoriz(self, pos, size, chars, pColorSet, prange):
+		return genFunc(
+			position, size, chars,
+			parsedColorset, prange
+		)
+
+
+	def _genHoriz(self, pos, size, chars, pColorSet, prange) -> str:
 		width, height = size
-		SEGMENTS_FULL = int((capValue(prange[0], prange[1], 0) / capValue(prange[1], min=1))*width)
+		charFull, charEmpty = chars
+		SEGMENTS_FULL = int((prange[0] / prange[1])*width)
 		SEGMENTS_EMPTY = width - SEGMENTS_FULL
 
-		charFull, charEmpty = chars
+		"""
+		When drawing horizontally:
+			1. Print the full character the number of SEGMENTS_FULL.
+			2. Print the empty character the number of SEGMENTS_EMPTY.
+			3. Duplicate for each row of the bar.
+		"""
 
 		def iterRows(string: str):
 			return "".join((
@@ -53,6 +58,12 @@ class BarContent:
 				+ pColorSet["full"] + charFull*SEGMENTS_FULL
 			)
 		elif self.gfrom == "center":
+			"""
+			For the center:
+				1. Print the entire empty bar.
+				2. Move the cursor left to the center + half SEGMENTS_FULL.
+				3. Print the completed bar chars.
+			"""
 			return iterRows(
 				pColorSet["empty"] + charEmpty*width
 				+ Term.moveHoriz(-width/2 - SEGMENTS_FULL/2)
@@ -62,16 +73,55 @@ class BarContent:
 			raise RuntimeError(f"invalid gfrom {self.gfrom}")
 
 
-	def _genVert(self, pos, size, chars, pColorSet, prange):
-		width, height = size
-		SEGMENTS_FULL = int((capValue(prange[0], prange[1], 0) / capValue(prange[1], min=1))*height)
+	def _genVert(self, pos, size, chars, pColorSet, prange) -> str:
+		width, height = size[0], size[1] - 1
+		pos = pos[0], pos[1] + 1
+		charFull, charEmpty = chars
+		SEGMENTS_FULL = int(capValue((prange[0] / prange[1])*height, max=height))
+		SEGMENTS_EMPTY = capValue(height - SEGMENTS_FULL, min=0)
 
-		return Term.pos(pos, (0, SEGMENTS_FULL)) + "test"
+		"""
+		When drawing vertically, we esentially:
+			1. Print one full row with the width of the bar.
+			2. Move the cursor one character down, and the width of the bar to the left.
+			3. Repeat
+		"""
+
+		if self.gfrom == "top":
+			return (
+				Term.pos(pos)
+				+ (pColorSet["full"] + charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
+				+ (pColorSet["empty"] + charEmpty*width + Term.posRel((-width, 1)))*SEGMENTS_EMPTY
+			)
+		elif self.gfrom == "bottom":
+			return (
+				Term.pos(pos)
+				+ (pColorSet["empty"] + charEmpty*width + Term.posRel((-width, 1)))*SEGMENTS_EMPTY
+				+ (pColorSet["full"] + charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
+			)
+		elif self.gfrom == "center":
+			"""
+			For the center:
+				1. Print the entire empty bar.
+				2. Move the cursor up to the center + half SEGMENTS_FULL.
+				3. Print the completed bar rows.
+			"""
+			return (
+				Term.pos(pos)
+				+ (pColorSet["empty"] + charEmpty*width + Term.posRel((-width, 1)))*height
+				+ Term.moveVert(-height/2 - SEGMENTS_FULL/2)
+				+ (pColorSet["full"] + charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
+			)
 
 
 
 
-def shape(position: tuple[int, int], size: tuple[int, int], charset: CharSet,
+
+
+
+
+
+def shape(position: tuple[int, int], size: tuple[int, int], charset,
 		  parsedColorset: dict, filled: Optional[str] = " ") -> str:
 	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
 	width, height = size[0] + 2, size[1]
@@ -116,18 +166,12 @@ def shape(position: tuple[int, int], size: tuple[int, int], charset: CharSet,
 	return top + mid + bottom
 
 
-def content(position: tuple[int, int], size: tuple[int, int], charset: CharSet,
-			parsedColorset: ColorSet, rangeValue: tuple[int, int]) -> str:
-	"""Generates the progress shape with a parsed colorset and a charset specified"""
-	test = BarContent(BarContent.VERTICAL, "bottom")
-	return test.getStr(
-		position, size, (charset["full"], charset["empty"]), parsedColorset,
-		rangeValue
-	)
+
+
 
 
 def bText(position: tuple[int, int], size: tuple[int, int],
-		  parsedColorset: dict[str, Union[dict, str]], formatset: FormatSet) -> str:
+		  parsedColorset: dict[str, Union[dict, str]], formatset) -> str:
 	"""Generates all text for the bar"""
 	width, height = size
 

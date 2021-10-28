@@ -385,9 +385,9 @@ class PBar():
 			size, self._charset, parsedColorSet
 		)
 
-		barContent = gen.content(
+		barContent = gen.BarContent(gen.BarContent.VERTICAL, "bottom").getStr(
 			POSITION,
-			size, self._charset, parsedColorSet, self._range
+			size, self.charset, parsedColorSet, self._range
 		)
 
 		barText = gen.bText(

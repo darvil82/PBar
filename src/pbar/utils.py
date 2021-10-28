@@ -148,6 +148,16 @@ class Term:
 
 
 	@staticmethod
+	def posRel(pos: tuple[SupportsInt, SupportsInt]):
+		"""
+		Move the cursor to a relative position.
+		(Shortcut for `Term.moveHoriz` and `Term.moveVert`)
+		Negative values are supported.
+		"""
+		return Term.moveHoriz(int(pos[0]))+ Term.moveVert(int(pos[1]))
+
+
+	@staticmethod
 	def color(rgb: Optional[tuple[int, int, int]], bg: bool=False) -> str:
 		"""
 		Color of the cursor.
