@@ -25,8 +25,9 @@ class PBar():
 	def __init__(self,
 			prange: tuple[int, int]=(0, 1), text: str=None, size: tuple[int, int]=(20, 1),
 			position: tuple[Union[str, int], Union[str, int]]=("center", "center"),
-			charset: Optional[CharSetEntry]=None, colorset: Optional[ColorSetEntry]=None,
-			formatset: Optional[FormatSetEntry]=None, conditions: Optional[Union[list[Cond], Cond]]=None
+			charset: CharSetEntry=None, colorset: ColorSetEntry=None,
+			formatset: FormatSetEntry=None, conditions: Union[list[Cond], Cond]=None,
+			arangement: tuple[str, str]="auto"
 		) -> None:
 		"""
 		### Detailed descriptions:
@@ -92,6 +93,7 @@ class PBar():
 		self._colorset = ColorSet(colorset)
 		self._pos = self._getPos(position)
 		self._conditions = PBar._getConds(conditions)
+		self._arangement = self._getArangement(arangement)
 
 		self._oldValues = [self._pos, self._size]	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
@@ -307,7 +309,7 @@ class PBar():
 		"""Get and process new length requested"""
 		chkSeqOfLen(size, 2)
 		width, height = map(int, size)
-		return (capValue(int(width), min=5),
+		return (capValue(int(width), min=1),
 				capValue(int(height), min=1))
 
 
@@ -338,6 +340,19 @@ class PBar():
 			if cond.newSets[0]:	self.charset = cond.newSets[0]
 			if cond.newSets[1]:	self.colorset = cond.newSets[1]
 			if cond.newSets[2]:	self.formatset = cond.newSets[2]
+
+
+	def _getArangement(self, value: Union[str, tuple[str, str]]) -> tuple[str, str]:
+		width, height = self._size
+		if value != "auto":
+			chkSeqOfLen(value, 2, "arangement")
+			return value
+
+		mode = 1 if width/2 > height else 0
+		return (
+			"horiz" if mode else "vert",
+			"left" if mode else "bottom"
+		)
 
 
 
@@ -385,7 +400,7 @@ class PBar():
 			size, self._charset, parsedColorSet
 		)
 
-		barContent = gen.BarContent(gen.BarContent.VERTICAL, "bottom").getStr(
+		barContent = gen.BarContent(*self._arangement)(
 			POSITION,
 			size, self.charset, parsedColorSet, self._range
 		)

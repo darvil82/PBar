@@ -4,18 +4,17 @@ from . utils import capValue, Term
 
 
 class BarContent:
-	HORIZONTAL: int = 0
-	VERTICAL: int = 1
-
+	"""Generate the content of the bar"""
 	def __init__(self, mode: int, gfrom: str) -> None:
 		self.mode = mode
 		self.gfrom = gfrom
 
-	def getStr(self, position: tuple[int, int], size: tuple[int, int], charset: tuple[str, str],
-			   parsedColorset, prange: tuple[int, int]) -> str:
-		if self.mode == BarContent.HORIZONTAL:
+
+	def __call__(self, position: tuple[int, int], size: tuple[int, int], charset: tuple[str, str],
+				 parsedColorset, prange: tuple[int, int]) -> str:
+		if "horiz" in self.mode:
 			genFunc: Callable = self._genHoriz
-		elif self.mode == BarContent.VERTICAL:
+		elif "vert" in self.mode:
 			genFunc: Callable = self._genVert
 		else:
 			raise RuntimeError(f"unknown mode {self.mode}")
@@ -112,11 +111,8 @@ class BarContent:
 				+ Term.moveVert(-height/2 - SEGMENTS_FULL/2)
 				+ (pColorSet["full"] + charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
 			)
-
-
-
-
-
+		else:
+			raise RuntimeError(f"invalid gfrom {self.gfrom}")
 
 
 
@@ -164,8 +160,6 @@ def shape(position: tuple[int, int], size: tuple[int, int], charset,
 	)
 
 	return top + mid + bottom
-
-
 
 
 
