@@ -481,7 +481,7 @@ class FormatSet(_BaseSet):
 		text = FormatSet._rmPoisonChars(string)
 
 		# Convert the keys to a final string
-		for index, char in enumerate(text):
+		for char in text:
 			if not foundOpen:
 				if foundBackslash:
 					# Also skip the character next to the slash
@@ -529,6 +529,6 @@ class FormatSet(_BaseSet):
 		"""Convert all values in the FormatSet to strings with spaces of the same size."""
 		return FormatSet({
 			key: FormatSet.cleanedValues(value)
-			if isinstance(value, dict) else " " * len(value)
+			if isinstance(value, dict) else " "*len(value)
 			for key, value in val.items()
 		})
