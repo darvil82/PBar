@@ -3,21 +3,39 @@ from typing import Callable, Optional, Union
 from . utils import capValue, Term
 
 
+
 class BarContent:
-	"""Generate the content of the bar"""
-	def __init__(self, mode: int, gfrom: str) -> None:
-		self.mode = mode
+	"""
+	Generate the content of the bar.
+	Call this object to get the content string with the properties supplied.
+	"""
+	def __init__(self, gfrom: str) -> None:
+		"""
+		@gfrom: Place from where the full part of the bar will grow:
+
+		- `auto`:		Will automatically select between `left` and `bottom` depending on the size of the bar.
+		- `left`:		Grow from the left side.
+		- `right`:		Grow from the right side.
+		- `top`:		Grow from the top.
+		- `bottom`:		Grow from the bottom.
+		- `centerX`:	Grow from the center horizontally.
+		- `centerY`:	Grow from the center vertically.
+		"""
 		self.gfrom = gfrom
 
 
 	def __call__(self, position: tuple[int, int], size: tuple[int, int], charset: tuple[str, str],
 				 parsedColorset, prange: tuple[int, int]) -> str:
-		if "horiz" in self.mode:
+		"""Generate the content of the bar."""
+		if self.gfrom == "auto":
+			self.gfrom = "left" if size[0]/2 > size[1] else "bottom"
+
+		if self.gfrom in {"left", "right", "centerX"}:
 			genFunc: Callable = self._genHoriz
-		elif "vert" in self.mode:
+		elif self.gfrom in {"bottom", "top", "centerY"}:
 			genFunc: Callable = self._genVert
 		else:
-			raise RuntimeError(f"unknown mode {self.mode}")
+			raise RuntimeError(f"unknown gfrom {self.gfrom}")
 
 		chars = charset["full"], charset["empty"]
 
@@ -56,7 +74,7 @@ class BarContent:
 				pColorSet["empty"] + charEmpty*SEGMENTS_EMPTY
 				+ pColorSet["full"] + charFull*SEGMENTS_FULL
 			)
-		elif self.gfrom == "center":
+		elif self.gfrom == "centerX":
 			"""
 			For the center:
 				1. Print the entire empty bar.
@@ -68,8 +86,6 @@ class BarContent:
 				+ Term.moveHoriz(-width/2 - SEGMENTS_FULL/2)
 				+ pColorSet["full"] + charFull*SEGMENTS_FULL
 			)
-		else:
-			raise RuntimeError(f"invalid gfrom {self.gfrom}")
 
 
 	def _genVert(self, pos, size, chars, pColorSet, prange) -> str:
@@ -98,7 +114,7 @@ class BarContent:
 				+ (pColorSet["empty"] + charEmpty*width + Term.posRel((-width, 1)))*SEGMENTS_EMPTY
 				+ (pColorSet["full"] + charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
 			)
-		elif self.gfrom == "center":
+		elif self.gfrom == "centerY":
 			"""
 			For the center:
 				1. Print the entire empty bar.
@@ -111,9 +127,6 @@ class BarContent:
 				+ Term.moveVert(-height/2 - SEGMENTS_FULL/2)
 				+ (pColorSet["full"] + charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
 			)
-		else:
-			raise RuntimeError(f"invalid gfrom {self.gfrom}")
-
 
 
 

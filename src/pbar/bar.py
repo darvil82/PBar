@@ -4,7 +4,7 @@ from os import system as runsys, isatty
 from time import time as epochTime, sleep
 from inspect import getsourcelines
 
-from . sets import CharSet, ColorSet, FormatSet, CharSetEntry, FormatSetEntry, ColorSetEntry
+from . sets import CharSet, ColorSet, FormatSet, CharSetEntry, ColorSetEntry, FormatSetEntry
 from . utils import *
 from . cond import Cond
 from . import gen
@@ -27,7 +27,7 @@ class PBar():
 			position: tuple[Union[str, int], Union[str, int]]=("center", "center"),
 			charset: CharSetEntry=None, colorset: ColorSetEntry=None,
 			formatset: FormatSetEntry=None, conditions: Union[list[Cond], Cond]=None,
-			arangement: tuple[str, str]="auto"
+			gfrom: str="auto"
 		) -> None:
 		"""
 		### Detailed descriptions:
@@ -79,10 +79,22 @@ class PBar():
 		If one succeeds, the specified customization sets will be applied to the bar.
 
 		To create a condition, use `pbar.Cond`.
+
+		---
+
+		@gfrom: Place from where the full part of the bar will grow:
+
+		- `auto`:		Will automatically select between `left` and `bottom` depending on the size of the bar.
+		- `left`:		Grow from the left side.
+		- `right`:		Grow from the right side.
+		- `top`:		Grow from the top.
+		- `bottom`:		Grow from the bottom.
+		- `centerX`:	Grow from the center horizontally.
+		- `centerY`:	Grow from the center vertically.
 		"""
 		self._requiresClear = False		# This controls if the bar needs to clear its old position before drawing.
-		self._enabled = True			# If disabled, the bar will never draw.
-		self._time = epochTime()			# The elapsed time since the bar created.
+		self.enabled = True				# If disabled, the bar will never draw.
+		self._time = epochTime()		# The elapsed time since the bar created.
 		self._isOnScreen = False		# Is the bar on screen?
 
 		self._range = PBar._getRange(prange)
@@ -93,7 +105,7 @@ class PBar():
 		self._colorset = ColorSet(colorset)
 		self._pos = self._getPos(position)
 		self._conditions = PBar._getConds(conditions)
-		self._arangement = self._getArangement(arangement)
+		self._gfrom = gfrom
 
 		self._oldValues = [self._pos, self._size]	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
@@ -229,15 +241,6 @@ class PBar():
 
 
 	@property
-	def enabled(self):
-		"""Will the bar draw on the next `draw` calls?"""
-		return self._enabled
-	@enabled.setter
-	def enabled(self, state: bool):
-		self._enabled = state
-
-
-	@property
 	def etime(self) -> float:
 		"""Time elapsed since the bar created."""
 		return round(epochTime() - self._time, 2)
@@ -264,12 +267,13 @@ class PBar():
 			"colorset":		convertClrs(self._colorset, "HEX"),
 			"formatset":	self._formatset,
 			"conditions":	self._conditions,
-			"enabled":		self._enabled
+			"_gfrom":		self._gfrom,
+			"enabled":		self.enabled
 		}
 	@config.setter
 	def config(self, config: dict[str, Any]):
 		chkInstOf(config, dict, name="config")
-		for key in {"prange", "text", "size", "position", "charset", "colorset", "formatset", "conditions", "enabled"}:
+		for key in {"prange", "text", "size", "position", "charset", "colorset", "formatset", "conditions", "_gfrom", "enabled"}:
 			# Iterate through every key in the dict and populate the config of the class with its values
 			if key not in config:
 				raise ValueError(f"config dict is missing the {key!r} key")
@@ -342,20 +346,6 @@ class PBar():
 			if cond.newSets[2]:	self.formatset = cond.newSets[2]
 
 
-	def _getArangement(self, value: Union[str, tuple[str, str]]) -> tuple[str, str]:
-		width, height = self._size
-		if value != "auto":
-			chkSeqOfLen(value, 2, "arangement")
-			return value
-
-		mode = 1 if width/2 > height else 0
-		return (
-			"horiz" if mode else "vert",
-			"left" if mode else "bottom"
-		)
-
-
-
 
 	def _genClearedBar(self, values: tuple[tuple[int, int], tuple[int, int]]) -> str:
 		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
@@ -400,7 +390,7 @@ class PBar():
 			size, self._charset, parsedColorSet
 		)
 
-		barContent = gen.BarContent(*self._arangement)(
+		barContent = gen.BarContent(self._gfrom)(
 			POSITION,
 			size, self.charset, parsedColorSet, self._range
 		)
@@ -416,7 +406,7 @@ class PBar():
 
 	def _printStr(self, barString: str):
 		"""Prints string to stream"""
-		if not self._enabled: return
+		if not self.enabled: return
 		print(
 			Term.CURSOR_SAVE + Term.CURSOR_HIDE
 			+ barString
