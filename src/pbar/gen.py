@@ -1,6 +1,7 @@
-from typing import Callable, Optional, Union
+from typing import Callable, Literal, Optional, Union
 
-from . utils import capValue, Term
+from . utils import capValue, Term, convertClrs
+from . import sets
 
 
 
@@ -9,7 +10,7 @@ class BarContent:
 	Generate the content of the bar.
 	Call this object to get the content string with the properties supplied.
 	"""
-	def __init__(self, gfrom: str) -> None:
+	def __init__(self, gfrom: Literal["auto", "left", "right", "top", "bottom", "centerX", "centerY"]) -> None:
 		"""
 		@gfrom: Place from where the full part of the bar will grow:
 
@@ -35,7 +36,7 @@ class BarContent:
 		elif self.gfrom in {"bottom", "top", "centerY"}:
 			genFunc: Callable = self._genVert
 		else:
-			raise RuntimeError(f"unknown gfrom {self.gfrom}")
+			raise RuntimeError(f"unknown gfrom {self.gfrom!r}")
 
 		chars = charset["full"], charset["empty"]
 
@@ -127,6 +128,7 @@ class BarContent:
 				+ Term.moveVert(-height/2 - SEGMENTS_FULL/2)
 				+ (pColorSet["full"] + charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
 			)
+
 
 
 
@@ -227,3 +229,17 @@ def bText(position: tuple[int, int], size: tuple[int, int],
 	)
 
 	return textTitle + textSubtitle + textRight + textLeft + txtInside
+
+
+
+
+def rect(pos: tuple[int, int], size: tuple[int, int],
+		 char: str, color: Union[tuple, str]) -> str:
+	"""Generate a rectangle."""
+	return shape(
+		pos,
+		size,
+		sets.CharSet({"corner": char, "horiz": char, "vert": char}),
+		sets.ColorSet({"corner": color, "horiz": color, "vert": color}).parsedValues(),
+		char
+	)

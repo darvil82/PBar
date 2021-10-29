@@ -1,5 +1,5 @@
 from io import TextIOWrapper
-from typing import Any, Callable, Optional, SupportsInt, Union, IO
+from typing import Any, Callable, Literal, Optional, SupportsInt, Union, IO
 from os import system as runsys, isatty
 from time import time as epochTime, sleep
 from inspect import getsourcelines
@@ -27,7 +27,7 @@ class PBar():
 			position: tuple[Union[str, int], Union[str, int]]=("center", "center"),
 			charset: CharSetEntry=None, colorset: ColorSetEntry=None,
 			formatset: FormatSetEntry=None, conditions: Union[list[Cond], Cond]=None,
-			gfrom: str="auto"
+			gfrom: Literal["auto", "left", "right", "top", "bottom", "centerX", "centerY"]="auto"
 		) -> None:
 		"""
 		### Detailed descriptions:
