@@ -1,6 +1,6 @@
 from typing import Callable, Literal, Optional, Union
 
-from . utils import capValue, Term, convertClrs
+from . utils import capValue, Term
 from . import sets
 
 
