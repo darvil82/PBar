@@ -4,9 +4,10 @@ from os import system as runsys, isatty
 from time import time as epochTime, sleep
 from inspect import getsourcelines
 
-from . sets import CharSet, ColorSet, FormatSet, CharSetEntry, FormatSetEntry, ColorSetEntry
+from . sets import CharSet, ColorSet, FormatSet, CharSetEntry, ColorSetEntry, FormatSetEntry
 from . utils import *
 from . cond import Cond
+from . import gen
 
 
 if not isatty(0):	# check if we are running in a tty
@@ -17,120 +18,6 @@ runsys("")		# We need to do this, otherwise Windows won't display special VT100 
 Position = tuple[Union[str, int], Union[str, int]]
 
 
-def _genShape(position: tuple[int, int], size: tuple[int, int], charset: CharSet,
-			  parsedColorset: dict, filled: Optional[str] = " ") -> str:
-	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
-	width, height = size[0] + 2, size[1]
-
-	charVert = (	# Vertical characters, normally "|" at both sides.
-		parsedColorset["vert"]["left"] + charset["vert"]["left"],
-		parsedColorset["vert"]["right"] + charset["vert"]["right"]
-	)
-	charHoriz = (	# Horizontal characters, normally "-" at top and bottom.
-		charset["horiz"]["top"],
-		charset["horiz"]["bottom"],
-	)
-	charCorner = (	# Corners of the shape at all four sides
-		parsedColorset["corner"]["tleft"] + charset["corner"]["tleft"],
-		parsedColorset["corner"]["tright"] + charset["corner"]["tright"],
-		parsedColorset["corner"]["bleft"] + charset["corner"]["bleft"],
-		parsedColorset["corner"]["bright"] + charset["corner"]["bright"]
-	)
-
-
-	top: str = (
-		Term.pos(position)
-		+ charCorner[0]
-		+ parsedColorset["horiz"]["top"] + charHoriz[0]*width
-		+ charCorner[1]
-	)
-
-	mid: str = "".join((	# generate all the rows of the bar. If filled is None, we just make the cursor jump
-		Term.pos(position, (0, row))
-		+ charVert[0]
-		+ (Term.moveHoriz(width) if filled is None else filled[0]*width)
-		+ charVert[1]
-	) for row in range(1, height))
-
-	bottom: str = (
-		Term.pos(position, (0, height))
-		+ charCorner[2]
-		+ parsedColorset["horiz"]["bottom"] + charHoriz[1]*width
-		+ charCorner[3]
-	)
-
-	return top + mid + bottom
-
-
-def _genBarContent(position: tuple[int, int], size: tuple[int, int], charset: CharSet,
-				   parsedColorset: ColorSet, rangeValue: tuple[int, int]) -> str:
-	"""Generates the progress shape with a parsed colorset and a charset specified"""
-	width, height = size
-	SEGMENTS_FULL = int((capValue(rangeValue[0], rangeValue[1], 0) / capValue(rangeValue[1], min=1))*width)	# Number of character for the full part of the bar
-	SEGMENTS_EMPTY = width - SEGMENTS_FULL	# number of characters for the empty part of the bar
-
-	charFull = charset["full"]	# character that represets the full part of the bar
-	charEmpty = charset["empty"]	# character that represents the empty part of the bar
-
-	return "".join((	# duplicate the bar content each row of the bar (height)
-			Term.pos((position), (0, row))
-			+ parsedColorset["full"] + charFull*SEGMENTS_FULL
-			+ parsedColorset["empty"] + charEmpty*SEGMENTS_EMPTY
-		) for row in range(1, height))
-
-
-def _genBarText(position: tuple[int, int], size: tuple[int, int],
-				parsedColorset: dict[str, Union[dict, str]], formatset: FormatSet) -> str:
-	"""Generates all text for the bar"""
-	width, height = size
-
-	def stripText(string: str, maxlen: int):
-		"""Return a string stripped if the len of it is larger than the maxlen specified"""
-		maxlen = capValue(maxlen, min=3)
-		return string[:maxlen-3] + "..." if len(string) > maxlen else string
-
-	# set the max number of characters that a string should have on each part of the bar
-	txtMaxWidth = width + 2
-	txtSubtitle = stripText(formatset["subtitle"], txtMaxWidth)
-	txtInside = stripText(formatset["inside"], txtMaxWidth - 4)
-	txtTitle = stripText(formatset["title"], txtMaxWidth)
-
-	# position each text on its correct position relative to the bar
-	textTitle = (
-		Term.pos(position, (-1, 0))
-		+ parsedColorset["text"]["title"]
-		+ txtTitle
-	)
-
-	textSubtitle = (
-		Term.pos(position, (width - len(txtSubtitle) + 1, height))
-		+ parsedColorset["text"]["subtitle"]
-		+ txtSubtitle
-	)
-
-	textRight = (
-		Term.pos(position, (width + 3, height/2))
-		+ parsedColorset["text"]["right"]
-		+ formatset["right"]
-		+ Term.CLEAR_RIGHT
-	) if formatset["right"] else ""
-
-	textLeft = (
-		Term.pos(position, (-len(formatset["left"]) - 3, height/2))
-		+ Term.CLEAR_LEFT
-		+ parsedColorset["text"]["left"]
-		+ formatset["left"]
-	) if formatset["left"] else ""
-
-	txtInside = (
-		Term.pos(position, (width/2 - len(txtInside)/2, height/2))
-		+ parsedColorset["text"]["inside"]
-		+ txtInside
-	)
-
-	return textTitle + textSubtitle + textRight + textLeft + txtInside
-
-
 
 
 class PBar():
@@ -138,8 +25,9 @@ class PBar():
 	def __init__(self,
 			prange: tuple[int, int]=(0, 1), text: str=None, size: tuple[int, int]=(20, 1),
 			position: tuple[Union[str, int], Union[str, int]]=("center", "center"),
-			charset: Optional[CharSetEntry]=None, colorset: Optional[ColorSetEntry]=None,
-			formatset: Optional[FormatSetEntry]=None, conditions: Optional[Union[list[Cond], Cond]]=None
+			charset: CharSetEntry=None, colorset: ColorSetEntry=None,
+			formatset: FormatSetEntry=None, conditions: Union[list[Cond], Cond]=None,
+			gfrom: str="auto"
 		) -> None:
 		"""
 		### Detailed descriptions:
@@ -191,10 +79,22 @@ class PBar():
 		If one succeeds, the specified customization sets will be applied to the bar.
 
 		To create a condition, use `pbar.Cond`.
+
+		---
+
+		@gfrom: Place from where the full part of the bar will grow:
+
+		- `auto`:		Will automatically select between `left` and `bottom` depending on the size of the bar.
+		- `left`:		Grow from the left side.
+		- `right`:		Grow from the right side.
+		- `top`:		Grow from the top.
+		- `bottom`:		Grow from the bottom.
+		- `centerX`:	Grow from the center horizontally.
+		- `centerY`:	Grow from the center vertically.
 		"""
 		self._requiresClear = False		# This controls if the bar needs to clear its old position before drawing.
-		self._enabled = True			# If disabled, the bar will never draw.
-		self._time = epochTime()			# The elapsed time since the bar created.
+		self.enabled = True				# If disabled, the bar will never draw.
+		self._time = epochTime()		# The elapsed time since the bar created.
 		self._isOnScreen = False		# Is the bar on screen?
 
 		self._range = PBar._getRange(prange)
@@ -205,6 +105,7 @@ class PBar():
 		self._colorset = ColorSet(colorset)
 		self._pos = self._getPos(position)
 		self._conditions = PBar._getConds(conditions)
+		self._gfrom = gfrom
 
 		self._oldValues = [self._pos, self._size]	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
@@ -340,15 +241,6 @@ class PBar():
 
 
 	@property
-	def enabled(self):
-		"""Will the bar draw on the next `draw` calls?"""
-		return self._enabled
-	@enabled.setter
-	def enabled(self, state: bool):
-		self._enabled = state
-
-
-	@property
 	def etime(self) -> float:
 		"""Time elapsed since the bar created."""
 		return round(epochTime() - self._time, 2)
@@ -375,12 +267,13 @@ class PBar():
 			"colorset":		convertClrs(self._colorset, "HEX"),
 			"formatset":	self._formatset,
 			"conditions":	self._conditions,
-			"enabled":		self._enabled
+			"_gfrom":		self._gfrom,
+			"enabled":		self.enabled
 		}
 	@config.setter
 	def config(self, config: dict[str, Any]):
 		chkInstOf(config, dict, name="config")
-		for key in {"prange", "text", "size", "position", "charset", "colorset", "formatset", "conditions", "enabled"}:
+		for key in {"prange", "text", "size", "position", "charset", "colorset", "formatset", "conditions", "_gfrom", "enabled"}:
 			# Iterate through every key in the dict and populate the config of the class with its values
 			if key not in config:
 				raise ValueError(f"config dict is missing the {key!r} key")
@@ -420,7 +313,7 @@ class PBar():
 		"""Get and process new length requested"""
 		chkSeqOfLen(size, 2)
 		width, height = map(int, size)
-		return (capValue(int(width), min=5),
+		return (capValue(int(width), min=1),
 				capValue(int(height), min=1))
 
 
@@ -454,7 +347,6 @@ class PBar():
 
 
 
-
 	def _genClearedBar(self, values: tuple[tuple[int, int], tuple[int, int]]) -> str:
 		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
 		if not self._isOnScreen:	return ""
@@ -465,14 +357,14 @@ class PBar():
 		POSITION = (pos[0] + int(size[0]/-2),
 					pos[1] + int(size[1]/-2))
 
-		barShape = _genShape(
+		barShape = gen.shape(
 			(POSITION[0] - 2, POSITION[1]),
 			size,
 			CharSet.EMPTY,
 			parsedColorSet
 		)
 
-		barText = _genBarText(
+		barText = gen.bText(
 			POSITION,
 			size,
 			parsedColorSet,
@@ -493,17 +385,17 @@ class PBar():
 		parsedColorSet = self._colorset.parsedValues()
 
 		# Build all the parts of the progress bar
-		barShape = _genShape(
+		barShape = gen.shape(
 			(POSITION[0] - 2, POSITION[1]),
 			size, self._charset, parsedColorSet
 		)
 
-		barContent = _genBarContent(
+		barContent = gen.BarContent(self._gfrom)(
 			POSITION,
-			size, self._charset, parsedColorSet, self._range
+			size, self.charset, parsedColorSet, self._range
 		)
 
-		barText = _genBarText(
+		barText = gen.bText(
 			POSITION,
 			size, parsedColorSet, self._formatset.parsedValues(self)
 		)
@@ -514,7 +406,7 @@ class PBar():
 
 	def _printStr(self, barString: str):
 		"""Prints string to stream"""
-		if not self._enabled: return
+		if not self.enabled: return
 		print(
 			Term.CURSOR_SAVE + Term.CURSOR_HIDE
 			+ barString

@@ -133,3 +133,6 @@ dmypy.json
 # stuff
 test.py
 buildpkg.sh
+
+# vscode
+.vscode
