@@ -105,7 +105,7 @@ class PBar():
 		self._colorset = ColorSet(colorset)
 		self._pos = self._getPos(position)
 		self._conditions = PBar._getConds(conditions)
-		self._gfrom = gfrom
+		self.gfrom = gfrom
 
 		self._oldValues = [self._pos, self._size]	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
@@ -267,13 +267,13 @@ class PBar():
 			"colorset":		convertClrs(self._colorset, "HEX"),
 			"formatset":	self._formatset,
 			"conditions":	self._conditions,
-			"_gfrom":		self._gfrom,
+			"gfrom":		self.gfrom,
 			"enabled":		self.enabled
 		}
 	@config.setter
 	def config(self, config: dict[str, Any]):
 		chkInstOf(config, dict, name="config")
-		for key in {"prange", "text", "size", "position", "charset", "colorset", "formatset", "conditions", "_gfrom", "enabled"}:
+		for key in {"prange", "text", "size", "position", "charset", "colorset", "formatset", "conditions", "gfrom", "enabled"}:
 			# Iterate through every key in the dict and populate the config of the class with its values
 			if key not in config:
 				raise ValueError(f"config dict is missing the {key!r} key")
@@ -390,7 +390,7 @@ class PBar():
 			size, self._charset, parsedColorSet
 		)
 
-		barContent = gen.BarContent(self._gfrom)(
+		barContent = gen.BarContent(self.gfrom)(
 			POSITION,
 			size, self.charset, parsedColorSet, self._range
 		)
