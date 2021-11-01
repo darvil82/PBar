@@ -15,8 +15,8 @@ _OP_IN = "<-"
 
 class Cond:
 	"""Condition manager used by a PBar object."""
-	def __init__(self, condition: str, charset: CharSetEntry = None,
-				 colorset: ColorSetEntry = None, formatset: FormatSetEntry = None) -> None:
+	def __init__(self, condition: str, colorset: ColorSetEntry=None,
+				 charset: CharSetEntry=None, formatset: FormatSetEntry=None) -> None:
 		"""
 		Apply different customization sets to a bar if the condition supplied succeeds.
 		Text comparisons are case insensitive.
@@ -33,9 +33,9 @@ class Cond:
 
 		### Examples:
 
-		>>> Cond("percentage >= 50", colorset=ColorSet.DARVIL)
+		>>> Cond("percentage >= 50", ColorSet.DARVIL)
 
-		>>> Cond("text <- 'error'", colorset=ColorSet.ERROR, formatset=FormatSet.TITLE_SUBTITLE)
+		>>> Cond("text <- 'error'", ColorSet.ERROR, formatset=FormatSet.TITLE_SUBTITLE)
 		"""
 		vs = self._chkCond(condition)
 		self._attribute, self.operator = vs[0:2]

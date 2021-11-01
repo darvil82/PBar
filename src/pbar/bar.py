@@ -25,7 +25,7 @@ class PBar():
 	def __init__(self,
 			prange: tuple[int, int]=(0, 1), text: str=None, size: tuple[int, int]=(20, 1),
 			position: tuple[Union[str, int], Union[str, int]]=("center", "center"),
-			charset: CharSetEntry=None, colorset: ColorSetEntry=None,
+			colorset: ColorSetEntry=None, charset: CharSetEntry=None,
 			formatset: FormatSetEntry=None, conditions: Union[list[Cond], Cond]=None,
 			gfrom: Literal["auto", "left", "right", "top", "bottom", "centerX", "centerY"]="auto"
 		) -> None:
@@ -263,8 +263,8 @@ class PBar():
 			"text":			self._text,
 			"size":			self._size,
 			"position":		self._pos,
-			"charset":		self._charset,
 			"colorset":		convertClrs(self._colorset, "HEX"),
+			"charset":		self._charset,
 			"formatset":	self._formatset,
 			"conditions":	self._conditions,
 			"gfrom":		self.gfrom,
@@ -273,7 +273,7 @@ class PBar():
 	@config.setter
 	def config(self, config: dict[str, Any]):
 		chkInstOf(config, dict, name="config")
-		for key in {"prange", "text", "size", "position", "charset", "colorset", "formatset", "conditions", "gfrom", "enabled"}:
+		for key in {"prange", "text", "size", "position", "colorset", "charset", "formatset", "conditions", "gfrom", "enabled"}:
 			# Iterate through every key in the dict and populate the config of the class with its values
 			if key not in config:
 				raise ValueError(f"config dict is missing the {key!r} key")
