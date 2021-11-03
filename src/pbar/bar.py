@@ -117,11 +117,11 @@ class PBar():
 		"""Print the progress bar on screen."""
 		if self._requiresClear:
 			# Clear the bar at the old position and length
-			self._printStr(self._genClearedBar(self._oldValues))
+			clsb = self._genClearedBar(self._oldValues)
 			self._oldValues = [self._pos, self._size]	# Reset the old values
-
-		# Draw the bar
-		self._printStr(self._genBar())
+			self._printStr(clsb + self._genBar())	# we print the "cleared" bar and the new bar
+		else:
+			self._printStr(self._genBar())	# Draw the bar
 
 		self._requiresClear = False
 
@@ -139,8 +139,7 @@ class PBar():
 
 	def clear(self):
 		"""Clear the progress bar."""
-		bar = self._genClearedBar((self._pos, self._size))
-		self._printStr(bar)
+		self._printStr(self._genClearedBar((self._pos, self._size)))
 
 
 	def resetETime(self):
@@ -353,7 +352,7 @@ class PBar():
 		pos, size = values
 		parsedColorSet = ColorSet.parsedValues(ColorSet.EMPTY)
 
-		size = size[0], size[1] + 1
+		size = size[0] + 1, size[1] + 1
 		POSITION = (pos[0] + int(size[0]/-2),
 					pos[1] + int(size[1]/-2))
 
