@@ -37,4 +37,4 @@ from . utils import Term
 # ░▄░▀░░█░▀▄▄░░░░░░░░░░░░░░░▄▄▄▀░░░▄▀░░░░░
 # ▀░░░░░░▀▄░░▀▄░░░░░░░░▄▄▄▀▀░░░░▄▀▀░░░░░░░
 
-# Thanks a lot for taking a look at my project. - DarviL
+# Thanks a lot for taking a look at this project. - DarviL
