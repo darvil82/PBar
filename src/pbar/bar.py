@@ -163,6 +163,15 @@ class PBar():
 
 
 	@property
+	def prange(self) -> tuple[int, int]:
+		"""Range for the bar progress."""
+		return (self._range[0], self._range[1])
+	@prange.setter
+	def prange(self, range: tuple[int, int]):
+		self._range = PBar._getRange(range)
+
+
+	@property
 	def percentage(self) -> int:
 		"""Percentage of the progress of the current `prange`."""
 		return int((self._range[0]*100) / self._range[1])
@@ -183,12 +192,12 @@ class PBar():
 
 
 	@property
-	def prange(self) -> tuple[int, int]:
-		"""Range for the bar progress."""
-		return (self._range[0], self._range[1])
-	@prange.setter
-	def prange(self, range: tuple[int, int]):
-		self._range = PBar._getRange(range)
+	def colorset(self) -> ColorSet:
+		"""Set of colors for the bar."""
+		return self._colorset
+	@colorset.setter
+	def colorset(self, colorset: ColorSetEntry):
+		self._colorset = ColorSet(colorset)
 
 
 	@property
@@ -198,15 +207,6 @@ class PBar():
 	@charset.setter
 	def charset(self, charset: CharSetEntry):
 		self._charset = CharSet(charset)
-
-
-	@property
-	def colorset(self) -> ColorSet:
-		"""Set of colors for the bar."""
-		return self._colorset
-	@colorset.setter
-	def colorset(self, colorset: ColorSetEntry):
-		self._colorset = ColorSet(colorset)
 
 
 	@property
@@ -267,7 +267,7 @@ class PBar():
 			"text":			self._text,
 			"size":			self._size,
 			"position":		self._pos,
-			"colorset":		convertClrs(self._colorset, "HEX"),
+			"colorset":		self._colorset,
 			"charset":		self._charset,
 			"formatset":	self._formatset,
 			"conditions":	self._conditions,
