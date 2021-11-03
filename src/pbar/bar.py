@@ -163,13 +163,18 @@ class PBar():
 
 
 	@property
-	def percentage(self):
+	def percentage(self) -> int:
 		"""Percentage of the progress of the current `prange`."""
 		return int((self._range[0]*100) / self._range[1])
+	@percentage.setter
+	def percentage(self, percentage: int):
+		crange = self._range
+		perc = crange[1]/100 * percentage
+		self.prange = (perc, crange[1])
 
 
 	@property
-	def text(self):
+	def text(self) -> str:
 		"""Text to be displayed on the bar."""
 		return self._text
 	@text.setter
