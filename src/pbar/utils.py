@@ -94,7 +94,7 @@ def chkSeqOfLen(obj: Any, length: int, name: str=None) -> bool:
 		raise ValueError(
 			(name or f"Sequence {Term.color((255, 150, 0))}{obj!r}{Term.RESET}")
 			+ " must have " + Term.color((0, 255, 0)) + str(length) + Term.RESET + " items, "
-			+ "not " + Term.color((255, 0, 0)) + str(len(obj))
+			+ "not " + Term.color((255, 0, 0)) + str(len(obj)) + Term.RESET
 		)
 	return True
 
