@@ -69,8 +69,8 @@ h3 { margin: 20px 0;}
 	flex-direction: column;
 	justify-content: flex-end;
 	right: 50px;
-	width: 200px;
-	padding: 0.4em 1em;
+	width: fit-content;
+	padding: 0.4em 1.5em;
 	height: max-content;
 	margin-bottom: 1em;
 	border-radius: 0 0 0.5vh 0.5vh;
@@ -78,7 +78,7 @@ h3 { margin: 20px 0;}
 	background-color: white;
 	transition: all .25s ease-in-out;
 	user-select: none;
-	transform: translateY(-2.5em);
+	transform: translateY(-75%);
 	font-size: 1.25em;
 	text-decoration: underline;
 	color: transparent;
@@ -90,7 +90,6 @@ h3 { margin: 20px 0;}
 	z-index: -1;
 }
 .lang-changer:hover {
-	height: 4rem;
 	transform: none;
 	color: black;
 }
@@ -510,7 +509,8 @@ span.whisper {
 
 @media screen and (max-width: 1000px) {
 	.lang-changer {
-		height: 4rem;
+		font-size: 4vw;
+		right: 5vw;
 		transform: none;
 		color: black;
 	}
