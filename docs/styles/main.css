@@ -82,6 +82,7 @@ h3 { margin: 20px 0;}
 	font-size: 1.25em;
 	text-decoration: underline;
 	color: transparent;
+	box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.267);
 }
 .lang-changer::after {	/* We use this to make the hold area way bigger */
 	position: absolute;
