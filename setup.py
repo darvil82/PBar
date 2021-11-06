@@ -16,7 +16,7 @@ setuptools.setup(
 	description="Display customizable progress bars on the terminal easily.",
 	long_description=long_description,
 	long_description_content_type="text/markdown",
-	url="https://github.com/DarviL82/PBar",
+	url="https://darvil82.github.io/PBar",
 	project_urls={
 		"Tracker": "https://github.com/DarviL82/PBar/issues",
 		"Documentation": "https://github.com/DarviL82/PBar/wiki"
