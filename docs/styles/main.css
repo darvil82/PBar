@@ -61,30 +61,35 @@ h3 { margin: 20px 0;}
 	background-color: white;
 }
 
+
+
 .lang-changer {
 	position: fixed;
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
 	right: 50px;
-	width: max-content;
+	width: 200px;
 	padding: 0.4em 1em;
-	height: 30px;
+	height: max-content;
 	margin-bottom: 1em;
 	border-radius: 0 0 0.5vh 0.5vh;
 	z-index: 50;
 	background-color: white;
 	transition: all .25s ease-in-out;
 	user-select: none;
-	transform: translateY(-25px);
+	transform: translateY(-2.5em);
+	font-size: 1.25em;
+	text-decoration: underline;
 }
 .lang-changer::after {	/* We use this to make the hold area way bigger */
 	position: absolute;
 	content: "";
 	inset: -50px -50px;
+	z-index: -1;
 }
 .lang-changer:hover {
-	height: 40px;
+	height: 4rem;
 	transform: none;
 }
 
@@ -134,7 +139,7 @@ h3 { margin: 20px 0;}
 		justify-content: center;
 		height: 70vh;
 		font-size: 15vh;
-		padding-left: 10%;
+		padding: 0 10%;
 		background-image: linear-gradient(
 			rgba(0, 0, 0, var(--bg-opacity)),	/* We do this to have to darken the bg a bit */
 			rgba(0, 0, 0, var(--bg-opacity))),
@@ -502,6 +507,16 @@ span.whisper {
 .right {float: right;}
 
 @media screen and (max-width: 1000px) {
+	.lang-changer {
+		height: 4rem;
+		transform: none;
+	}
+
+	.banner {
+		font-size: 20vw;
+		height: 100vw;
+	}
+
 	.info {
 		flex-direction: column;
 	}
@@ -526,7 +541,7 @@ span.whisper {
 	}
 
 	.showcase {
-		padding: 5%;
+		padding: 15% 5%;
 	}
 
 	.links {
