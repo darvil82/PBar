@@ -81,6 +81,7 @@ h3 { margin: 20px 0;}
 	transform: translateY(-2.5em);
 	font-size: 1.25em;
 	text-decoration: underline;
+	color: transparent;
 }
 .lang-changer::after {	/* We use this to make the hold area way bigger */
 	position: absolute;
@@ -91,6 +92,7 @@ h3 { margin: 20px 0;}
 .lang-changer:hover {
 	height: 4rem;
 	transform: none;
+	color: black;
 }
 
 
@@ -510,6 +512,7 @@ span.whisper {
 	.lang-changer {
 		height: 4rem;
 		transform: none;
+		color: black;
 	}
 
 	.banner {
