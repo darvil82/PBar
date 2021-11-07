@@ -81,17 +81,21 @@ h3 { margin: 20px 0;}
 	text-decoration: underline;
 	color: transparent;
 	box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.267);
+
+
+	&::after {	/* We use this to make the hold area way bigger */
+		position: absolute;
+		content: "";
+		inset: -50px -50px;
+		z-index: -1;
+	}
+
+	&:hover {
+		transform: none;
+		color: black;
+	}
 }
-.lang-changer::after {	/* We use this to make the hold area way bigger */
-	position: absolute;
-	content: "";
-	inset: -50px -50px;
-	z-index: -1;
-}
-.lang-changer:hover {
-	transform: none;
-	color: black;
-}
+
 
 
 
