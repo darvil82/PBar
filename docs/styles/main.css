@@ -238,10 +238,11 @@ h3 { margin: 20px 0;}
 			color: var(--color)
 		}
 		.info-item p {text-align: justify;}
+		.info-item a {margin-top: auto;}
 
 		.info-item:hover { transform: scale(1.05); }
 		.info-item:hover::after { opacity: 0.15; }
-		.info-item a:hover {background-color: var(--color); }
+		.info-item a:hover {background-color: var(--color);}
 
 
 		/* Setting the different colors used by the info-items */
@@ -532,7 +533,7 @@ span.whisper {
 	}
 
 	.info-item {
-		width: 90%;
+		width: initial;
 	}
 
 	.show-title {font-size: 3em;}
