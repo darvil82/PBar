@@ -154,6 +154,12 @@ h3 { margin: 20px 0;}
 		position: relative;
 	}
 
+	@supports not (backdrop-filter: blur()) {
+		.banner {
+			--bg-opacity: 0.75;
+		}
+	}
+
 	.banner::before {	/* Banner blur effect */
 		position: absolute;
 		inset: 0;
