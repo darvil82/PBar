@@ -296,7 +296,7 @@ class PBar():
 
 		for index, value in enumerate(position):
 			if value == "center":
-				value = int(TERM_SIZE[index]/2)+1
+				value = int(TERM_SIZE[index]/2)
 			chkInstOf(value, int, float, name="pos")
 
 			if value < 0:	# if negative value, return Term size - value
@@ -357,9 +357,9 @@ class PBar():
 		pos, size = values
 		parsedColorSet = ColorSet.parsedValues(ColorSet.EMPTY)
 
-		size = size[0] + 1, size[1] + 1
-		POSITION = (pos[0] + int(size[0]/-2),
-					pos[1] + int(size[1]/-2))
+		size = size[0], size[1] + 1
+		POSITION = (pos[0] - int(size[0]/2),
+					pos[1] - int(size[1]/2))
 
 		barShape = gen.shape(
 			(POSITION[0] - 2, POSITION[1]),
