@@ -383,8 +383,8 @@ class PBar():
 		"""Generate the progress bar"""
 		if self._conditions:	self._chkConds()
 		size = self._size[0], self._size[1] + 1
-		POSITION = (self._pos[0] + int(size[0]/-2),
-					self._pos[1] + int(size[1]/-2))
+		POSITION = (self._pos[0] - int(size[0]/2),
+					self._pos[1] - int(size[1]/2))
 
 		parsedColorSet = self._colorset.parsedValues()
 
