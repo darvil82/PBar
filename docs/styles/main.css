@@ -165,6 +165,7 @@ a.button:hover {
 }
 
 .banner {
+  --bg-opacity: 0.1;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -178,8 +179,8 @@ a.button:hover {
   height: 70vh;
   font-size: 15vh;
   padding: 0 10%;
-  background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0.1)), to(rgba(0, 0, 0, 0.1))), url("../images/anim.gif");
-  background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url("../images/anim.gif");
+  background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, var(--bg-opacity))), to(rgba(0, 0, 0, var(--bg-opacity)))), url("../images/anim.gif");
+  background-image: linear-gradient(rgba(0, 0, 0, var(--bg-opacity)), rgba(0, 0, 0, var(--bg-opacity))), url("../images/anim.gif");
   background-size: 250vh;
   background-position-y: 50%;
   -webkit-animation: bg-move 20s infinite alternate ease-in-out;
@@ -200,6 +201,12 @@ a.button:hover {
   -webkit-backdrop-filter: blur(10px);
           backdrop-filter: blur(10px);
   z-index: 0;
+}
+
+@supports not ((-webkit-backdrop-filter: blur()) or (backdrop-filter: blur())) {
+  .banner {
+    --bg-opacity: 0.6;
+  }
 }
 
 .banner .banner-title {

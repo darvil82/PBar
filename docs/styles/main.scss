@@ -135,7 +135,7 @@ a.button {
 }
 
 .banner {
-	$bg-opacity: 0.1;
+	--bg-opacity: 0.1;
 	$bg-blur: 10px;
 
 	display: flex;
@@ -145,8 +145,8 @@ a.button {
 	font-size: 15vh;
 	padding: 0 10%;
 	background-image: linear-gradient(
-		rgba(0, 0, 0, $bg-opacity),	/* We do this to have to darken the bg a bit */
-		rgba(0, 0, 0, $bg-opacity)),
+		rgba(0, 0, 0, var(--bg-opacity)),	/* We do this to have to darken the bg a bit */
+		rgba(0, 0, 0, var(--bg-opacity))),
 		url("../images/anim.gif");
 	background-size: 250vh;
 	background-position-y: 50%;
@@ -166,7 +166,7 @@ a.button {
 
 	@supports not (backdrop-filter: blur()) {
 		& {
-			$bg-opacity: 0.75;
+			--bg-opacity: 0.6;
 		}
 	}
 
