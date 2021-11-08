@@ -596,7 +596,7 @@ span.whisper {
   .links {
     padding: 5%;
   }
-  .items {
+  .links .items {
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
         -ms-flex-direction: column;
@@ -605,7 +605,7 @@ span.whisper {
         -ms-flex-align: center;
             align-items: center;
   }
-  .link {
+  .links .items .link {
     width: 90%;
     margin-right: 0;
   }

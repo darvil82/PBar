@@ -530,17 +530,16 @@ span.whisper {
 
 	.links {
 		padding: 5%;
-	}
 
-	.items {
-		flex-direction: column;
-		align-items: center;
-	}
+		.items {
+			flex-direction: column;
+			align-items: center;
 
-	.link {
-		width: 90%;
-		margin-right: 0;
+			.link {
+				width: 90%;
+				margin-right: 0;
+			}
+		}
 	}
-
 
 }
