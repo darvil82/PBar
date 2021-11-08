@@ -71,7 +71,7 @@ h3 { margin: 20px 0;}
 	padding: 0.4em 1.5em;
 	height: max-content;
 	margin-bottom: 1em;
-	border-radius: 0 0 0.5vh 0.5vh;
+	border-radius: 0 0 7px 7px;
 	z-index: 50;
 	background-color: white;
 	transition: all .25s ease-in-out;
@@ -101,27 +101,27 @@ h3 { margin: 20px 0;}
 
 
 /* a */
-	a.button {
-		display: inline-block;
-		background-color: rgb(65, 65, 65);
+a.button {
+	display: inline-block;
+	background-color: rgb(65, 65, 65);
 
-		border: none;
-		color: white;
-		font-size: 1em;
-		padding: 0.4em 1.75em;
-		border-radius: 5px;
-		margin: 0.5em;
-		font-weight: bold;
-		text-decoration: none;
-		transition:
-			background-color 0.25s,
-			color 0.25s;
-	}
+	border: none;
+	color: white;
+	font-size: 1em;
+	padding: 0.4em 1.75em;
+	border-radius: 5px;
+	margin: 0.5em;
+	font-weight: bold;
+	text-decoration: none;
+	transition:
+		background-color 0.25s,
+		color 0.25s;
 
-	a.button:hover {
+	&:hover {
 		background-color: rgb(119, 219, 164);
 		color: black;
 	}
+}
 
 
 
@@ -129,135 +129,135 @@ h3 { margin: 20px 0;}
 
 
 /* Main screen */
-	@keyframes bg-move {
-		from { background-position-x: left;}
-		to { background-position-x: right;}
+@keyframes bg-move {
+	from { background-position-x: left;}
+	to { background-position-x: right;}
+}
+
+.banner {
+	$bg-opacity: 0.1;
+	$bg-blur: 10px;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	height: 70vh;
+	font-size: 15vh;
+	padding: 0 10%;
+	background-image: linear-gradient(
+		rgba(0, 0, 0, $bg-opacity),	/* We do this to have to darken the bg a bit */
+		rgba(0, 0, 0, $bg-opacity)),
+		url("../images/anim.gif");
+	background-size: 250vh;
+	background-position-y: 50%;
+	animation: bg-move 20s infinite alternate ease-in-out;
+	overflow: hidden;
+	user-select: none;
+	position: relative;
+
+
+	&::before {	/* Banner blur effect */
+		position: absolute;
+		inset: 0;
+		content: "";
+		backdrop-filter: blur($bg-blur);
+		z-index: 0;
 	}
 
-	.banner {
-		$bg-opacity: 0.1;
-		$bg-blur: 10px;
+	@supports not (backdrop-filter: blur()) {
+		& {
+			$bg-opacity: 0.75;
+		}
+	}
 
+
+
+	.banner-title {
+		font-family: 'Roboto', sans-serif;;
+		display: inline-block;
+		letter-spacing: -0.05em;
+		width: max-content;
+		background-image: $bar-gradient;
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+		background-size: 5em;
+		animation: bg-move 5s infinite alternate ease-in-out;
+		z-index: 1;
+	}
+
+	.banner-subtitle {
+		transform: translate(0.5em, -1.75em);
+		font-size: 0.25em;
+		display: block;
+		color: rgb(230, 230, 230);
+		font-weight: bold;
+	}
+}
+
+
+
+
+
+
+
+
+.info {		/* Contains the info-items */
+	min-height: 30vh;
+	display: flex;
+	justify-content: space-around;
+	font-size: 1.25em;
+	color: white;
+
+
+	.info-item {
+		--color: white;
 		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		height: 70vh;
-		font-size: 15vh;
-		padding: 0 10%;
-		background-image: linear-gradient(
-			rgba(0, 0, 0, $bg-opacity),	/* We do this to have to darken the bg a bit */
-			rgba(0, 0, 0, $bg-opacity)),
-			url("../images/anim.gif");
-		background-size: 250vh;
-		background-position-y: 50%;
-		animation: bg-move 20s infinite alternate ease-in-out;
-		overflow: hidden;
-		user-select: none;
+		justify-content: flex-start;
+		align-items: flex-start;
+		border-left: 5px solid var(--color);
+		width: 100%;
+		font-size: 0.9em;
 		position: relative;
 
+		margin: 30px;
+		padding: 10px; padding-right: 50px;
+		flex-direction: column;
+		transition: all .5s;
 
-		&::before {	/* Banner blur effect */
+
+		&::after {		/* Colored background with round borders */
+			content: "";
+			display: block;
 			position: absolute;
 			inset: 0;
-			content: "";
-			backdrop-filter: blur($bg-blur);
-			z-index: 0;
-		}
-
-		@supports not (backdrop-filter: blur()) {
-			& {
-				$bg-opacity: 0.75;
-			}
-		}
-
-
-
-		.banner-title {
-			font-family: 'Roboto', sans-serif;;
-			display: inline-block;
-			letter-spacing: -0.05em;
-			width: max-content;
-			background-image: $bar-gradient;
-			background-clip: text;
-			-webkit-background-clip: text;
-			color: transparent;
-			background-size: 5em;
-			animation: bg-move 5s infinite alternate ease-in-out;
-			z-index: 1;
-		}
-
-		.banner-subtitle {
-			transform: translate(0.5em, -1.75em);
-			font-size: 0.25em;
-			display: block;
-			color: rgb(230, 230, 230);
-			font-weight: bold;
-		}
-	}
-
-
-
-
-
-
-
-
-	.info {		/* Contains the info-items */
-		min-height: 30vh;
-		display: flex;
-		justify-content: space-around;
-		font-size: 1.25em;
-		color: white;
-
-
-		.info-item {
-			--color: white;
-			display: flex;
-			justify-content: flex-start;
-			align-items: flex-start;
-			border-left: 5px solid var(--color);
+			background-color: var(--color);
+			opacity: 0;
+			border-radius: 0 1.25em 1.25em 0;
 			width: 100%;
-			font-size: 0.9em;
-			position: relative;
-
-			margin: 30px;
-			padding: 10px; padding-right: 50px;
-			flex-direction: column;
+			z-index: -1;
 			transition: all .5s;
-
-
-			&::after {		/* Colored background with round borders */
-				content: "";
-				display: block;
-				position: absolute;
-				inset: 0;
-				background-color: var(--color);
-				opacity: 0;
-				border-radius: 0 1.25em 1.25em 0;
-				width: 100%;
-				z-index: -1;
-				transition: all .5s;
-			}
-
-			p {text-align: justify;}
-			a {margin-top: auto;}
-			a:hover {background-color: var(--color);}
-			h1 {
-				margin-bottom: 0.25em;
-				font-size: 2em;
-				color: var(--color)
-			}
-
-			&:hover { transform: scale(1.05); }
-			&:hover::after { opacity: 0.15; }
-
-
-			/* Setting the different colors used by the info-items */
-			&.blue {--color: rgb(78, 189, 197);}
-			&.red {--color: rgb(228, 146, 146);}
-			&.purple {--color: rgb(132, 123, 218);}
 		}
+
+		p {text-align: justify;}
+		a {margin-top: auto;}
+		a:hover {background-color: var(--color);}
+		h1 {
+			margin-bottom: 0.25em;
+			font-size: 2em;
+			color: var(--color)
+		}
+
+		&:hover { transform: scale(1.05); }
+		&:hover::after { opacity: 0.15; }
+
+
+		/* Setting the different colors used by the info-items */
+		&.blue {--color: rgb(78, 189, 197);}
+		&.red {--color: rgb(228, 146, 146);}
+		&.purple {--color: rgb(132, 123, 218);}
 	}
+}
 
 
 
@@ -279,44 +279,43 @@ video, code {
 
 
 /* Code blocks */
-	code {
-		font-family: monospace;
-		display: block;
-		color: white;
-		white-space: pre-line;
-		padding: 20px;
-		padding-top: 5px;
-		font-size: 1.2em;
-		margin-bottom: 20px;
-		overflow-x: hidden;
-	}
+code {
+	font-family: monospace;
+	display: block;
+	color: white;
+	white-space: pre-line;
+	padding: 20px;
+	padding-top: 5px;
+	font-size: 1.2em;
+	margin-bottom: 20px;
+	overflow-x: hidden;
+}
 
-	/* syntax highlighting */
-	.kw {color: rgb(191, 123, 212)}
-	.var {color: rgb(238, 146, 146)}
-	.str {color: rgb(136, 189, 115)}
-	.obj {color: rgb(252, 200, 89)}
-	.func {color: rgb(89, 192, 252)}
-	.op {color: rgb(78, 207, 197)}
-	.num {color: rgb(18, 141, 241)}
-
-
-	.pre {	/* small code */
-		display: inline-block;
-		background-color: rgba(20, 20, 20, 0.274);
-		padding: 0.1em;
-		border-radius: 3px;
-		font-size: 1.1em;
-		font-family: monospace;
-	}
+/* syntax highlighting */
+.kw {color: rgb(191, 123, 212)}
+.var {color: rgb(238, 146, 146)}
+.str {color: rgb(136, 189, 115)}
+.obj {color: rgb(252, 200, 89)}
+.func {color: rgb(89, 192, 252)}
+.op {color: rgb(78, 207, 197)}
+.num {color: rgb(18, 141, 241)}
 
 
+.pre {	/* small code */
+	display: inline-block;
+	background-color: rgba(20, 20, 20, 0.274);
+	padding: 0.1em;
+	border-radius: 3px;
+	font-size: 1.1em;
+	font-family: monospace;
+}
 
 
 
 
 
-/* Showcase */
+
+
 
 
 /* Showcases */
@@ -359,29 +358,23 @@ video, code {
 		}
 	}
 
-
 	&:hover {background-position: right; }
 
 
-	&.part1 {
-		--gradient1: rgb(92, 168, 145);
-		--gradient2: rgb(136, 115, 96);
-	}
+	/* Different gradients used for the showcase sections */
+	$sectionColors: (
+		part1: (rgb(92, 168, 145), rgb(136, 115, 96)),
+		part2: (rgb(117, 96, 136), rgb(187, 137, 91)),
+		part3: (rgb(96, 136, 96), rgb(105, 91, 187)),
+		part4: (rgb(197, 188, 65), rgb(179, 91, 32))
+	);
 
-	&.part2 {
-		--gradient1: rgb(117, 96, 136);
-		--gradient2: rgb(187, 137, 91);
-	}
-
-	&.part3 {
-		--gradient1: rgb(96, 136, 96);
-		--gradient2: rgb(105, 91, 187);
-	}
-
-	&.part4 {
-		--gradient1: rgb(197, 188, 65);
-		--gradient2: rgb(179, 91, 32);
-	}
+	@each $part, $colorlist in $sectionColors {
+		&.#{$part} {
+			--gradient1: #{nth($colorlist, 1)};
+			--gradient2: #{nth($colorlist, 2)};
+		}
+	};
 }
 
 
@@ -395,58 +388,58 @@ video, code {
 
 
 /* Links */
-	.items {
+.items {
+	display: flex;
+	justify-content: space-evenly;
+	align-items: stretch;
+	flex-wrap: nowrap;
+	margin-top: 20px;
+	color: black;
+
+
+	.link {
 		display: flex;
-		justify-content: space-evenly;
-		align-items: stretch;
-		flex-wrap: nowrap;
-		margin-top: 20px;
+		justify-content: flex-start;
+		align-items: center;
+		flex-direction: column;
+		text-align: center;
+		width: 300px;
+		border-radius: 1vh;
+		padding: 15px;
+		margin-right: 20px;
+		margin-bottom: 20px;
+		transition: all .5s;
+		outline: 3px solid rgb(235, 235, 235);
+		background-color: white;
 		color: black;
 
+		&:hover {
+			box-shadow: 0 0 30px 1px rgba(0, 0, 0, 0.199);
+			transform: scale(1.1);
+			outline: 2px solid transparent;
+			z-index: 1;
+		}
 
-		.link {
-			display: flex;
-			justify-content: flex-start;
-			align-items: center;
-			flex-direction: column;
-			text-align: center;
-			width: 300px;
-			border-radius: 1vh;
-			padding: 15px;
-			margin-right: 20px;
-			margin-bottom: 20px;
-			transition: all .5s;
-			outline: 3px solid rgb(235, 235, 235);
-			background-color: white;
-			color: black;
-
-			&:hover {
-				box-shadow: 0 0 30px 1px rgba(0, 0, 0, 0.199);
-				transform: scale(1.1);
-				outline: 2px solid transparent;
-				z-index: 1;
-			}
-
-			img {
-				width: 100px;
-				height: 100px;
-			}
+		img {
+			width: 100px;
+			height: 100px;
+		}
 
 
-			.link-title {
-				display: inline-block;
-				width: 100%;
-				padding-top: 0.25em;
-				padding-bottom: 0.25em;
-				border-bottom: 3px solid currentColor;
-			}
+		.link-title {
+			display: inline-block;
+			width: 100%;
+			padding-top: 0.25em;
+			padding-bottom: 0.25em;
+			border-bottom: 3px solid currentColor;
+		}
 
-			.link-text {
-				margin-top: 10px;
-				text-align: justify;
-			}
+		.link-text {
+			margin-top: 10px;
+			text-align: justify;
 		}
 	}
+}
 
 
 
@@ -457,25 +450,25 @@ video, code {
 
 
 /* Credits */
-	footer {
-		padding: 20px;
-		overflow: hidden;
-		color: white;
-		font-size: 1.25em;
-		display: flex;
+footer {
+	padding: 20px;
+	overflow: hidden;
+	color: white;
+	font-size: 1.25em;
+	display: flex;
 
 
-		.credits-img {
-			margin-right: 1vw;
-			width: 2em;
-			height: 2em;
-		}
-
-		.credits-logo {
-			width: 20em;
-			img { width: 100%; }
-		}
+	.credits-img {
+		margin-right: 1vw;
+		width: 2em;
+		height: 2em;
 	}
+
+	.credits-logo {
+		width: 20em;
+		img { width: 100%; }
+	}
+}
 
 
 
@@ -501,7 +494,7 @@ span.whisper {
 
 @media screen and (max-width: 1000px) {
 	.lang-changer {
-		font-size: 4vw;
+		font-size: calc(2vw + 0.5em);
 		right: 5vw;
 		transform: none;
 		color: black;
@@ -534,6 +527,11 @@ span.whisper {
 	}
 
 
+
+	.links {
+		padding: 5%;
+	}
+
 	.items {
 		flex-direction: column;
 		align-items: center;
@@ -545,8 +543,4 @@ span.whisper {
 	}
 
 
-
-	.links {
-		padding: 5%;
-	}
 }

@@ -93,7 +93,7 @@ h3 {
   height: -moz-max-content;
   height: max-content;
   margin-bottom: 1em;
-  border-radius: 0 0 0.5vh 0.5vh;
+  border-radius: 0 0 7px 7px;
   z-index: 50;
   background-color: white;
   -webkit-transition: all .25s ease-in-out;
@@ -382,7 +382,6 @@ code {
   font-family: monospace;
 }
 
-/* Showcase */
 /* Showcases */
 .showcase {
   --gradient1: lime;
@@ -394,6 +393,7 @@ code {
   -webkit-transition: background-position 1s;
   transition: background-position 1s;
   background-image: linear-gradient(45deg, var(--gradient1), var(--gradient2));
+  /* Different gradients used for the showcase sections */
 }
 
 .showcase .show-title {
@@ -425,23 +425,23 @@ code {
 }
 
 .showcase.part1 {
-  --gradient1: rgb(92, 168, 145);
-  --gradient2: rgb(136, 115, 96);
+  --gradient1: #5ca891;
+  --gradient2: #887360;
 }
 
 .showcase.part2 {
-  --gradient1: rgb(117, 96, 136);
-  --gradient2: rgb(187, 137, 91);
+  --gradient1: #756088;
+  --gradient2: #bb895b;
 }
 
 .showcase.part3 {
-  --gradient1: rgb(96, 136, 96);
-  --gradient2: rgb(105, 91, 187);
+  --gradient1: #608860;
+  --gradient2: #695bbb;
 }
 
 .showcase.part4 {
-  --gradient1: rgb(197, 188, 65);
-  --gradient2: rgb(179, 91, 32);
+  --gradient1: #c5bc41;
+  --gradient2: #b35b20;
 }
 
 /* Links */
@@ -555,7 +555,7 @@ span.whisper {
 
 @media screen and (max-width: 1000px) {
   .lang-changer {
-    font-size: 4vw;
+    font-size: calc(2vw + 0.5em);
     right: 5vw;
     -webkit-transform: none;
             transform: none;
@@ -586,6 +586,9 @@ span.whisper {
   .showcase .show.code, .showcase .show.content {
     width: 100%;
   }
+  .links {
+    padding: 5%;
+  }
   .items {
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
@@ -598,9 +601,6 @@ span.whisper {
   .link {
     width: 90%;
     margin-right: 0;
-  }
-  .links {
-    padding: 5%;
   }
 }
 /*# sourceMappingURL=main.css.map */
