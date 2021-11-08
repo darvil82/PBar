@@ -391,15 +391,12 @@ code {
 
 /* Showcases */
 .showcase {
-  --gradient1: lime;
-  --gradient2: blue;
   padding: 7.5% 20%;
   overflow: hidden;
   background-size: 150%;
   background-position: left;
   -webkit-transition: background-position 1s;
   transition: background-position 1s;
-  background-image: linear-gradient(45deg, var(--gradient1), var(--gradient2));
   /* Different gradients used for the showcase sections */
 }
 
@@ -432,23 +429,19 @@ code {
 }
 
 .showcase.part1 {
-  --gradient1: #5ca891;
-  --gradient2: #887360;
+  background-image: linear-gradient(45deg, #5ca891, #887360);
 }
 
 .showcase.part2 {
-  --gradient1: #756088;
-  --gradient2: #bb895b;
+  background-image: linear-gradient(45deg, #756088, #bb895b);
 }
 
 .showcase.part3 {
-  --gradient1: #608860;
-  --gradient2: #695bbb;
+  background-image: linear-gradient(45deg, #608860, #695bbb);
 }
 
 .showcase.part4 {
-  --gradient1: #c5bc41;
-  --gradient2: #b35b20;
+  background-image: linear-gradient(45deg, #c5bc41, #b35b20);
 }
 
 /* Links */
