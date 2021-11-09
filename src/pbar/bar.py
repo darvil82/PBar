@@ -462,7 +462,7 @@ def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=T
 	return wrapper
 
 
-def animate(barObj: PBar, rng: range, delay: float=0.1) -> None:
+def animate(barObj: PBar, rng: range=range(100), delay: float=0.05) -> None:
 	"""
 	Animates the given PBar object by filling it by the range given, with a delay.
 	@barObj: PBar object to use.
