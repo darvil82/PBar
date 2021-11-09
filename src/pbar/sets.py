@@ -34,7 +34,7 @@ class _BaseSet(dict):
 		return f"{self.__class__.__name__}({dict(self)})"
 
 
-	def _populate(self, currentSet: dict) -> dict:		# ?: Needs a proper rewrite
+	def _populate(self, currentSet: dict) -> dict:		# ?: Needs a proper rewrite if we end up needing more subdicts
 		"""Return a new set with all the necessary keys for drawing the bar, making sure that no keys are missing."""
 		newSet = {}
 		for key, currentValue in currentSet.items():
@@ -53,22 +53,19 @@ class _BaseSet(dict):
 		return newSet
 
 
-	def iterValues(self, val: dict[dict, tuple[Optional[list[Any]], Optional[dict]]], func: Callable) -> dict:		# !thanks MithicSpirit. Still doesnt work with dicts inside dicts.
+	def iterValues(self, val: dict, func: Callable) -> dict:
 		"""
-		Return dict with all values in it used as args for a function that will return a new value.
-		@val: This represents the dictionary which contains a key for the dict to process, and a tuple containing
-			  the *args and *kwargs.
+		Return dict with all values in it used as an arg for a function that will return a new value for it.
+		@val: This represents the dictionary.
+		@func: This represents the callable which only accepts one argument.
+
+		Example:
+		>>> iterValues(myDict, (lambda val: myFunc("stuff", val)))
 		"""
-		newSet = {}
-		for key, value in val.items():
-			if isinstance(value, dict):
-				raise NotImplementedError	# !: Using workarounds everywhere.
-				#newSet[key] = self.iterValues(value, func)
-			#else:
-			args = value[0] or ()
-			kwargs = value[1] or {}
-			newSet[key] = func(*args, *kwargs)
-		return newSet
+		return {
+			key: self.iterValues(value, func) if isinstance(value, dict) else func(value)
+			for key, value in val.items()
+		}
 
 
 
@@ -347,13 +344,7 @@ class ColorSet(_BaseSet):
 
 	def parsedValues(self, bg=False) -> dict[str, Union[dict, str]]:
 		"""Convert all values in the ColorSet to parsed color sequences"""
-		# newset = {key: ((value, bg), None) for key, value in self.items()}
-		# return ColorSet(self.iterValues(newset, Term.color))
-		return {
-			key: ColorSet.parsedValues(value, bg)
-			if isinstance(value, dict) else Term.color(value, bg)
-			for key, value in self.items()
-		}
+		return ColorSet(self.iterValues(self, (lambda val: Term.color(val, bg))))
 
 
 
@@ -520,8 +511,7 @@ class FormatSet(_BaseSet):
 
 	def parsedValues(self, cls: "bar.PBar") -> "FormatSet":
 		"""Returns a new FormatSet with all values parsed with the properties of the PBar object specified"""
-		newset = {key: ((cls, value), None) for key, value in self.items()}
-		return FormatSet(self.iterValues(newset, self._parseString))
+		return FormatSet(self.iterValues(self, (lambda val: self._parseString(cls, val))))
 
 
 	@staticmethod
