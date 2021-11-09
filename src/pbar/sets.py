@@ -53,7 +53,8 @@ class _BaseSet(dict):
 		return newSet
 
 
-	def iterValues(self, val: dict, func: Callable) -> dict:
+	@staticmethod
+	def iterValues(val: dict, func: Callable) -> dict:
 		"""
 		Return dict with all values in it used as an arg for a function that will return a new value for it.
 		@val: This represents the dictionary.
@@ -63,7 +64,7 @@ class _BaseSet(dict):
 		>>> iterValues(myDict, (lambda val: myFunc("stuff", val)))
 		"""
 		return {
-			key: self.iterValues(value, func) if isinstance(value, dict) else func(value)
+			key: _BaseSet.iterValues(value, func) if isinstance(value, dict) else func(value)
 			for key, value in val.items()
 		}
 
