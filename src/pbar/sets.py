@@ -40,12 +40,12 @@ class _BaseSet(dict):
 		for key, currentValue in currentSet.items():
 			if key not in self.EMPTY:
 				raise UnknownSetKeyError(key, self)
-			else:
-				defaultSetValue = self.EMPTY[key]
+
+			defaultSetValue = self.EMPTY[key]
 
 			if not isinstance(currentValue, dict) and isinstance(defaultSetValue, dict):
 				newSet[key] = {subkey: currentValue for subkey in defaultSetValue}
-			elif isinstance(currentValue, dict):
+			elif isinstance(currentValue, dict) and isinstance(defaultSetValue, dict):
 				newSet[key] = defaultSetValue | currentValue
 			else:
 				newSet[key] = currentValue
