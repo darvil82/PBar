@@ -184,9 +184,9 @@ def bText(position: tuple[int, int], size: tuple[int, int],
 	"""Generates all text for the bar"""
 	width, height = size
 
-	def stripText(string: str, maxlen: int):
-		"""Return a string stripped if the len of it is larger than the maxlen specified"""
-		maxlen = capValue(maxlen, min=3)
+	def stripText(string: str, maxlen: int) -> str:
+		"""Return a string with three dots at the end if the len of it is larger than the maxlen specified."""
+		if maxlen < 3:	return ""
 		return string[:maxlen-3] + "..." if len(string) > maxlen else string
 
 	# set the max number of characters that a string should have on each part of the bar

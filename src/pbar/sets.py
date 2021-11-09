@@ -389,8 +389,8 @@ class FormatSet(_BaseSet):
 	}
 
 	DEFAULT: FormatSetEntry = {
-		"right":	"<percentage>%",
-		"title":	"<text>"
+		"title":	"<text>",
+		"inside":	"<percentage>%"
 	}
 
 	DESCRIPTIVE: FormatSetEntry = {
