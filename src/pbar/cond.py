@@ -65,7 +65,7 @@ class Cond:
 	def test(self, cls: "bar.PBar") -> bool:
 		"""Check if the condition succeededs with the values of the PBar object"""
 		op = self.operator
-		val = FormatSet._getBarAttrs(cls, self._attribute)
+		val = FormatSet.getBarAttrs(cls, self._attribute)
 		val = val.lower() if isinstance(val, str) else val
 
 		if op == _OP_EQU:

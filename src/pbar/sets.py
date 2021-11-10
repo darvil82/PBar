@@ -26,7 +26,6 @@ class _BaseSet(dict):
 
 	def __init__(self, newSet: dict) -> None:
 		chkInstOf(newSet, dict, name="newSet")
-
 		super().__init__(self._populate(self.EMPTY | newSet))
 
 
@@ -445,7 +444,7 @@ class FormatSet(_BaseSet):
 
 
 	@staticmethod
-	def _getBarAttrs(cls: "bar.PBar", string: str):
+	def getBarAttrs(cls: "bar.PBar", string: str):
 		if string == "percentage":
 			return cls.percentage
 		elif string == "prange1":
@@ -461,7 +460,7 @@ class FormatSet(_BaseSet):
 
 
 	@staticmethod
-	def _parseString(cls: "bar.PBar", string: str) -> str:
+	def parseString(cls: "bar.PBar", string: str) -> str:
 		"""Parse a string that may contain formatting keys"""
 		if string is None: return ""
 
@@ -488,7 +487,7 @@ class FormatSet(_BaseSet):
 				# Found '<'. Now we add every char to tempStr until we find a '>'.
 				if char == ">":
 					# Found '>'. Now just add the formatting keys.
-					if (newValue := FormatSet._getBarAttrs(cls, tempStr)) is None:
+					if (newValue := FormatSet.getBarAttrs(cls, tempStr)) is None:
 						raise UnknownFormattingKeyError(text)
 					else: endStr += str(newValue)
 
@@ -511,7 +510,7 @@ class FormatSet(_BaseSet):
 
 	def parsedValues(self, cls: "bar.PBar") -> "FormatSet":
 		"""Returns a new FormatSet with all values parsed with the properties of the PBar object specified"""
-		return FormatSet(self.iterValues(lambda val: self._parseString(cls, val)))
+		return FormatSet(self.iterValues(lambda val: self.parseString(cls, val)))
 
 
 	@staticmethod
