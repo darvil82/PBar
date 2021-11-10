@@ -1,50 +1,58 @@
+"""
+HTML generator for the different languages of the page. This will hopefully help when doing
+some changes to the markup, so we don't need to edit the same thing on all the html files.
+
+This script will grab the langs.json file with all the labels to use.
+"""
+
+
+
+HTML_CONTENT = """\
 <!DOCTYPE html>
-<html lang="es">
+<!--
+	This page was initialy made as homework for school.
+	One of the handicaps was not being able to use JavaScript, or any other scripting language.
+	That's why this page lacks of it.
+-->
+
+<html lang="{lang}">
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>PBar</title>
 	<link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
 	<div class="lang-changer">
-		<a href="index.html">English</a>
-		<a href="polish.html">Polski</a>
+		{langChanger}
 	</div>
 
 	<div class="banner">
 		<h1 class="banner-title">PBar</h1>
-		<span class="banner-subtitle">Crea barras de progreso en la terminal con Python</span>
+		<span class="banner-subtitle">{bannerSubtitle}</span>
 	</div>
 
 	<div class="info">
 		<div class="info-item blue">
-			<h1>Fácil de usar</h1>
+			<h1>{infoItem1_heading}</h1>
 			<p>
-				PBar es realmente fácil de usar. Tan solo es necesario establecer
-				el rango de progreso, y establecer los puntos en los que la barra
-				progresará, nada más.
+				{infoItem1_text}
 			</p>
-			<a class="button" href="#showcase1">Ver más</a>
+			<a class="button" href="#showcase1">{infoItem1_button}</a>
 		</div>
 		<div class="info-item red">
-			<h1>Personalizable</h1>
+			<h1>{infoItem2_heading}</h1>
 			<p>
-				¿Quieres cambiar el color de la zona completada? ¿Mostrar el
-				porcentaje como título de la barra? ¿O simplemente mostrar una
-				barra vertical? Sin problemas, con PBar podrás personalizar <i>casi</i>
-				todos los aspectos que puedas imaginar.
+				{infoItem2_text}
 			</p>
-			<a class="button" href="#showcase4">Personalización</a>
+			<a class="button" href="#showcase1">{infoItem2_button}</a>
 		</div>
 		<div class="info-item purple">
-			<h1>Completo</h1>
+			<h1>{infoItem3_heading}</h1>
 			<p>
-				PBar cuenta con unas cuantas funciones y objetos que te ayudarán a
-				la hora de gestionar tareas con la barra.
+				{infoItem3_text}
 			</p>
-			<a target="_blank" class="button" href="https://github.com/DarviL82/PBar/wiki">Características</a>
+			<a target="_blank" class="button" href="https://github.com/DarviL82/PBar/wiki">{infoItem3_button}</a>
 		</div>
 	</div>
 
@@ -55,7 +63,7 @@
 
 
 	<div class="showcase part1" id="showcase1">
-		<h1 class="show-title">Espera, ¿Seguro que es sencillo?</h1>
+		<h1 class="show-title">{showcase1_title}</h1>
 		<div class="show code left">
 			<code>
 				<span class="kw">import</span> <span class="obj">pbar</span>
@@ -65,77 +73,66 @@
 			</code>
 		</div>
 		<div class="show content right">
-			Aquí tienes el código que genera una barra de carga con los valores por
-			defecto. También muestra la muestra en la terminal.
-			Así que bueno... ¡Debería ser sencillo!
+			{showcase1_text}
 		</div>
 	</div>
 
 
 	<div class="showcase part2">
-		<h1 class="show-title">Vale vale, pero me interesa que sea algo útil.</h1>
+		<h1 class="show-title">{showcase2_title}</h1>
 		<div class="show content left">
-			Eso tiene sentido, a todo el mundo le gustan las cosas útiles, (al menos
-			eso creo). Por eso, puedes mostrar el progreso de un conjunto de tareas de
-			forma súper sencilla.
+			{showcase2_text}
 		</div>
 		<div class="show code right">
 			<code>
 				<span class="func">@</span><span class="obj">pbar</span>.<span class="func">taskWrapper</span>(<span class="var">b</span>)
-				<span class="kw">def</span><span class="func"> mi_tarea</span>():
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">adquirir_datos</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">procesar_cosas</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">mostrar_datos</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">funcion_inutil</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">otra_funcion</span>()
+				<span class="kw">def</span><span class="func"> my_task</span>():
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">get_data</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">process_stuff</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">show_data</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">useless_function</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">another_function</span>()
 			</code>
 		</div>
 	</div>
 
 
 	<div class="showcase part3">
-		<h1 class="show-title">Me dan miedo los <span class="func">@decoradores</span>, ¿Alguna otra opción?</h1>
+		<h1 class="show-title">{showcase3_title}</h1>
 		<div class="show code left">
 			<code>
-				<span class="kw">def</span><span class="func"> mi_tarea</span>():
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">adquirir_datos</span>()
+				<span class="kw">def</span><span class="func"> my_task</span>():
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">get_data</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">procesar_cosas</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">process_stuff</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">mostrar_datos</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">show_data</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">funcion_inutil</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">useless_function</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">otra_funcion</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">another_function</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
 			</code>
 		</div>
 		<div class="show content right">
-			<p>
-				¡Pues claro! ¿A quién no le da miedo un decorador? Son verdaderamente terroríficos,
-				y por eso, puedes seguir progresando tu barra de la forma "clásica".
-			</p>
-			<p>
-				Eso sí, me temo que tendrás que admitir que es mucho más feo.
-			</p>
+			{showcase3_text}
 		</div>
 	</div>
 
 
 	<div class="showcase part4" id="showcase4">
-		<h1 class="show-title">¿Y si quiero cambiar el color cuando se complete?</h1>
+		<h1 class="show-title">{showcase4_title}</h1>
 		<div class="show content" style="width: 100%;">
-			Es tu día de suerte, por que puedes establecer condiciones para bastantes propiedades
-			de la barra, y que cuando se cumplan, ¡se apliquen diferentes colores, caracteres, o texto!
+			{showcase4_text}
 		</div>
 		<code>	<!-- turture -->
-			<span class="var">condiciones</span> <span class="op">=</span> (
+			<span class="var">conds</span> <span class="op">=</span> (
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage >= 50"</span>, </span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.YELLOW, <span class="obj">pbar</span>.<span class="obj">CharSet</span>.BRICKS),
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage == 100"</span>, </span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.GREEN),
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"text <- error"</span>, <span class="obj">pbar</span>.<span class="obj">ColorSet</span>.RED, <span class="var">formatset</span><span class="op">=</span><span class="obj">pbar</span>.<span class="obj">FormatSet</span>.DESCRIPTIVE)
 			)
 
-			<span class="var">b</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>(<span class="var">conditions</span><span class="op">=</span><span class="var">condiciones</span>)
+			<span class="var">b</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>(<span class="var">conditions</span><span class="op">=</span><span class="var">conds</span>)
 
 			<span class="kw">try</span>:
 			&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="func">animate</span>(<span class="var">b</span>, <span class="obj">range</span>(<span class="num">50</span>))
@@ -155,34 +152,27 @@
 
 
 	<div class="links">
-		<h1 style="font-size: 2.5em">Enlaces y Descarga</h1>
+		<h1 style="font-size: 2.5em">{links_title}</h1>
 		<div class="items">
 			<a class="link" target="_blank" href="https://pypi.org/project/PBar2/">
 				<img src="images/pypi.svg" alt="">
 				<h2 class="link-title">Python Package Index</h2>
 				<p class="link-text">
-					PBar está disponible en los repositorios de PyPI bajo el nombre
-					de <span class="pre">pbar2</span>. ¿Por qué 2? ¿Es una secuela? Sí, lo es, pero
-					también es por que alguien me cogió el nombre.
+					{link1_text}
 				</p>
 			</a>
 			<a class="link" target="_blank" href="https://github.com/DarviL82/PBar">
 				<img src="images/github.png" alt="">
 				<h2 class="link-title">GitHub</h2>
 				<p class="link-text">
-					No podía faltar un control de versiones que ayude en mi mediocre
-					organización (y la perdida de archivos). <i>En serio, gracias git.</i>
-					Ah sí, también puedes encontrar todo el código fuente del proyecto.
-					<span class="whisper">pstt, es una chapuza.</span>
+					{link2_text}
 				</p>
 			</a>
 			<a class="link" target="_blank" href="https://aur.archlinux.org/packages/python-pbar/">
 				<img src="images/arch.png" alt="">
 				<h2 class="link-title">Arch User Repository</h2>
 				<p class="link-text">
-					También está disponible en el repositorio de paquetes de Arch, gracias a
-					<span style="color: green">MithicSpirit</span>.
-					<span class="whisper">I don't use Arch btw.</span>
+					{link3_text}
 				</p>
 			</a>
 		</div>
@@ -202,3 +192,64 @@
 	</footer>
 </body>
 </html>
+"""
+
+
+
+# {
+# 	"bannerSubtitle": "",
+
+# 	"infoItem1_heading": "",
+# 	"infoItem1_text": "",
+# 	"infoItem1_button": "",
+
+# 	"infoItem2_heading": "",
+# 	"infoItem2_text": "",
+# 	"infoItem2_button": "",
+
+# 	"infoItem3_heading": "",
+# 	"infoItem3_text": "",
+# 	"infoItem3_button": "",
+
+# 	"showcase1_title": "",
+# 	"showcase1_text": "",
+
+# 	"showcase2_title": "",
+# 	"showcase2_text": "",
+
+# 	"showcase3_title": "",
+# 	"showcase3_text": "",
+
+# 	"showcase4_title": "",
+# 	"showcase4_text": "",
+
+# 	"links_title": "",
+# 	"link1_text": "",
+# 	"link2_text": "",
+# 	"link3_text": "",
+# },
+
+
+
+import json
+
+
+def main():
+	with open("langs.json", "r") as langsFile:	# load json file with languages
+		LANGUAGES = json.load(langsFile)
+
+
+	for lang, labels in LANGUAGES.items():
+		langChanger = "".join(	# add the language selector, which only shows the other languages, not the current one.
+			f"<a href={'index' if lc == 'en' else lc}.html> {labels['langName']} </a>"
+			for lc, labels in LANGUAGES.items() if lc != lang)
+
+		labels = LANGUAGES["en"] | labels	# merge with english dict, in case some labels are missing.
+
+		with open(f"{'index' if lang == 'en' else lang}.html", "w") as file:
+			labels["lang"] = lang	# we now set both the lang and langchanger values for the HTML
+			labels["langChanger"] = langChanger
+			file.write(HTML_CONTENT.format(**labels))
+
+
+main()

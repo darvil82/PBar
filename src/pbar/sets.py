@@ -55,7 +55,6 @@ class _BaseSet(dict):
 	def iterValues(self, func: Callable) -> dict:
 		"""
 		Return dict with all values in it used as an arg for a function that will return a new value for it.
-		@val: This represents the dictionary.
 		@func: This represents the callable which only accepts one argument.
 
 		Example:

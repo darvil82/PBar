@@ -1,0 +1,104 @@
+{
+    "en": {
+		"langName": "English",
+
+        "bannerSubtitle": "Create progress bars on the terminal with Python",
+
+        "infoItem1_heading": "Easy to use",
+        "infoItem1_text": "PBar is really easy to use. You only need to set the progress range, and the places where the bar will progress, nothing more.",
+        "infoItem1_button": "View more",
+
+        "infoItem2_heading": "Customizable",
+        "infoItem2_text": "Do you want to change the color of the completed part? Show the percentage as the title of the bar? Or perhaps simply show a vertical bar? No problem, with PBar you'll be able to customize <i>almost</i> every aspect that you can imagine.",
+        "infoItem2_button": "Personalization",
+
+        "infoItem3_heading": "Complete",
+        "infoItem3_text": "PBar comes with some functions and objects that will help you when managing tasks with the bar.",
+        "infoItem3_button": "Features",
+
+        "showcase1_title": "Wait. Are you sure it's easy?",
+        "showcase1_text": "Here is the code that generates a progress bar with the default values. It also shows it on the terminal. So yeah... Should be easy enough!",
+
+        "showcase2_title": "Okay okay, but I want it to be something useful.",
+        "showcase2_text": "That makes sense, everyone likes useful things (at least that's what I think). Therefore, you can show the progress of a set of tasks in a super easy way.",
+
+        "showcase3_title": "I am afraid of <span class='func'>@decorators</span>, is there any other option?",
+        "showcase3_text": "<p> Of course! Who is not afraid of a decorator? They are truly terrifying, so that's why you can still progress in the 'classic' way.</p> <p>Hey, I'm afraid you'll have to admit that it's much uglier.</p>",
+
+        "showcase4_title": "What if I want to change the color when it completes?",
+        "showcase4_text": "It is your lucky day, because you can set conditions for quite a few properties of the bar, and that when they are met, different colors, characters, or text are applied!",
+
+        "links_title": "Links and Download",
+        "link1_text": "PBar is available on the PyPI repository as <span class='pre'>pbar2</span>. Why 2? Is it a sequel? Yes, it is, but also because someone took the name.",
+        "link2_text": "I could not miss a version control that helps in my mediocre organization (and the loss of files). <i>Seriously, thanks git.</i> Ah yes, you can also find all the source code of the project. <span class='whisper'>pstt, it's a botch.</span>",
+        "link3_text": "Is is also available on the Arch packages repository, thanks to <span style='color: green'> MithicSpirit</span>. <span class='whisper'>I don't use Arch btw.</span>"
+    },
+    "es": {
+		"langName": "Español",
+
+        "bannerSubtitle": "Crea barras de progreso en la terminal con Python",
+
+        "infoItem1_heading": "Fácil de usar",
+        "infoItem1_text": "PBar es realmente fácil de usar. Tan solo es necesario establecer el rango de progreso, y establecer los puntos en los que la barra progresará, nada más.",
+        "infoItem1_button": "Ver más",
+
+        "infoItem2_heading": "Personalizable",
+        "infoItem2_text": "¿Quieres cambiar el color de la zona completada? ¿Mostrar el porcentaje como título de la barra? ¿O simplemente mostrar una barra vertical? Sin problemas, con PBar podrás personalizar <i>casi</i> todos los aspectos que puedas imaginar.",
+        "infoItem2_button": "Personalización",
+
+        "infoItem3_heading": "Completo",
+        "infoItem3_text": "PBar cuenta con unas cuantas funciones y objetos que te ayudarán a la hora de gestionar tareas con la barra.",
+        "infoItem3_button": "Características",
+
+        "showcase1_title": "Espera, ¿Seguro que es sencillo?",
+        "showcase1_text": "Aquí tienes el código que genera una barra de carga con los valores por defecto. También muestra la muestra en la terminal. Así que bueno... ¡Debería ser sencillo!",
+
+        "showcase2_title": "Vale vale, pero me interesa que sea algo útil.",
+        "showcase2_text": "Eso tiene sentido, a todo el mundo le gustan las cosas útiles, (al menos eso creo). Por eso, puedes mostrar el progreso de un conjunto de tareas de forma súper sencilla.",
+
+        "showcase3_title": "Me dan miedo los <span class='func'>@decoradores</span>, ¿Alguna otra opción?",
+        "showcase3_text": "<p>¡Pues claro! ¿A quién no le da miedo un decorador? Son verdaderamente terroríficos, y por eso, puedes seguir progresando tu barra de la forma 'clásica'.</p> <p>Eso sí, me temo que tendrás que admitir que es mucho más feo.</p>",
+
+        "showcase4_title": "¿Y si quiero cambiar el color cuando se complete?",
+        "showcase4_text": "Es tu día de suerte, por que puedes establecer condiciones para bastantes propiedades de la barra, y que cuando se cumplan, ¡se apliquen diferentes colores, caracteres, o texto!",
+
+        "links_title": "Enlaces y Descarga",
+        "link1_text": "PBar está disponible en los repositorios de PyPI bajo el nombre de <span class='pre'>pbar2</span>. ¿Por qué 2? ¿Es una secuela? Sí, lo es, pero también es por que alguien me cogió el nombre.",
+        "link2_text": "No podía faltar un control de versiones que ayude en mi mediocre organización (y la perdida de archivos). <i>En serio, gracias git.</i> Ah sí, también puedes encontrar todo el código fuente del proyecto. <span class='whisper'>pstt, es una chapuza.</span>",
+        "link3_text": "También está disponible en el repositorio de paquetes de Arch, gracias a <span style='color: green'>MithicSpirit</span>. <span class='whisper'>I don't use Arch btw.</span>"
+    },
+    "pl": {
+		"langName": "Polski",
+
+        "bannerSubtitle": "Tworzenie pasków postępu w terminalu za pomocą Pythona",
+
+        "infoItem1_heading": "Łatwy w użyciu",
+        "infoItem1_text": "PBar jest naprawdę łatwy w użyciu. Musisz tylko ustawić zakres progresji, oraz miejsca, w których pasek będzie się ładował, nic więcej.",
+        "infoItem1_button": "Zobacz więcej",
+
+        "infoItem2_heading": "Konfigurowalny",
+        "infoItem2_text": "Chcesz zmienić kolor ukończonej części? Pokazać procent jako tytuł paska? A może po prostu pokazać pionowy pasek? Nie ma problemu, z PBar będziesz w stanie dostosować <i>prawie</i> każdy aspekt, który możesz sobie wyobrazić.",
+        "infoItem2_button": "Personalizacja",
+
+        "infoItem3_heading": "Kompletny",
+        "infoItem3_text": "PBar posiada pewne funkcje i obiekty, które pomogą Ci w zarządzaniu zadaniami za pomocą paska.",
+        "infoItem3_button": "Cechy",
+
+        "showcase1_title": "Zaczekaj. Jesteś pewien, że to łatwe?",
+        "showcase1_text": "Oto kod, który generuje pasek postępu z domyślnymi wartościami. Pokazuje to również w terminalu. Więc no... powinno być wystarczająco łatwo!",
+
+        "showcase2_title": "Okej okej, ale chcę, żeby to było coś pożytecznego.",
+        "showcase2_text": "To ma sens, każdy lubi użyteczne rzeczy (a przynajmniej tak mi się wydaje). Dlatego też, możesz pokazać postępy w realizacji zestawu zadań w super prosty sposób.",
+
+        "showcase3_title": "Boje się <span class='func'>@dekoratorów</span>, czy jest jakaś inna opcja?",
+        "showcase3_text": "<p> Oczywiście! Któż z nas nie boi się dekoratorów? Są naprawdę przerażające, dlatego też możesz nadal używać PBar w bardziej klasyczny sposób. </p> <p> Ale hej, obawiam się, że będziesz musiał przyznać, że to jest znacznie brzydsze. </p>",
+
+        "showcase4_title": "Co jeśli chcę zmienić kolor, kiedy skończy?",
+        "showcase4_text": "To twój szczęśliwy dzień, bo możesz ustawić warunki dla całkiej sporej ilości właściwości paska - kiedy są one spełnione, różne kolory, znaki lub tekst są wyświetlane.",
+
+        "links_title": "Linki i pobieranie",
+        "link1_text": "PBar jest dostępny w repozytorium PyPI jako <span class='pre'>pbar2</span>. Dlaczego 2? Czy to sequel? Tak, to sequel, ale także dlatego, że ktoś zajął nazwę.",
+        "link2_text": "Nie mógłbym przegapić kontroli wersji, która pomaga w mojej miernej organizacji (i utracie plików). <i>Serio, dzięki git.</i> Ach tak, możesz również znaleźć cały kod źródłowy projektu. <span class='whisper'>pstt, jest spartaczony.</span>",
+        "link3_text": "Jest również dostępny w repozytorium pakietów Arch, dzięki <span style='color: green'> MithicSpirit</span>. <span class='whisper'>I don't use Arch btw.</span>"
+    }
+}
