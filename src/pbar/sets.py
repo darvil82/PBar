@@ -53,8 +53,7 @@ class _BaseSet(dict):
 		return newSet
 
 
-	@staticmethod
-	def iterValues(val: dict, func: Callable) -> dict:
+	def iterValues(self, func: Callable) -> dict:
 		"""
 		Return dict with all values in it used as an arg for a function that will return a new value for it.
 		@val: This represents the dictionary.
@@ -65,7 +64,7 @@ class _BaseSet(dict):
 		"""
 		return {
 			key: _BaseSet.iterValues(value, func) if isinstance(value, dict) else func(value)
-			for key, value in val.items()
+			for key, value in self.items()
 		}
 
 
@@ -345,7 +344,7 @@ class ColorSet(_BaseSet):
 
 	def parsedValues(self, bg=False) -> dict[str, Union[dict, str]]:
 		"""Convert all values in the ColorSet to parsed color sequences"""
-		return ColorSet(self.iterValues(self, (lambda val: Term.color(val, bg))))
+		return ColorSet(self.iterValues(lambda val: Term.color(val, bg)))
 
 
 
@@ -512,7 +511,7 @@ class FormatSet(_BaseSet):
 
 	def parsedValues(self, cls: "bar.PBar") -> "FormatSet":
 		"""Returns a new FormatSet with all values parsed with the properties of the PBar object specified"""
-		return FormatSet(self.iterValues(self, (lambda val: self._parseString(cls, val))))
+		return FormatSet(self.iterValues(lambda val: self._parseString(cls, val)))
 
 
 	@staticmethod

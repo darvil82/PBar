@@ -355,7 +355,7 @@ class PBar():
 		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
 		if not self._isOnScreen:	return ""
 		pos, size = values
-		parsedColorSet = ColorSet.parsedValues(ColorSet.EMPTY)
+		parsedColorSet = ColorSet(ColorSet.EMPTY).parsedValues()
 
 		size = size[0], size[1] + 1
 		POSITION = (pos[0] - int(size[0]/2),
