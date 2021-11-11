@@ -59,12 +59,12 @@
 			<code>
 				<span class="kw">import</span> <span class="obj">pbar</span>
 
-				<span class="var">b</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>()
-				<span class="var">b</span>.<span class="func">draw</span>()
+				<span class="var">myBar</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>()
+				<span class="var">myBar</span>.<span class="func">draw</span>()
 			</code>
 		</div>
 		<div class="show content right">
-			Here is the code that generates a progress bar with the default values. It also shows it on the terminal. So yeah... Should be easy enough!
+			<p>Here is the code that generates a progress bar with the default values. It also shows it on the terminal. So yeah... Should be easy enough!</p>
 		</div>
 	</div>
 
@@ -72,11 +72,11 @@
 	<div class="showcase part2">
 		<h1 class="show-title">Okay okay, but I want it to be something useful.</h1>
 		<div class="show content left">
-			That makes sense, everyone likes useful things (at least that's what I think). Therefore, you can show the progress of a set of tasks in a super easy way.
+			<p>That makes sense, everyone likes useful things (at least that's what I think). Therefore, you can show the progress of a set of tasks in a super easy way.</p>
 		</div>
 		<div class="show code right">
 			<code>
-				<span class="func">@</span><span class="obj">pbar</span>.<span class="func">taskWrapper</span>(<span class="var">b</span>)
+				<span class="func">@</span><span class="obj">pbar</span>.<span class="func">taskWrapper</span>(<span class="var">myBar</span>, <span class="func">locals</span>())
 				<span class="kw">def</span><span class="func"> my_task</span>():
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">get_data</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">process_stuff</span>()
@@ -94,19 +94,19 @@
 			<code>
 				<span class="kw">def</span><span class="func"> my_task</span>():
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">get_data</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">process_stuff</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">show_data</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">useless_function</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">another_function</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 			</code>
 		</div>
 		<div class="show content right">
-			<p> Of course! Who is not afraid of a decorator? They are truly terrifying, so that's why you can still progress in the 'classic' way.</p> <p>Hey, I'm afraid you'll have to admit that it's much uglier.</p>
+			<p><p> Of course! Who is not afraid of a decorator? They are truly terrifying, so that's why you can still progress in the 'classic' way.</p> <p>Hey, I'm afraid you'll have to admit that it's much uglier.</p></p>
 		</div>
 	</div>
 
@@ -114,7 +114,7 @@
 	<div class="showcase part4" id="showcase4">
 		<h1 class="show-title">What if I want to change the color when it completes?</h1>
 		<div class="show content" style="width: 100%;">
-			It is your lucky day, because you can set conditions for quite a few properties of the bar, and that when they are met, different colors, characters, or text are applied!
+			<p>It is your lucky day, because you can set conditions for quite a few properties of the bar, and that when they are met, different colors, characters, or text are applied!</p>
 		</div>
 		<code>	<!-- turture -->
 			<span class="var">conds</span> <span class="op">=</span> (
@@ -123,13 +123,13 @@
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"text <- error"</span>, <span class="obj">pbar</span>.<span class="obj">ColorSet</span>.RED, <span class="var">formatset</span><span class="op">=</span><span class="obj">pbar</span>.<span class="obj">FormatSet</span>.DESCRIPTIVE)
 			)
 
-			<span class="var">b</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>(<span class="var">conditions</span><span class="op">=</span><span class="var">conds</span>)
+			<span class="var">myBar</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>(<span class="var">conditions</span><span class="op">=</span><span class="var">conds</span>)
 
 			<span class="kw">try</span>:
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="func">animate</span>(<span class="var">b</span>, <span class="obj">range</span>(<span class="num">50</span>))
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="func">animate</span>(<span class="var">myBar</span>, <span class="obj">range</span>(<span class="num">50</span>))
 			<span class="kw">except</span>:
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="var">text</span> <span class="op">=</span> <span class="str">"Error!"</span>
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">draw</span>()
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="var">text</span> <span class="op">=</span> <span class="str">"Error!"</span>
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">draw</span>()
 
 		</code>
 
@@ -182,4 +182,6 @@
 		</div>
 	</footer>
 </body>
+<script src="scripts/main.js"></script>
+
 </html>

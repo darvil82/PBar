@@ -350,6 +350,17 @@ code {
   overflow-x: hidden;
 }
 
+code * {
+  -webkit-transition: all .1s;
+  transition: all .1s;
+}
+
+code > span:hover {
+  -webkit-filter: brightness(1.2);
+          filter: brightness(1.2);
+  font-weight: bold;
+}
+
 /* syntax highlighting */
 .kw {
   color: #bf7bd4;
@@ -376,7 +387,7 @@ code {
 }
 
 .num {
-  color: #128df1;
+  color: #ff7b00;
 }
 
 .pre {

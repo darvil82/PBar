@@ -1,3 +1,5 @@
+#! /bin/env python3.9
+
 """
 HTML generator for the different languages of the page. This will hopefully help when doing
 some changes to the markup, so we don't need to edit the same thing on all the html files.
@@ -69,12 +71,12 @@ HTML_CONTENT = """\
 			<code>
 				<span class="kw">import</span> <span class="obj">pbar</span>
 
-				<span class="var">b</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>()
-				<span class="var">b</span>.<span class="func">draw</span>()
+				<span class="var">myBar</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>()
+				<span class="var">myBar</span>.<span class="func">draw</span>()
 			</code>
 		</div>
 		<div class="show content right">
-			{showcase1_text}
+			<p>{showcase1_text}</p>
 		</div>
 	</div>
 
@@ -82,11 +84,11 @@ HTML_CONTENT = """\
 	<div class="showcase part2">
 		<h1 class="show-title">{showcase2_title}</h1>
 		<div class="show content left">
-			{showcase2_text}
+			<p>{showcase2_text}</p>
 		</div>
 		<div class="show code right">
 			<code>
-				<span class="func">@</span><span class="obj">pbar</span>.<span class="func">taskWrapper</span>(<span class="var">b</span>)
+				<span class="func">@</span><span class="obj">pbar</span>.<span class="func">taskWrapper</span>(<span class="var">myBar</span>, <span class="func">locals</span>())
 				<span class="kw">def</span><span class="func"> my_task</span>():
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">get_data</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">process_stuff</span>()
@@ -104,19 +106,19 @@ HTML_CONTENT = """\
 			<code>
 				<span class="kw">def</span><span class="func"> my_task</span>():
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">get_data</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">process_stuff</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">show_data</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">useless_function</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">another_function</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 			</code>
 		</div>
 		<div class="show content right">
-			{showcase3_text}
+			<p>{showcase3_text}</p>
 		</div>
 	</div>
 
@@ -124,7 +126,7 @@ HTML_CONTENT = """\
 	<div class="showcase part4" id="showcase4">
 		<h1 class="show-title">{showcase4_title}</h1>
 		<div class="show content" style="width: 100%;">
-			{showcase4_text}
+			<p>{showcase4_text}</p>
 		</div>
 		<code>	<!-- turture -->
 			<span class="var">conds</span> <span class="op">=</span> (
@@ -133,13 +135,13 @@ HTML_CONTENT = """\
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"text <- error"</span>, <span class="obj">pbar</span>.<span class="obj">ColorSet</span>.RED, <span class="var">formatset</span><span class="op">=</span><span class="obj">pbar</span>.<span class="obj">FormatSet</span>.DESCRIPTIVE)
 			)
 
-			<span class="var">b</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>(<span class="var">conditions</span><span class="op">=</span><span class="var">conds</span>)
+			<span class="var">myBar</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>(<span class="var">conditions</span><span class="op">=</span><span class="var">conds</span>)
 
 			<span class="kw">try</span>:
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="func">animate</span>(<span class="var">b</span>, <span class="obj">range</span>(<span class="num">50</span>))
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="func">animate</span>(<span class="var">myBar</span>, <span class="obj">range</span>(<span class="num">50</span>))
 			<span class="kw">except</span>:
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="var">text</span> <span class="op">=</span> <span class="str">"Error!"</span>
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">draw</span>()
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="var">text</span> <span class="op">=</span> <span class="str">"Error!"</span>
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">draw</span>()
 
 		</code>
 
@@ -192,6 +194,8 @@ HTML_CONTENT = """\
 		</div>
 	</footer>
 </body>
+<script src="scripts/main.js"></script>
+
 </html>
 """
 

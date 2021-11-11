@@ -59,12 +59,12 @@
 			<code>
 				<span class="kw">import</span> <span class="obj">pbar</span>
 
-				<span class="var">b</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>()
-				<span class="var">b</span>.<span class="func">draw</span>()
+				<span class="var">myBar</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>()
+				<span class="var">myBar</span>.<span class="func">draw</span>()
 			</code>
 		</div>
 		<div class="show content right">
-			Oto kod, który generuje pasek postępu z domyślnymi wartościami. Pokazuje to również w terminalu. Więc no... powinno być wystarczająco łatwo!
+			<p>Oto kod, który generuje pasek postępu z domyślnymi wartościami. Pokazuje to również w terminalu. Więc no... powinno być wystarczająco łatwo!</p>
 		</div>
 	</div>
 
@@ -72,11 +72,11 @@
 	<div class="showcase part2">
 		<h1 class="show-title">Okej okej, ale chcę, żeby to było coś pożytecznego.</h1>
 		<div class="show content left">
-			To ma sens, każdy lubi użyteczne rzeczy (a przynajmniej tak mi się wydaje). Dlatego też, możesz pokazać postępy w realizacji zestawu zadań w super prosty sposób.
+			<p>To ma sens, każdy lubi użyteczne rzeczy (a przynajmniej tak mi się wydaje). Dlatego też, możesz pokazać postępy w realizacji zestawu zadań w super prosty sposób.</p>
 		</div>
 		<div class="show code right">
 			<code>
-				<span class="func">@</span><span class="obj">pbar</span>.<span class="func">taskWrapper</span>(<span class="var">b</span>)
+				<span class="func">@</span><span class="obj">pbar</span>.<span class="func">taskWrapper</span>(<span class="var">myBar</span>, <span class="func">locals</span>())
 				<span class="kw">def</span><span class="func"> my_task</span>():
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">get_data</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">process_stuff</span>()
@@ -94,19 +94,19 @@
 			<code>
 				<span class="kw">def</span><span class="func"> my_task</span>():
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">get_data</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">process_stuff</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">show_data</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">useless_function</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">another_function</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">step</span>()
+				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
 			</code>
 		</div>
 		<div class="show content right">
-			<p> Oczywiście! Któż z nas nie boi się dekoratorów? Są naprawdę przerażające, dlatego też możesz nadal używać PBar w bardziej klasyczny sposób. </p> <p> Ale hej, obawiam się, że będziesz musiał przyznać, że to jest znacznie brzydsze. </p>
+			<p><p> Oczywiście! Któż z nas nie boi się dekoratorów? Są naprawdę przerażające, dlatego też możesz nadal używać PBar w bardziej klasyczny sposób. </p> <p> Ale hej, obawiam się, że będziesz musiał przyznać, że to jest znacznie brzydsze. </p></p>
 		</div>
 	</div>
 
@@ -114,7 +114,7 @@
 	<div class="showcase part4" id="showcase4">
 		<h1 class="show-title">Co jeśli chcę zmienić kolor, kiedy skończy?</h1>
 		<div class="show content" style="width: 100%;">
-			To twój szczęśliwy dzień, bo możesz ustawić warunki dla całkiej sporej ilości właściwości paska - kiedy są one spełnione, różne kolory, znaki lub tekst są wyświetlane.
+			<p>To twój szczęśliwy dzień, bo możesz ustawić warunki dla całkiej sporej ilości właściwości paska - kiedy są one spełnione, różne kolory, znaki lub tekst są wyświetlane.</p>
 		</div>
 		<code>	<!-- turture -->
 			<span class="var">conds</span> <span class="op">=</span> (
@@ -123,13 +123,13 @@
 				&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"text <- error"</span>, <span class="obj">pbar</span>.<span class="obj">ColorSet</span>.RED, <span class="var">formatset</span><span class="op">=</span><span class="obj">pbar</span>.<span class="obj">FormatSet</span>.DESCRIPTIVE)
 			)
 
-			<span class="var">b</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>(<span class="var">conditions</span><span class="op">=</span><span class="var">conds</span>)
+			<span class="var">myBar</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>(<span class="var">conditions</span><span class="op">=</span><span class="var">conds</span>)
 
 			<span class="kw">try</span>:
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="func">animate</span>(<span class="var">b</span>, <span class="obj">range</span>(<span class="num">50</span>))
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="func">animate</span>(<span class="var">myBar</span>, <span class="obj">range</span>(<span class="num">50</span>))
 			<span class="kw">except</span>:
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="var">text</span> <span class="op">=</span> <span class="str">"Error!"</span>
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">b</span>.<span class="func">draw</span>()
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="var">text</span> <span class="op">=</span> <span class="str">"Error!"</span>
+			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">draw</span>()
 
 		</code>
 
@@ -182,4 +182,6 @@
 		</div>
 	</footer>
 </body>
+<script src="scripts/main.js"></script>
+
 </html>
