@@ -1,33 +1,41 @@
-function addStuffToCode() {
-	let spans = document.getElementsByTagName("span")
+const WIKI_URL = "https://github.com/DarviL82/PBar/wiki/"
 
+
+
+function addCodeLinks() {
 	function addLink(element, url, target="_blank") {
 		element.style.cursor = "pointer"
+		element.classList.add("special")
 		element.addEventListener("click", () => {
 			open(url, target)
 		})
 	}
 
+	const wiki_pages = {	// Define the wiki pages available
+		PBar: "PBar",
+		Cond: "Cond",
+		animate: "animate-function",
+		taskWrapper: "taskWrapper",
+		ColorSet: "PBar#colorset",
+		CharSet: "PBar#charset",
+		FormatSet: "PBar#formatset",
+		barHelper: "barHelper",
+		Term: "Term"
+	}
+
+	let spans = document.querySelectorAll("code span")	// get all the spans inside codes */
 
 	for (let i = 0; i < spans.length; i++) {
 		const span = spans[i]
-		switch (span.innerHTML) {
-			case "PBar":
-				addLink(span, "https://github.com/DarviL82/PBar/wiki/PBar")
-				break
-			case "Cond":
-				addLink(span, "https://github.com/DarviL82/PBar/wiki/Cond")
-				break
-			case "animate":
-				addLink(span, "https://github.com/DarviL82/PBar/wiki/animate-function")
-				break
-			case "taskWrapper":
-				addLink(span, "https://github.com/DarviL82/PBar/wiki/taskWrapper-function-decorator")
-				break
+		if (span.innerHTML in wiki_pages) {
+			/* if the content of the element
+			matches a key of wiki_pages, add a link to it with the value of
+			the object */
+			addLink(span, WIKI_URL+wiki_pages[span.innerHTML])
 		}
 	}
 }
 
 
 
-addStuffToCode()
+addCodeLinks()

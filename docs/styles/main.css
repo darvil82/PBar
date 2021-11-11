@@ -355,10 +355,16 @@ code * {
   transition: all .1s;
 }
 
-code > span:hover {
-  -webkit-filter: brightness(1.2);
-          filter: brightness(1.2);
+code > .special {
   font-weight: bold;
+}
+
+code > .special:hover {
+  -webkit-filter: brightness(1.5);
+          filter: brightness(1.5);
+  font-weight: bold;
+  text-decoration: underline;
+  text-shadow: 0 0 2em currentColor, 0 0 0.25em currentColor;
 }
 
 /* syntax highlighting */
