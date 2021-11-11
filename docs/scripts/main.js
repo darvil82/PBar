@@ -15,7 +15,7 @@ function addCodeLinks() {
 		PBar: "PBar",
 		Cond: "Cond",
 		animate: "animate-function",
-		taskWrapper: "taskWrapper",
+		taskWrapper: "taskWrapper-function-decorator",
 		ColorSet: "PBar#colorset",
 		CharSet: "PBar#charset",
 		FormatSet: "PBar#formatset",
