@@ -14,7 +14,7 @@ HTML_CONTENT = """\
 <!--
 	This page was initialy made as homework for school.
 	One of the handicaps was not being able to use JavaScript, or any other scripting language.
-	That's why this page lacks of it.
+	That's why this page lacks a bit of it.
 -->
 
 <html lang="{lang}">
