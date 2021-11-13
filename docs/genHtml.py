@@ -69,10 +69,10 @@ HTML_CONTENT = """\
 		<h1 class="show-title">{showcase1_title}</h1>
 		<div class="show code left">
 			<code>
-				<span class="kw">import</span> <span class="obj">pbar</span>
+<span class="kw">import</span> <span class="obj">pbar</span>
 
-				<span class="var">myBar</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>()
-				<span class="var">myBar</span>.<span class="func">draw</span>()
+<span class="var">myBar</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>()
+<span class="var">myBar</span>.<span class="func">draw</span>()
 			</code>
 		</div>
 		<div class="show content right">
@@ -88,13 +88,13 @@ HTML_CONTENT = """\
 		</div>
 		<div class="show code right">
 			<code>
-				<span class="func">@</span><span class="obj">pbar</span>.<span class="func">taskWrapper</span>(<span class="var">myBar</span>, <span class="func">locals</span>())
-				<span class="kw">def</span><span class="func"> my_task</span>():
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">get_data</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">process_stuff</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">show_data</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">useless_function</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">another_function</span>()
+<span class="func">@</span><span class="obj">pbar</span>.<span class="func">taskWrapper</span>(<span class="var">myBar</span>, <span class="func">locals</span>())
+<span class="kw">def</span><span class="func"> my_task</span>():
+	<span class="func">get_data</span>()
+	<span class="func">process_stuff</span>()
+	<span class="func">show_data</span>()
+	<span class="func">useless_function</span>()
+	<span class="func">another_function</span>()
 			</code>
 		</div>
 	</div>
@@ -104,17 +104,17 @@ HTML_CONTENT = """\
 		<h1 class="show-title">{showcase3_title}</h1>
 		<div class="show code left">
 			<code>
-				<span class="kw">def</span><span class="func"> my_task</span>():
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">get_data</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">process_stuff</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">show_data</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">useless_function</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="func">another_function</span>()
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">step</span>()
+<span class="kw">def</span><span class="func"> my_task</span>():
+	<span class="func">get_data</span>()
+	<span class="var">myBar</span>.<span class="func">step</span>()
+	<span class="func">process_stuff</span>()
+	<span class="var">myBar</span>.<span class="func">step</span>()
+	<span class="func">show_data</span>()
+	<span class="var">myBar</span>.<span class="func">step</span>()
+	<span class="func">useless_function</span>()
+	<span class="var">myBar</span>.<span class="func">step</span>()
+	<span class="func">another_function</span>()
+	<span class="var">myBar</span>.<span class="func">step</span>()
 			</code>
 		</div>
 		<div class="show content right">
@@ -129,20 +129,19 @@ HTML_CONTENT = """\
 			<p>{showcase4_text}</p>
 		</div>
 		<code>	<!-- turture -->
-			<span class="var">conds</span> <span class="op">=</span> (
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage >= 50"</span>, </span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.YELLOW, <span class="obj">pbar</span>.<span class="obj">CharSet</span>.BRICKS),
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage == 100"</span>, </span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.GREEN),
-				&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"text <- error"</span>, <span class="obj">pbar</span>.<span class="obj">ColorSet</span>.RED, <span class="var">formatset</span><span class="op">=</span><span class="obj">pbar</span>.<span class="obj">FormatSet</span>.DESCRIPTIVE)
-			)
+<span class="var">conds</span> <span class="op">=</span> (
+	<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage >= 50"</span>, </span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.YELLOW, <span class="obj">pbar</span>.<span class="obj">CharSet</span>.BRICKS),
+	<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage == 100"</span>, </span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.GREEN),
+	<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"text <- error"</span>, <span class="obj">pbar</span>.<span class="obj">ColorSet</span>.RED, <span class="var">formatset</span><span class="op">=</span><span class="obj">pbar</span>.<span class="obj">FormatSet</span>.DESCRIPTIVE)
+)
 
-			<span class="var">myBar</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>(<span class="var">conditions</span><span class="op">=</span><span class="var">conds</span>)
+<span class="var">myBar</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>(<span class="var">conditions</span><span class="op">=</span><span class="var">conds</span>)
 
-			<span class="kw">try</span>:
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="obj">pbar</span>.<span class="func">animate</span>(<span class="var">myBar</span>, <span class="obj">range</span>(<span class="num">50</span>))
-			<span class="kw">except</span>:
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="var">text</span> <span class="op">=</span> <span class="str">"Error!"</span>
-			&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">myBar</span>.<span class="func">draw</span>()
-
+<span class="kw">try</span>:
+	<span class="obj">pbar</span>.<span class="func">animate</span>(<span class="var">myBar</span>, <span class="obj">range</span>(<span class="num">50</span>))
+<span class="kw">except</span>:
+	<span class="var">myBar</span>.<span class="var">text</span> <span class="op">=</span> <span class="str">"Error!"</span>
+	<span class="var">myBar</span>.<span class="func">draw</span>()
 		</code>
 
 		<video width="100%" autoplay loop muted>
