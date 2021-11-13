@@ -92,7 +92,6 @@ h3 {
   height: -webkit-max-content;
   height: -moz-max-content;
   height: max-content;
-  margin-bottom: 1em;
   border-radius: 0 0 7px 7px;
   z-index: 50;
   background-color: white;
@@ -347,16 +346,13 @@ code {
   padding-top: 5px;
   font-size: 1.2em;
   margin-bottom: 20px;
-  overflow-x: hidden;
-}
-
-code * {
-  -webkit-transition: all .1s;
-  transition: all .1s;
+  overflow-x: visible;
 }
 
 code > .special {
   font-weight: bold;
+  -webkit-transition: all .1s;
+  transition: all .1s;
 }
 
 code > .special:hover {
@@ -399,7 +395,7 @@ code > .special:hover {
 .pre {
   /* small code */
   display: inline-block;
-  background-color: rgba(20, 20, 20, 0.274);
+  background-color: rgba(20, 20, 20, 0.411);
   padding: 0.1em;
   border-radius: 3px;
   font-size: 1.1em;
@@ -564,6 +560,42 @@ footer .credits-logo img {
 span.whisper {
   opacity: 0.3;
   font-style: italic;
+}
+
+.tooltip {
+  -webkit-filter: initial;
+          filter: initial;
+  font-size: initial;
+  text-shadow: initial;
+  font-weight: initial;
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  background-color: #252525;
+  border-left: 5px solid white;
+  border-radius: 0 1vh 1vh 1vh;
+  padding: 15px;
+  position: absolute;
+  top: 1em;
+  left: -10px;
+  width: 300px;
+  color: white;
+  pointer-events: none;
+  z-index: 10;
+  -webkit-box-shadow: 0 10px 10px 2px rgba(0, 0, 0, 0.548);
+          box-shadow: 0 10px 10px 2px rgba(0, 0, 0, 0.548);
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  -webkit-transition: opacity .5s, left .5s;
+  transition: opacity .5s, left .5s;
+}
+
+*:hover > .tooltip {
+  left: 0;
+  opacity: 1;
+  visibility: visible;
 }
 
 .left {
