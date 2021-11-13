@@ -112,7 +112,7 @@ a.button {
 	font-size: 1em;
 	padding: 0.4em 1.75em;
 	border-radius: 5px;
-	margin: 0.5em;
+	margin: 0.5em 0;
 	font-weight: bold;
 	text-decoration: none;
 	transition:
@@ -350,7 +350,7 @@ code > .special:hover {
 	.show-title {
 		color: white;
 		font-family: "Roboto";
-		font-size: 4em;
+		font-size: 5em;
 		margin-bottom: 0.5em;
 	}
 
@@ -365,7 +365,7 @@ code > .special:hover {
 		&.content {
 			width: 50%;
 			color: white;
-			font-size: 1.2em;
+			font-size: 1.3rem;
 			text-align: justify;
 			margin-bottom: 15px;
 		}
@@ -379,7 +379,8 @@ code > .special:hover {
 		part1: (rgb(92, 168, 145), rgb(136, 115, 96)),
 		part2: (rgb(117, 96, 136), rgb(187, 137, 91)),
 		part3: (rgb(96, 136, 96), rgb(105, 91, 187)),
-		part4: (rgb(197, 188, 65), rgb(179, 91, 32))
+		part4: (rgb(197, 188, 65), rgb(179, 91, 32)),
+		part5: (rgb(42, 117, 54), rgb(87, 168, 164)),
 	);
 
 	@each $part, $colorlist in $sectionColors {
@@ -534,7 +535,7 @@ span.whisper {
 	.showcase {
 		padding: 15% 5%;
 
-		.show-title {font-size: 3em;}
+		.show-title {font-size: 3.2em;}
 		.show {
 			&.code, &.content {
 				width: 100%;

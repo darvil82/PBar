@@ -28,6 +28,11 @@
 		"showcase4_title": "What if I want to change the color when it completes?",
 		"showcase4_text": "It is your lucky day, because you can set conditions for quite a few properties of the bar, and that when they are met, different colors, characters, or text are applied!",
 
+		"showcase5_title": "And... That's it?",
+		"showcase5_text1": "No! That's not all of it! I knew this wouldn't be enough for you, so I can tell you there's much more to see! There are a lot of different options to tweak. Here, take this quick demo that shows <i>some</i> of it's options:",
+		"showcase5_text2": "If you want to see all the features of PBar, check out the wiki pages on GitHub! You can also click on the words that are slightly highlighted inside the code blocks above. They will show you the wiki page of that object!",
+		"showcase5_button": "Visit the Wiki page",
+
 		"links_title": "Links and Download",
 		"link1_text": "PBar is available on the PyPI repository as <span class='pre'>pbar2</span>. Why 2? Is it a sequel? Yes, it is, but also because someone took the name.",
 		"link2_text": "I could not miss a version control that helps in my mediocre organization (and the loss of files). <i>Seriously, thanks git.</i> Ah yes, you can also find all the source code of the project. <span class='whisper'>pstt, it's a botch.</span>",
@@ -61,6 +66,11 @@
 
 		"showcase4_title": "¿Y si quiero cambiar el color cuando se complete?",
 		"showcase4_text": "Es tu día de suerte, por que puedes establecer condiciones para bastantes propiedades de la barra, y que cuando se cumplan, ¡se apliquen diferentes colores, caracteres, o texto!",
+
+		"showcase5_title": "Y... Eso es todo?",
+		"showcase5_text1": "¡No! Eso no es todo! Sabía que esto no sería suficiente para ti, ¡así que puedo decirte que hay mucho más por ver! Hay muchas opciones distintas para modificar. Aquí tienes una pequeña demostración de algunas de esas opciones:",
+		"showcase5_text2": "Si quieres ver todas las características de PBar, consulte las páginas de la Wiki en GitHub. También puedes hacer click en las palabras que están ligeramente resaltadas en los bloques de código de arriba. ¡Te mostrarán la página de la Wiki de ese objeto!",
+		"showcase5_button": "Visitar la Wiki",
 
 		"links_title": "Enlaces y Descarga",
 		"link1_text": "PBar está disponible en los repositorios de PyPI bajo el nombre de <span class='pre'>pbar2</span>. ¿Por qué 2? ¿Es una secuela? Sí, lo es, pero también es por que alguien me cogió el nombre.",

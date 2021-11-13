@@ -48,7 +48,7 @@ HTML_CONTENT = """\
 			<p>
 				{infoItem2_text}
 			</p>
-			<a class="button" href="#showcase1">{infoItem2_button}</a>
+			<a class="button" href="#showcase4">{infoItem2_button}</a>
 		</div>
 		<div class="info-item purple">
 			<h1>{infoItem3_heading}</h1>
@@ -152,6 +152,26 @@ HTML_CONTENT = """\
 	</div>
 
 
+	<div class="showcase part5">
+		<h1 class="show-title">{showcase5_title}</h1>
+		<div class="show content" style="width: 100%;">
+			<p>{showcase5_text1}</p>
+		</div>
+
+		<video width="100%" autoplay loop muted controls>
+			<source src="https://user-images.githubusercontent.com/48654552/140072905-f83a1ff4-fba7-481d-925d-727caed6c3e8.mp4" type="video/mp4">
+		</video>
+
+		<div class="show content" style="width: 100%;">
+			<p>
+				{showcase5_text2}
+			</p>
+			<a target="_blank" href="https://github.com/DarviL82/PBar/wiki" class="button">{showcase5_button}</a>
+		</div>
+
+	</div>
+
+
 
 
 	<div class="links">
@@ -227,6 +247,11 @@ HTML_CONTENT = """\
 
 # 	"showcase4_title": "",
 # 	"showcase4_text": "",
+
+#	"showcase5_title": "",
+#	"showcase5_text1": "",
+#	"showcase5_text2": "",
+#	"showcase5_button": "",
 
 # 	"links_title": "",
 # 	"link1_text": "",

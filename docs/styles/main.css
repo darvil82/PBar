@@ -134,7 +134,7 @@ a.button {
   font-size: 1em;
   padding: 0.4em 1.75em;
   border-radius: 5px;
-  margin: 0.5em;
+  margin: 0.5em 0;
   font-weight: bold;
   text-decoration: none;
   -webkit-transition: background-color 0.25s, color 0.25s;
@@ -420,7 +420,7 @@ code > .special:hover {
 .showcase .show-title {
   color: white;
   font-family: "Roboto";
-  font-size: 4em;
+  font-size: 5em;
   margin-bottom: 0.5em;
 }
 
@@ -436,7 +436,7 @@ code > .special:hover {
 .showcase .show.content {
   width: 50%;
   color: white;
-  font-size: 1.2em;
+  font-size: 1.3rem;
   text-align: justify;
   margin-bottom: 15px;
 }
@@ -459,6 +459,10 @@ code > .special:hover {
 
 .showcase.part4 {
   background-image: linear-gradient(45deg, #c5bc41, #b35b20);
+}
+
+.showcase.part5 {
+  background-image: linear-gradient(45deg, #2a7536, #57a8a4);
 }
 
 /* Links */
@@ -598,7 +602,7 @@ span.whisper {
     padding: 15% 5%;
   }
   .showcase .show-title {
-    font-size: 3em;
+    font-size: 3.2em;
   }
   .showcase .show.code, .showcase .show.content {
     width: 100%;
