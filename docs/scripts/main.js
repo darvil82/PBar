@@ -27,6 +27,8 @@ function addTooltip(element, content) {
 }
 
 
+
+
 function addLink(element, url, target="_blank") {
 	element.style.cursor = "pointer"
 	element.classList.add("special")
