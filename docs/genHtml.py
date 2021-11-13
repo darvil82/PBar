@@ -211,6 +211,10 @@ HTML_CONTENT = """\
 			<h3>David Losantos</h3>
 			<a target="_blank" href="https://github.com/DarviL82/"><img class="credits-img" style="filter: invert()" src="images/github.png"></a>
 			<a target="_blank" href="https://twitter.com/DarviL82_"><img class="credits-img" src="images/twitter.png"></a>
+			<a style="position: relative" target="_blank" href="https://discord.gg/">
+				<img class="credits-img" src="images/discord.png">
+				<div class="tooltip holdable"> DarviL#3242 </div>
+			</a>
 		</div>
 	</footer>
 </body>

@@ -5,6 +5,7 @@
   padding: 0px;
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
+  scroll-behavior: smooth;
 }
 
 ::-moz-selection {
@@ -136,12 +137,16 @@ a.button {
   margin: 0.5em 0;
   font-weight: bold;
   text-decoration: none;
-  -webkit-transition: background-color 0.25s, color 0.25s;
-  transition: background-color 0.25s, color 0.25s;
+  -webkit-transition: background-color 0.25s, color 0.25s, -webkit-box-shadow 1s;
+  transition: background-color 0.25s, color 0.25s, -webkit-box-shadow 1s;
+  transition: background-color 0.25s, box-shadow 1s, color 0.25s;
+  transition: background-color 0.25s, box-shadow 1s, color 0.25s, -webkit-box-shadow 1s;
 }
 
 a.button:hover {
   background-color: #77dba4;
+  -webkit-box-shadow: 0 0 10px 1px rgba(36, 36, 36, 0.63);
+          box-shadow: 0 0 10px 1px rgba(36, 36, 36, 0.63);
   color: black;
 }
 
@@ -347,6 +352,12 @@ code {
   font-size: 1.2em;
   margin-bottom: 20px;
   overflow-x: visible;
+  background-color: rgba(26, 26, 26, 0.801);
+}
+
+code:hover > .special {
+  -webkit-text-decoration: underline dotted 2px;
+          text-decoration: underline dotted 2px;
 }
 
 code > .special {
@@ -544,9 +555,8 @@ footer {
 }
 
 footer .credits-img {
-  margin-right: 1vw;
-  width: 2em;
-  height: 2em;
+  height: 2rem;
+  margin-right: 0.25rem;
 }
 
 footer .credits-logo {
@@ -580,16 +590,19 @@ span.whisper {
   left: -10px;
   width: 300px;
   color: white;
+  -webkit-box-shadow: 0 5px 10px 1px rgba(0, 0, 0, 0.295);
+          box-shadow: 0 5px 10px 1px rgba(0, 0, 0, 0.295);
   pointer-events: none;
-  z-index: 10;
-  -webkit-box-shadow: 0 10px 10px 2px rgba(0, 0, 0, 0.548);
-          box-shadow: 0 10px 10px 2px rgba(0, 0, 0, 0.548);
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
   -webkit-transition: opacity .5s, left .5s;
   transition: opacity .5s, left .5s;
+}
+
+.tooltip.holdable {
+  pointer-events: visible;
 }
 
 *:hover > .tooltip {

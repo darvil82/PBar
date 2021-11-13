@@ -2,6 +2,11 @@ const WIKI_URL = "https://github.com/DarviL82/PBar/wiki/"
 
 const PBAR_INFO = {	// Define the wiki pages, and their corresponding tooltip
 	PBar: ["PBar", "The main progress bar object, which will let us manage and customize the progress bars however we want."],
+		draw: ["PBar#draw", "Draws the progress bar on the screen."],
+		text: ["PBar#text", "Text to be displayed on the progress bar."],
+		step: ["PBar#step", "Add <span class='pre'>steps</span> to the first value in prange, then draw the bar."],
+		conditions: ["PBar#conditions", "One or more conditions to check before each time the bar draws. If one succeeds, the specified customization sets will be applied to the bar."],
+
 	Cond: ["Cond", "Applies different customization sets to a bar if the condition supplied succeeds."],
 	animate: ["animate-function", "Animates the given PBar object by filling it by the range given, with a delay."],
 	taskWrapper: ["taskWrapper-function-decorator", "Automatically changes the prange of the progress bar depending on the number of function calls inside the decorated function. <br> This will also call the <span class='pre'>PBar.step()</span> method after each function call processed."],
