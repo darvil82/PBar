@@ -513,21 +513,20 @@ span.whisper {
 
 	display: block;
 	opacity: 0;
-	visibility: hidden;
 	background-color: rgb(37, 37, 37);
-	border-left: 5px solid white;
+
 	border-radius: 0 1vh 1vh 1vh;
 	padding: 15px;
 	position: absolute;
 	top: 1em;
-	left: -10px;
+	left: -20px;
 	width: 300px;
 	color: white;
 	box-shadow: 0 5px 10px 1px rgba(0, 0, 0, 0.295);
 	pointer-events: none;
 	user-select: none;
 
-	transition: opacity .5s, left .5s;
+	transition: opacity .5s, left .5s, border-left .15s .5s;
 
 	&.holdable { pointer-events: visible; }
 }
@@ -535,7 +534,7 @@ span.whisper {
 *:hover > .tooltip {
 	left: 0;
 	opacity: 1;
-	visibility: visible;
+	border-left: 5px solid white;
 }
 
 

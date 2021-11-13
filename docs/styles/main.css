@@ -580,14 +580,12 @@ span.whisper {
   font-weight: initial;
   display: block;
   opacity: 0;
-  visibility: hidden;
   background-color: #252525;
-  border-left: 5px solid white;
   border-radius: 0 1vh 1vh 1vh;
   padding: 15px;
   position: absolute;
   top: 1em;
-  left: -10px;
+  left: -20px;
   width: 300px;
   color: white;
   -webkit-box-shadow: 0 5px 10px 1px rgba(0, 0, 0, 0.295);
@@ -597,8 +595,8 @@ span.whisper {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
-  -webkit-transition: opacity .5s, left .5s;
-  transition: opacity .5s, left .5s;
+  -webkit-transition: opacity .5s, left .5s, border-left .15s .5s;
+  transition: opacity .5s, left .5s, border-left .15s .5s;
 }
 
 .tooltip.holdable {
@@ -608,7 +606,7 @@ span.whisper {
 *:hover > .tooltip {
   left: 0;
   opacity: 1;
-  visibility: visible;
+  border-left: 5px solid white;
 }
 
 .left {
