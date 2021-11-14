@@ -2,9 +2,9 @@ const WIKI_URL = "https://github.com/DarviL82/PBar/wiki/"
 
 const PBAR_INFO = {	// Define the wiki pages, and their corresponding tooltip
 	PBar: ["PBar", "The main progress bar object, which will let us manage and customize the progress bars however we want."],
-		draw: ["PBar#draw", "Draws the progress bar on the screen."],
+		draw: ["PBar#methods", "Draws the progress bar on the screen."],
+		step: ["PBar#methods", "Add <span class='pre'>steps</span> to the first value in prange, then draw the bar."],
 		text: ["PBar#text", "Text to be displayed on the progress bar."],
-		step: ["PBar#step", "Add <span class='pre'>steps</span> to the first value in prange, then draw the bar."],
 		conditions: ["PBar#conditions", "One or more conditions to check before each time the bar draws. If one succeeds, the specified customization sets will be applied to the bar."],
 
 	Cond: ["Cond", "Applies different customization sets to a bar if the condition supplied succeeds."],
@@ -13,8 +13,7 @@ const PBAR_INFO = {	// Define the wiki pages, and their corresponding tooltip
 	ColorSet: ["PBar#colorset", "Set of colors to use when drawing the progress bar."],
 	CharSet: ["PBar#charset", "Set of characters to use when drawing the progress bar."],
 	FormatSet: ["PBar#formatset", "Formatting used when displaying the strings in different places around the bar."],
-	barHelper: ["barHelper", "Draw a bar helper on screen indefinitely until the user exits. Returns the position of the bar helper."],
-	Term: ["Term", ""]
+	barHelper: ["barHelper", "Draw a bar helper on screen indefinitely until the user exits. Returns the position of the bar helper."]
 }
 
 
