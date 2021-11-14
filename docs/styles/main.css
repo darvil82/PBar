@@ -369,7 +369,8 @@ code > .special:hover {
   -webkit-filter: brightness(1.5);
           filter: brightness(1.5);
   font-weight: bold;
-  text-decoration: underline;
+  -webkit-text-decoration: underline solid 2px;
+          text-decoration: underline solid 2px;
   text-shadow: 0 0 2em currentColor, 0 0 0.25em currentColor;
 }
 
@@ -582,6 +583,7 @@ span.whisper {
   background-color: #252525;
   border-radius: 0 1vh 1vh 1vh;
   padding: 15px;
+  padding-left: 20px;
   position: absolute;
   top: 1em;
   left: -20px;
@@ -594,18 +596,15 @@ span.whisper {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
-  -webkit-transition: opacity .5s, left .5s, border-left .15s .5s;
-  transition: opacity .5s, left .5s, border-left .15s .5s;
-}
-
-.tooltip.holdable {
-  pointer-events: visible;
+  -webkit-transition: opacity .5s, left .5s, border-left .15s .5s, padding-left .15s .5s;
+  transition: opacity .5s, left .5s, border-left .15s .5s, padding-left .15s .5s;
 }
 
 *:hover > .tooltip {
   left: 0;
   opacity: 1;
   border-left: 5px solid white;
+  padding-left: 15px;
 }
 
 .left {
@@ -614,6 +613,10 @@ span.whisper {
 
 .right {
   float: right;
+}
+
+.mshow {
+  visibility: hidden;
 }
 
 @media screen and (max-width: 1000px) {
@@ -664,6 +667,9 @@ span.whisper {
   .links .items .link {
     width: 90%;
     margin-right: 0;
+  }
+  .mshow {
+    visibility: visible;
   }
 }
 /*# sourceMappingURL=main.css.map */

@@ -305,7 +305,7 @@ code {
 		&:hover {
 			filter: brightness(1.5);
 			font-weight: bold;
-			text-decoration: underline;
+			text-decoration: underline solid 2px;
 			text-shadow:
 				0 0 2em currentColor,
 				0 0 0.25em currentColor;
@@ -515,7 +515,7 @@ span.whisper {
 	background-color: rgb(37, 37, 37);
 
 	border-radius: 0 1vh 1vh 1vh;
-	padding: 15px;
+	padding: 15px; padding-left: 20px;
 	position: absolute;
 	top: 1em;
 	left: -20px;
@@ -525,15 +525,14 @@ span.whisper {
 	pointer-events: none;
 	user-select: none;
 
-	transition: opacity .5s, left .5s, border-left .15s .5s;
-
-	&.holdable { pointer-events: visible; }
+	transition: opacity .5s, left .5s, border-left .15s .5s, padding-left .15s .5s;
 }
 
 *:hover > .tooltip {
 	left: 0;
 	opacity: 1;
 	border-left: 5px solid white;
+	padding-left: 15px;		// we do this to prevent the text shifting to the right when the border expands
 }
 
 
@@ -545,6 +544,7 @@ span.whisper {
 
 .left {float: left;}
 .right {float: right;}
+.mshow {visibility: hidden;}
 
 @media screen and (max-width: 1000px) {
 	.lang-changer {
@@ -581,7 +581,6 @@ span.whisper {
 	}
 
 
-
 	.links {
 		padding: 5%;
 
@@ -594,5 +593,11 @@ span.whisper {
 				margin-right: 0;
 			}
 		}
+	}
+
+
+
+	.mshow {
+		visibility: visible;
 	}
 }
