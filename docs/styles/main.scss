@@ -180,6 +180,7 @@ a.button {
 		font-family: 'Roboto', sans-serif;;
 		display: inline-block;
 		letter-spacing: -0.05em;
+		line-height: 0.75em;
 		width: max-content;
 		background-image: $bar-gradient;
 		background-clip: text;
@@ -191,7 +192,8 @@ a.button {
 	}
 
 	.banner-subtitle {
-		transform: translate(0.5em, -1.75em);
+		transform: translateX(0.5em);
+		line-height: 1em;
 		font-size: 0.25em;
 		display: block;
 		color: rgb(230, 230, 230);
@@ -301,9 +303,9 @@ code {
 	> .special {
 		font-weight: bold;
 		transition: all .1s;
+		position: relative;
 
 		&:hover {
-			filter: brightness(1.5);
 			font-weight: bold;
 			text-decoration: underline solid 2px;
 			text-shadow:
@@ -431,12 +433,43 @@ code {
 		outline: 3px solid rgb(235, 235, 235);
 		background-color: white;
 		color: black;
+		overflow: hidden;
+		position: relative;
+		z-index: 1;
+
+		// hover effect
+		&::before {
+			content: "";
+			position: absolute;
+			left: -80%;
+			top: 0;
+			width: 75%;
+			height: 100%;
+			opacity: 0;
+			transform: skewX(20deg);
+			// background-color: rgba(158, 158, 158, 0.075);
+			background-image: linear-gradient(
+				90deg,
+				rgba(158, 158, 158, 0.027),
+				rgba(158, 158, 158, 0.075),
+				rgba(133, 133, 133, 0.13),
+				rgba(158, 158, 158, 0.075),
+				rgba(158, 158, 158, 0.027)
+			);
+			z-index: -1;
+		}
 
 		&:hover {
 			box-shadow: 0 0 30px 1px rgba(0, 0, 0, 0.199);
 			transform: scale(1.1);
 			outline: 2px solid transparent;
 			z-index: 1;
+
+			&::before {
+				left: 130%;
+				transition: left 1s;
+				opacity: 1;
+			}
 		}
 
 		img {
@@ -512,7 +545,7 @@ span.whisper {
 
 	display: block;
 	opacity: 0;
-	background-color: rgb(37, 37, 37);
+	background-color: rgb(53, 53, 53);
 
 	border-radius: 0 1vh 1vh 1vh;
 	padding: 15px; padding-left: 20px;
@@ -524,6 +557,7 @@ span.whisper {
 	box-shadow: 0 5px 10px 1px rgba(0, 0, 0, 0.295);
 	pointer-events: none;
 	user-select: none;
+	z-index: 1;	// make sure it appears over the rest of elements with relative positions
 
 	transition: opacity .5s, left .5s, border-left .15s .5s, padding-left .15s .5s;
 }
@@ -544,7 +578,7 @@ span.whisper {
 
 .left {float: left;}
 .right {float: right;}
-.mshow {visibility: hidden;}
+.mshow {display: none;}
 
 @media screen and (max-width: 1000px) {
 	.lang-changer {
@@ -598,6 +632,6 @@ span.whisper {
 
 
 	.mshow {
-		visibility: visible;
+		display: initial;
 	}
 }
