@@ -36,7 +36,7 @@
 		"links_title": "Links and Download",
 		"link1_text": "PBar is available on the PyPI repository as <span class='pre'>pbar2</span>. Why 2? Is it a sequel? Yes, it is, but also because someone took the name.",
 		"link2_text": "I could not miss a version control that helps in my mediocre organization (and the loss of files). <i>Seriously, thanks git.</i> Ah yes, you can also find all the source code of the project. <span class='whisper'>pstt, it's a botch.</span>",
-		"link3_text": "Is is also available on the Arch packages repository, thanks to <span style='color: green'> MithicSpirit</span>. <span class='whisper'>I don't use Arch btw.</span>"
+		"link3_text": "It is also available on the Arch packages repository, thanks to <span style='color: green'> MithicSpirit</span>. <span class='whisper'>I don't use Arch btw.</span>"
 	},
 	"es": {
 		"langName": "Español",
