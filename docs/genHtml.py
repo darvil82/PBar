@@ -211,7 +211,7 @@ HTML_CONTENT = """\
 			<a target="_blank" href="https://github.com/DarviL82/"><img class="credits-img" style="filter: invert()" src="images/github.png"></a>
 			<a target="_blank" href="https://twitter.com/DarviL82_"><img class="credits-img" src="images/twitter.png"></a>
 			<a style="position: relative" target="_blank" href="https://discord.gg/">
-				<img class="credits-img" src="images/discord.png"> <span class="mshow"> DarviL82#8482 </span>
+				<img class="credits-img" src="images/discord.png"> <span class="mshow"> DarviL82#3242 </span>
 				<div class="tooltip"> DarviL#3242 </div>
 			</a>
 		</div>
