@@ -127,7 +127,7 @@
 
 <span class="kw">try</span>:
 	<span class="obj">pbar</span>.<span class="func">animate</span>(<span class="var">myBar</span>, <span class="obj">range</span>(<span class="num">50</span>))
-<span class="kw">except</span>:
+<span class="kw">except</span> <span class="obj">KeyboardInterrupt</span>:
 	<span class="var">myBar</span>.<span class="var">text</span> <span class="op">=</span> <span class="str">"Error!"</span>
 	<span class="var">myBar</span>.<span class="func">draw</span>()
 		</code>
