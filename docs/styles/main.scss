@@ -538,19 +538,18 @@ span.whisper {
 
 .tooltip {
 	// reset all the shit
-		filter: initial;
 		font-size: initial;
 		text-shadow: initial;
 		font-weight: initial;
 
 	display: block;
+	position: absolute;
 	opacity: 0;
 	background-color: rgb(53, 53, 53);
 
 	border-radius: 0 1vh 1vh 1vh;
 	padding: 15px; padding-left: 20px;
-	position: absolute;
-	top: 1.2em;
+	top: 1.2rem;
 	left: -20px;
 	width: 300px;
 	color: white;
@@ -560,14 +559,16 @@ span.whisper {
 	z-index: 1;	// make sure it appears over the rest of elements with relative positions
 
 	transition: opacity .5s, left .5s, border-left .15s .5s, padding-left .15s .5s;
+
+	*:hover > & {
+		left: 0;
+		opacity: 1;
+		border-left: 5px solid white;
+		padding-left: 15px;		// we do this to prevent the text shifting to the right when the border expands
+	}
 }
 
-*:hover > .tooltip {
-	left: 0;
-	opacity: 1;
-	border-left: 5px solid white;
-	padding-left: 15px;		// we do this to prevent the text shifting to the right when the border expands
-}
+
 
 
 

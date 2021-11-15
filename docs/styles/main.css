@@ -599,19 +599,17 @@ span.whisper {
 }
 
 .tooltip {
-  -webkit-filter: initial;
-          filter: initial;
   font-size: initial;
   text-shadow: initial;
   font-weight: initial;
   display: block;
+  position: absolute;
   opacity: 0;
   background-color: #353535;
   border-radius: 0 1vh 1vh 1vh;
   padding: 15px;
   padding-left: 20px;
-  position: absolute;
-  top: 1.2em;
+  top: 1.2rem;
   left: -20px;
   width: 300px;
   color: white;
