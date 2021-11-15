@@ -605,7 +605,9 @@ span.whisper {
   display: block;
   position: absolute;
   opacity: 0;
-  background-color: #353535;
+  background-color: rgba(53, 53, 53, 0.5);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
   border-radius: 0 1vh 1vh 1vh;
   padding: 15px;
   padding-left: 20px;
@@ -630,6 +632,12 @@ span.whisper {
   opacity: 1;
   border-left: 5px solid white;
   padding-left: 15px;
+}
+
+@supports not ((-webkit-backdrop-filter: blur()) or (backdrop-filter: blur())) {
+  .tooltip {
+    background-color: #353535;
+  }
 }
 
 .left {

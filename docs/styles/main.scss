@@ -545,7 +545,8 @@ span.whisper {
 	display: block;
 	position: absolute;
 	opacity: 0;
-	background-color: rgb(53, 53, 53);
+	background-color: rgba(53, 53, 53, 0.5);
+	backdrop-filter: blur(10px);
 
 	border-radius: 0 1vh 1vh 1vh;
 	padding: 15px; padding-left: 20px;
@@ -566,7 +567,15 @@ span.whisper {
 		border-left: 5px solid white;
 		padding-left: 15px;		// we do this to prevent the text shifting to the right when the border expands
 	}
+
+	@supports not (backdrop-filter: blur()) {
+		& {
+			background-color: rgb(53, 53, 53);
+		}
+	}
 }
+
+
 
 
 
