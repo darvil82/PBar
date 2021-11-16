@@ -1,4 +1,4 @@
-from typing import Any, Optional, Callable, Union
+from typing import Optional, Callable, Union
 from . utils import *
 from . import bar
 
@@ -189,7 +189,7 @@ class CharSet(_BaseSet):
 
 
 	def __init__(self, newSet: CharSetEntry) -> None:
-		super().__init__(self._strip(newSet) or self.DEFAULT)
+		super().__init__(self._strip(newSet) if newSet else self.DEFAULT)
 
 
 	@staticmethod
