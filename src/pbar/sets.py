@@ -58,7 +58,7 @@ class _BaseSet(dict):
 		@func: This represents the callable which only accepts one argument.
 
 		Example:
-		>>> iterValues(myDict, (lambda val: myFunc("stuff", val)))
+		>>> iterValues(lambda val: myFunc("stuff", val))
 		"""
 		return {
 			key: _BaseSet.iterValues(value, func) if isinstance(value, dict) else func(value)
@@ -189,30 +189,19 @@ class CharSet(_BaseSet):
 
 
 	def __init__(self, newSet: CharSetEntry) -> None:
-		super().__init__(newSet or self.DEFAULT)
-		self = CharSet._strip(self)
+		super().__init__(self._strip(newSet) or self.DEFAULT)
 
 
 	@staticmethod
-	def _strip(setdict: dict):
-		"""Converts empty values to spaces, and makes sure there's only one character"""
-		if not setdict:
-			return
-
-		newset = {}
-		for key, value in setdict.items():
-			if isinstance(value, dict):
-				newset[key] = CharSet._strip(value)
-				continue
-
+	def _strip(newDict) -> dict:
+		def clean(value) -> str:
 			if len(value) > 1:
-				value = value[0]
-
+				return value[0]
 			if value in _IGNORE_CHARS+"\t":
-				value = "?"
-			newset[key] = value
+				return "?"
 
-		return newset
+		return _BaseSet.iterValues(newDict, lambda val: clean(val))
+
 
 
 

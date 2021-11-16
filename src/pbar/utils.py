@@ -62,7 +62,12 @@ def convertClrs(clr: Union[dict[Any, Union[str, tuple]], str, tuple], type: str)
 	else:
 		color = clr
 
-	if type == "RGB":
+	if type == "HEX":
+		if not isinstance(color, (tuple, list)) or len(color) != 3: return color
+
+		capped = tuple(capValue(value, 255, 0) for value in color)
+		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
+	elif type == "RGB":
 		if not isinstance(color, str) or not color.startswith("#"):
 			return color
 
@@ -75,11 +80,6 @@ def convertClrs(clr: Union[dict[Any, Union[str, tuple]], str, tuple], type: str)
 			return tuple(int(clrs[i:i+2], 16) for i in (0, 2, 4))
 		except ValueError:
 			return color
-	elif type == "HEX":
-		if not isinstance(color, (tuple, list)) or len(color) != 3: return color
-
-		capped = tuple(capValue(value, 255, 0) for value in color)
-		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
 	else:
 		return ""
 
@@ -130,6 +130,7 @@ class Term:
 	def size() -> tuple[int, int]:
 		"""Get size of the terminal. Columns and rows."""
 		return tuple(get_terminal_size())
+
 
 	@staticmethod
 	def pos(pos: tuple[SupportsInt, SupportsInt],
