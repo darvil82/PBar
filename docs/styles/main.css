@@ -613,7 +613,10 @@ span.whisper {
   padding-left: 20px;
   top: 95%;
   left: -20px;
-  width: 300px;
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
+  max-width: 300px;
   color: white;
   -webkit-box-shadow: 0 5px 10px 1px rgba(0, 0, 0, 0.295);
           box-shadow: 0 5px 10px 1px rgba(0, 0, 0, 0.295);
