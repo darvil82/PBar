@@ -19,10 +19,12 @@ const PBAR_INFO = {	// Define the wiki pages, and their corresponding tooltip
 
 function addTooltip(element, content) {
 	let tooltip = document.createElement("div")
+
 	tooltip.style.borderColor = getComputedStyle(element).getPropertyValue("color")
-	tooltip.classList.add("tooltip")
+	tooltip.className = "tooltip"
 	tooltip.innerHTML = content
 	element.appendChild(tooltip)
+	element.style.position = "relative"	// make sure the tooltip is positioned relative to the element
 }
 
 
