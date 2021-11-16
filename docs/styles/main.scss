@@ -120,7 +120,7 @@ a.button {
 		box-shadow 1s,
 		color 0.25s;
 
-	&:hover {
+	&:hover, &:focus-visible {
 		background-color: rgb(119, 219, 164);
 		box-shadow: 0 0 10px 1px rgba(36, 36, 36, 0.63);
 		color: black;
@@ -247,7 +247,7 @@ a.button {
 
 		p {text-align: justify;}
 		a {margin-top: auto;}
-		a:hover {background-color: var(--color);}
+		a:hover, a:focus-visible {background-color: var(--color);}
 		h1 {
 			margin-bottom: 0.25em;
 			font-size: 2em;
@@ -459,7 +459,7 @@ code {
 			z-index: -1;
 		}
 
-		&:hover {
+		&:hover, &:focus-visible {
 			box-shadow: 0 0 30px 1px rgba(0, 0, 0, 0.199);
 			transform: scale(1.1);
 			outline: 2px solid transparent;
