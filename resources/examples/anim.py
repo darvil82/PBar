@@ -35,7 +35,7 @@ try:
 
 except KeyboardInterrupt:
 	mybar.text = "Interrupted!"
-	mybar.colorset = pbar.ColorSet.ERROR
+	mybar.colorset = pbar.ColorSet.RED
 
 
 mybar.draw()

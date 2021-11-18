@@ -189,18 +189,19 @@ class CharSet(_BaseSet):
 
 
 	def __init__(self, newSet: CharSetEntry) -> None:
-		super().__init__(self._strip(newSet) if newSet else self.DEFAULT)
+		super().__init__(newSet or self.DEFAULT)
+		self = self._strip()
 
 
-	@staticmethod
-	def _strip(newDict) -> dict:
+	def _strip(self) -> "CharSet":
 		def clean(value) -> str:
 			if len(value) > 1:
 				return value[0]
 			if value in _IGNORE_CHARS+"\t":
 				return "?"
+			return value
 
-		return _BaseSet.iterValues(newDict, lambda val: clean(val))
+		return self.iterValues(lambda val: clean(val))
 
 
 
