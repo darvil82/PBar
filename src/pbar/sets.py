@@ -433,18 +433,18 @@ class FormatSet(_BaseSet):
 
 	@staticmethod
 	def getBarAttrs(cls: "bar.PBar", string: str):
-		if string == "percentage":
-			return cls.percentage
-		elif string == "prange1":
-			return cls._range[0]
-		elif string == "prange2":
-			return cls._range[1]
-		elif string == "etime":
-			return cls.etime
-		elif string == "text":
-			return FormatSet._rmPoisonChars(cls._text) if cls._text else ""
-		else:
-			raise UnknownFormattingKeyError(string)
+		attrs = {
+			"percentage": cls.percentage,
+			"prange1": cls._range[0],
+			"prange2": cls._range[1],
+			"etime": cls.etime,
+			"text": FormatSet._rmPoisonChars(cls._text) if cls._text else ""
+		}
+
+		if string not in attrs:	raise UnknownFormattingKeyError(string)
+
+		return attrs[string]
+
 
 
 	@staticmethod
@@ -501,11 +501,10 @@ class FormatSet(_BaseSet):
 		return FormatSet(self.iterValues(lambda val: self.parseString(cls, val)))
 
 
-	@staticmethod
-	def cleanedValues(val: "FormatSet") -> "FormatSet":
+	def cleanedValues(self) -> "FormatSet":
 		"""Convert all values in the FormatSet to strings with spaces of the same size."""
 		return FormatSet({
 			key: FormatSet.cleanedValues(value)
 			if isinstance(value, dict) else " "*len(value)
-			for key, value in val.items()
+			for key, value in self.items()
 		})

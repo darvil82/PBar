@@ -372,7 +372,7 @@ class PBar():
 			POSITION,
 			size,
 			parsedColorSet,
-			FormatSet.cleanedValues(self._formatset.parsedValues(self))
+			self._formatset.parsedValues(self).cleanedValues()
 		)
 
 		self._isOnScreen = False
