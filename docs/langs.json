@@ -105,6 +105,11 @@
 
 		"showcase4_title": "Co jeśli chcę zmienić kolor, kiedy skończy?",
 		"showcase4_text": "To twój szczęśliwy dzień, bo możesz ustawić warunki dla całkiej sporej ilości właściwości paska - kiedy są one spełnione, różne kolory, znaki lub tekst są wyświetlane.",
+		
+		"showcase5_title": "I... to wszystko?",
+		"showcase5_text1": "Nie, to jeszcze nie wszystko! Wiedziałem, że to Ci nie wystarczy, więc mogę powiedzieć, że jest o wiele więcej do zobaczenia! Istnieje wiele różnych opcji do podrasowania. Sprawdź to szybkie demo, które pokazuje <i>niektóre</i> z jego opcji:",
+		"showcase5_text2": "Jeśli chcesz zobaczyć wszystkie funkcje PBara, sprawdź strony wiki na GitHubie! Mozesz również kliknąć na słowa, które są lekko podświetlone wewnątrz bloków kodu powyżej. Pokaże Ci się strona wiki tego obiektu!",
+		"showcase5_button": "Odwiedź stronę Wiki",
 
 		"links_title": "Linki i pobieranie",
 		"link1_text": "PBar jest dostępny w repozytorium PyPI jako <span class='pre'>pbar2</span>. Dlaczego 2? Czy to sequel? Tak, to sequel, ale także dlatego, że ktoś zajął nazwę.",
