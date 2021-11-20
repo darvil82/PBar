@@ -1,9 +1,9 @@
-from typing import SupportsFloat, TypeVar, Optional, Union, Any, SupportsInt
+from typing import Callable, SupportsFloat, TypeVar, Optional, Union, Any, SupportsInt
 from os import get_terminal_size
 
 __all__ = (
 	"capValue", "convertClrs", "chkInstOf",
-	"chkSeqOfLen", "isNum", "Term"
+	"chkSeqOfLen", "isNum", "mapDict", "Term"
 )
 
 
@@ -38,7 +38,7 @@ _HTML_COLOR_NAMES: dict = {		# thanks to https://stackoverflow.com/a/1573141/145
 
 Num = TypeVar("Num", int, float)
 
-def capValue(value: Num, max: Optional[Num]=None, min: Optional[Num]=None) -> Num:
+def capValue(value: Num, max: Num=None, min: Num=None) -> Num:
 	"""Clamp a value to a minimum and/or maximum value."""
 	if max is not None and value > max:
 		return max
@@ -120,6 +120,20 @@ def isNum(obj: SupportsFloat) -> bool:
 	except ValueError:
 		return False
 	return True
+
+
+def mapDict(dictionary: dict, func: Callable) -> dict:
+	"""
+	Return dict with all values in it used as an arg for a function that will return a new value for it.
+	@func: This represents the callable that accepts an argument.
+
+	Example:
+	>>> mapDict(lambda val: myFunc("stuff", val), {1: "a", 2: "b", 3: "c"})
+	"""
+	return {
+		key: mapDict(value, func) if isinstance(value, dict) else func(value)
+		for key, value in dictionary.items()
+	}
 
 
 
@@ -231,6 +245,17 @@ class Term:
 			Term.CURSOR_HOME
 			+ "".join(Term.pos((0, row)) + char[0]*ts[0] for row in range(ts[1] + 1))
 		)
+
+
+	class NewBuffer:
+		"""
+		Context manager for changing to an alternate buffer, and returning to the original when finishing.
+		(This basically prints `Term.BUFFER_NEW` and `Term.BUFFER_OLD`)
+		"""
+		def __enter__(self) -> str:
+			print(Term.BUFFER_NEW, end="")
+		def __exit__(self, type, value, traceback) -> None:
+			print(Term.BUFFER_OLD, end="")
 
 
 	@staticmethod

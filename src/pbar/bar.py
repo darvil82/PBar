@@ -107,7 +107,7 @@ class PBar():
 		self._conditions = PBar._getConds(conditions)
 		self.gfrom = gfrom
 
-		self._oldValues = [self._pos, self._size]	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
+		self._oldValues = [self._pos, self._size, self._formatset]	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
 
 	# --------- Properties / Methods the user should use. ----------
@@ -117,8 +117,8 @@ class PBar():
 		"""Print the progress bar on screen."""
 		if self._requiresClear:
 			# Clear the bar at the old position and length
-			clsb = self._genClearedBar(self._oldValues)
-			self._oldValues = [self._pos, self._size]	# Reset the old values
+			clsb = self._genClearedBar(*self._oldValues)
+			self._oldValues = [self._pos, self._size, self._formatset]	# Reset the old values
 			self._printStr(clsb + self._genBar())	# we print the "cleared" bar and the new bar
 		else:
 			self._printStr(self._genBar())	# Draw the bar
@@ -139,7 +139,7 @@ class PBar():
 
 	def clear(self):
 		"""Clear the progress bar."""
-		self._printStr(self._genClearedBar((self._pos, self._size)))
+		self._printStr(self._genClearedBar(self._pos, self._size, self._formatset))
 
 
 	def resetETime(self):
@@ -215,7 +215,11 @@ class PBar():
 		return self._formatset
 	@formatset.setter
 	def formatset(self, formatset: FormatSetEntry):
-		self._formatset = FormatSet(formatset)
+		newset = FormatSet(formatset)
+		if newset != self._formatset:
+			self._oldValues[2] = self._formatset
+			self._requiresClear = True
+			self._formatset = newset
 
 
 	@property
@@ -225,9 +229,10 @@ class PBar():
 	@size.setter
 	def size(self, size: tuple[int, int]):
 		newsize = PBar._getSize(size)
-		self._requiresClear = newsize != self._size
-		self._oldValues[1] = self._size
-		self._size = newsize
+		if newsize != self._size:
+			self._oldValues[1] = self._size
+			self._requiresClear = True
+			self._size = newsize
 
 
 	@property
@@ -351,10 +356,9 @@ class PBar():
 
 
 
-	def _genClearedBar(self, values: tuple[tuple[int, int], tuple[int, int]]) -> str:
+	def _genClearedBar(self, pos: tuple[int, int], size: tuple[int, int], formatset: FormatSet) -> str:
 		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
 		if not self._isOnScreen:	return ""
-		pos, size = values
 		parsedColorSet = ColorSet(ColorSet.EMPTY).parsedValues()
 
 		size = size[0], size[1] + 1
@@ -372,7 +376,7 @@ class PBar():
 			POSITION,
 			size,
 			parsedColorSet,
-			self._formatset.parsedValues(self).cleanedValues()
+			formatset.parsedValues(self).emptyValues()
 		)
 
 		self._isOnScreen = False
@@ -426,7 +430,10 @@ def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=T
 	"""
 	Use as a decorator. Takes a PBar object, sets its prange depending on the quantity of
 	statements inside the decorated function, and `steps` the bar over after every function statement.
-	Note: Multi-line expressions are not supported.
+
+	Note:
+	 - Multi-line statements are not supported.
+	 - It is only possible to send keyword arguments to the decorated function.
 
 	@barObj: PBar object to use.
 	@scope: Dictionary containing the scope local variables.
@@ -446,18 +453,22 @@ def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=T
 	def wrapper(func):
 		lines = getsourcelines(func)[0][2:]	# Get the source lines of code of the decorated function
 
-		def wrapper2():	# this is the function that the decorated func will 'convert' into
+		def wrapper2(**kwargs):	# this is the function that the decorated func will 'convert' into
 			barObj.prange = (0, len(lines)) if overwriteRange else barObj.prange
 
 			for inst in lines:	# Iterate through every line in the source code of the decorated function
 				instComment = getTitleComment(inst)
 				if titleComments and instComment:	barObj.text = instComment	# set text of the bar as the comment after #bTitle: (if any)
+
 				barObj.draw()
+
 				try:
-					eval(inst, scope)	# yep, this uses evil()
+					eval(inst, scope | kwargs)	# we merge the passed kwargs to the scope dictionary, so that the decorated function can reach them
 				except SyntaxError:
 					raise RuntimeError("Multi-line expressions are not supported inside functions decorated with taskWrapper")
+
 				barObj.step()
+
 		return wrapper2
 	return wrapper
 

@@ -52,18 +52,9 @@ class _BaseSet(dict):
 		return newSet
 
 
-	def iterValues(self, func: Callable) -> dict:
-		"""
-		Return dict with all values in it used as an arg for a function that will return a new value for it.
-		@func: This represents the callable which only accepts one argument.
-
-		Example:
-		>>> iterValues(lambda val: myFunc("stuff", val))
-		"""
-		return {
-			key: _BaseSet.iterValues(value, func) if isinstance(value, dict) else func(value)
-			for key, value in self.items()
-		}
+	def mapValues(self, func: Callable) -> dict:
+		"""Return a dict mapped the values of the set to a function."""
+		return mapDict(self, func)
 
 
 
@@ -201,7 +192,7 @@ class CharSet(_BaseSet):
 				return "?"
 			return value
 
-		return self.iterValues(lambda val: clean(val))
+		return self.mapValues(lambda val: clean(val))
 
 
 
@@ -332,7 +323,7 @@ class ColorSet(_BaseSet):
 
 	def parsedValues(self, bg=False) -> dict[str, Union[dict, str]]:
 		"""Convert all values in the ColorSet to parsed color sequences"""
-		return ColorSet(self.iterValues(lambda val: Term.color(val, bg)))
+		return ColorSet(self.mapValues(lambda val: Term.color(val, bg)))
 
 
 
@@ -499,13 +490,9 @@ class FormatSet(_BaseSet):
 
 	def parsedValues(self, cls: "bar.PBar") -> "FormatSet":
 		"""Returns a new FormatSet with all values parsed with the properties of the PBar object specified"""
-		return FormatSet(self.iterValues(lambda val: self.parseString(cls, val)))
+		return FormatSet(self.mapValues(lambda val: self.parseString(cls, val)))
 
 
-	def cleanedValues(self) -> "FormatSet":
+	def emptyValues(self) -> "FormatSet":
 		"""Convert all values in the FormatSet to strings with spaces of the same size."""
-		return FormatSet({
-			key: FormatSet.cleanedValues(value)
-			if isinstance(value, dict) else " "*len(value)
-			for key, value in self.items()
-		})
+		return self.mapValues(lambda val: " "*len(val))
