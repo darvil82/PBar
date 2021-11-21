@@ -28,8 +28,6 @@ function addTooltip(element, content) {
 }
 
 
-
-
 function addLink(element, url, target="_blank") {
 	element.style.cursor = "pointer"
 	element.classList.add("special")
@@ -39,8 +37,8 @@ function addLink(element, url, target="_blank") {
 }
 
 
-
-function addCodeLinks() {
+/** Add the tooltips and links to all the spans in the code blocks */
+(function() {
 	let spans = document.querySelectorAll("code span")	// get all the spans inside codes */
 
 	for (let i = 0; i < spans.length; i++) {
@@ -53,8 +51,4 @@ function addCodeLinks() {
 			addTooltip(span, PBAR_INFO[span.innerHTML][1])
 		}
 	}
-}
-
-
-
-addCodeLinks()
+})()
