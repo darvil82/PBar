@@ -181,18 +181,18 @@ class CharSet(_BaseSet):
 
 	def __init__(self, newSet: CharSetEntry) -> None:
 		super().__init__(newSet or self.DEFAULT)
-		self = self._strip()
+		self |= self._strip()	# we update with the stripped strings
 
 
 	def _strip(self) -> "CharSet":
 		def clean(value) -> str:
 			if len(value) > 1:
-				return value[0]
+				value = value[0]	# if the string is larger than one, just get the first char
 			if value in _IGNORE_CHARS+"\t":
-				return "?"
+				return "?"	# we just return a "?" if the char is invalid.
 			return value
 
-		return self.mapValues(lambda val: clean(val))
+		return self.mapValues(lambda val: clean(val))	# map the new dict
 
 
 
@@ -322,8 +322,8 @@ class ColorSet(_BaseSet):
 
 
 	def parsedValues(self, bg=False) -> dict[str, Union[dict, str]]:
-		"""Convert all values in the ColorSet to parsed color sequences"""
-		return ColorSet(self.mapValues(lambda val: Term.color(val, bg)))
+		"""Convert all values in the ColorSet to parsed color sequences for the terminal"""
+		return self.mapValues(lambda val: Term.color(val, bg))
 
 
 
@@ -495,4 +495,4 @@ class FormatSet(_BaseSet):
 
 	def emptyValues(self) -> "FormatSet":
 		"""Convert all values in the FormatSet to strings with spaces of the same size."""
-		return self.mapValues(lambda val: " "*len(val))
+		return FormatSet(self.mapValues(lambda val: " "*len(val)))
