@@ -172,7 +172,7 @@ a.button {
 
 	@supports not (backdrop-filter: blur()) {
 		& {
-			--bg-opacity: 0.6;
+			--bg-opacity: 0.8;
 		}
 	}
 

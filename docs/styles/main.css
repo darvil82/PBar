@@ -211,7 +211,7 @@ a.button:hover, a.button:focus-visible {
 
 @supports not ((-webkit-backdrop-filter: blur()) or (backdrop-filter: blur())) {
   .banner {
-    --bg-opacity: 0.6;
+    --bg-opacity: 0.8;
   }
 }
 
