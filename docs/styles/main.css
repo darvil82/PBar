@@ -109,6 +109,7 @@ h3 {
   color: transparent;
   -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.267);
           box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.267);
+  cursor: pointer;
 }
 
 .lang-changer::after {
@@ -117,6 +118,7 @@ h3 {
   content: "";
   inset: -50px -50px;
   z-index: -1;
+  cursor: default;
 }
 
 .lang-changer:hover {

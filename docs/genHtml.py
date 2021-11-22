@@ -24,11 +24,14 @@ HTML_CONTENT = """\
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title> PBar - {bannerSubtitle} </title>
 	<link rel="icon" href="images/favicon.png">
+
+	<script defer src="https://darvil82.github.io/DarviLStuff/web/promptTest/prompt.js"></script>
+	<script defer src="scripts/main.js"></script>
 	<link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
 	<div class="lang-changer">
-		{langChanger}
+		<span onclick="showLanguagePrompt()"> Language </span>
 	</div>
 
 	<div class="banner">

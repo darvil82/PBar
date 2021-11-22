@@ -52,3 +52,22 @@ function addLink(element, url, target="_blank") {
 		}
 	}
 })()
+
+
+
+function showLanguagePrompt() {
+	let goto = (site) => open(site, "_self")
+	let prompt = new Prompt(
+		"Choose a language",
+		"Select a language for the content of this page.",
+		[
+			new PromptButton("English", null, () => goto("index.html")),
+			new PromptButton("Español", null, () => goto("es.html")),
+			new PromptButton("Polski", null, () => goto("pl.html")),
+			new PromptSpacer(null, ".25em"),
+			new PromptButton("Cancel", ["red", "darkred"])
+		]
+	)
+
+	prompt.show()
+}
