@@ -89,7 +89,7 @@ h3 {
   width: -webkit-fit-content;
   width: -moz-fit-content;
   width: fit-content;
-  padding: 0.4em 1.5em;
+  padding: 0.4em 1em;
   height: -webkit-max-content;
   height: -moz-max-content;
   height: max-content;
@@ -110,6 +110,11 @@ h3 {
   -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.267);
           box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.267);
   cursor: pointer;
+}
+
+.lang-changer svg {
+  height: 1em;
+  width: 1em;
 }
 
 .lang-changer::after {

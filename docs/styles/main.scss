@@ -69,7 +69,7 @@ h3 { margin: 20px 0;}
 	justify-content: flex-end;
 	right: 50px;
 	width: fit-content;
-	padding: 0.4em 1.5em;
+	padding: 0.4em 1em;
 	height: max-content;
 	border-radius: 0 0 7px 7px;
 	z-index: 50;
@@ -83,6 +83,10 @@ h3 { margin: 20px 0;}
 	box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.267);
 	cursor: pointer;
 
+	& svg {
+		height: 1em;
+		width: 1em;
+	}
 
 	&::after {	/* We use this to make the hold area way bigger */
 		position: absolute;
