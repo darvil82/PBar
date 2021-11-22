@@ -508,29 +508,27 @@ def barHelper(position: Position=("center", "center"),
 		}
 	)
 
-	print(Term.BUFFER_NEW + Term.CURSOR_HIDE)	# create new console buffer and hide the cursor
+	with Term.NewBuffer(True):	# create a new buffer, and hide the cursor
+		try:
+			while True:
+				b.position = position
+				rPos = b.position
+				b.formatset = {"subtitle": f"X:{rPos[0]} Y:{rPos[1]}"}
 
-	try:
-		while True:
-			b.position = position
-			rPos = b.position
-			b.formatset = {"subtitle": f"X:{rPos[0]} Y:{rPos[1]}"}
+				xLine = Term.pos((0, rPos[1])) + "═"*rPos[0]
+				yLine = "".join(Term.pos((rPos[0], x)) + "║" for x in range(rPos[1]))
+				center = Term.pos(rPos) + "╝"
 
-			xLine = Term.pos((0, rPos[1])) + "═"*rPos[0]
-			yLine = "".join(Term.pos((rPos[0], x)) + "║" for x in range(rPos[1]))
-			center = Term.pos(rPos) + "╝"
+				print(
+					Term.CLEAR_ALL
+					+ b._genBar()	# the bar itself
+					+ Term.color((255, 100, 0)) + xLine + yLine + center	# x and y lines
+					+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET,
+					end=""
+				)
+				sleep(0.01)
+		except KeyboardInterrupt:
+			pass
 
-			print(
-				Term.CLEAR_ALL
-				+ b._genBar()	# the bar itself
-				+ Term.color((255, 100, 0)) + xLine + yLine + center	# x and y lines
-				+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET,
-				end=""
-			)
-			sleep(0.01)
-	except KeyboardInterrupt:
-		pass
-
-	print(Term.BUFFER_OLD + Term.CURSOR_SHOW, end="")	# return to old state
 	del b	# delete the bar we created
 	return rPos	# return the latest position of the helper

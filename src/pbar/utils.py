@@ -252,10 +252,12 @@ class Term:
 		Context manager for changing to an alternate buffer, and returning to the original when finishing.
 		(This basically prints `Term.BUFFER_NEW` and `Term.BUFFER_OLD`)
 		"""
+		def __init__(self, hideCursor: bool=False) -> None:
+			self.hcur = hideCursor
 		def __enter__(self) -> str:
-			print(Term.BUFFER_NEW, end="")
+			print(Term.BUFFER_NEW + (Term.CURSOR_HIDE if self.hcur else ""), end="")
 		def __exit__(self, type, value, traceback) -> None:
-			print(Term.BUFFER_OLD, end="")
+			print(Term.BUFFER_OLD + (Term.CURSOR_SHOW if self.hcur else ""), end="")
 
 
 	@staticmethod
