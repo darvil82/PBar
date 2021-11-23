@@ -677,6 +677,9 @@ span.whisper {
             transform: none;
     color: black;
   }
+  .lang-changer::after {
+    display: none;
+  }
   .banner {
     font-size: 20vw;
     height: 100vw;
