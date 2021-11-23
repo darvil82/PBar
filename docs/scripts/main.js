@@ -16,6 +16,12 @@ const PBAR_INFO = {	// Define the wiki pages, and their corresponding tooltip
 	barHelper: ["barHelper", "Draw a bar helper on screen indefinitely until the user exits. Returns the position of the bar helper."]
 }
 
+const LANGUAGES = {
+	en: "English",
+	es: "Español",
+	pl: "Polski",
+}
+
 
 function addTooltip(element, content) {
 	let tooltip = document.createElement("div")
@@ -35,7 +41,6 @@ function addLink(element, url, target="_blank") {
 		open(url, target)
 	})
 }
-
 
 
 
@@ -62,17 +67,28 @@ setTimeout(() => {
 }, 500)
 
 
-function showLanguagePrompt() {
-	let goto = (site) => open(site, "_self")
+function showLanguagePrompt(currentLang) {
+	const goto = (site) => open(site, "_self")
+
 	let prompt = new Prompt(
 		"Choose a language",
 		"Select a language for the content of this page.",
 		[
-			new PromptButton("English", null, () => goto("index.html")),
-			new PromptButton("Español", null, () => goto("es.html")),
-			new PromptButton("Polski", null, () => goto("pl.html")),
-			new PromptSpacer(null, ".25em"),
-			new PromptButton("Cancel", ["red", "darkred"])
+			new PromptOptionList(
+				Object.values(LANGUAGES),
+				Object.keys(LANGUAGES).indexOf(currentLang), // set the current language as the default value
+				"100%",
+				(value, index) => {
+					let page = Object.keys(LANGUAGES)[index]
+					if (page == "en") {
+						goto("index.html")
+						return
+					}
+
+					goto(page + ".html")
+				}
+			),
+			new PromptButton("Cancel", ["red", "darkred"]),
 		]
 	)
 
