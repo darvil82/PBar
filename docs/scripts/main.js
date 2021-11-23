@@ -70,7 +70,7 @@ setTimeout(() => {
 function showLanguagePrompt(currentLang) {
 	const goto = (site) => open(site, "_self")
 
-	let prompt = new Prompt(
+	new Prompt(
 		"Choose a language",
 		"Select a language for the content of this page.",
 		[
@@ -91,6 +91,5 @@ function showLanguagePrompt(currentLang) {
 			new PromptButton("Cancel", ["red", "darkred"]),
 		]
 	)
-
-	prompt.show()
+	.show()
 }
