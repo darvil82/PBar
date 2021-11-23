@@ -35,6 +35,13 @@ body {
   background-color: #363636;
 }
 
+body.preload * {
+  -webkit-animation-duration: 0ms !important;
+          animation-duration: 0ms !important;
+  -webkit-transition: 0ms !important;
+  transition: 0ms !important;
+}
+
 span {
   font-family: inherit;
 }
@@ -276,9 +283,9 @@ a.button:hover, a.button:focus-visible {
   width: 100%;
   font-size: 0.9em;
   position: relative;
-  margin: 30px;
-  padding: 10px;
-  padding-right: 50px;
+  margin: 1.5em;
+  padding: .75em;
+  padding-right: 3.5em;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
@@ -322,8 +329,8 @@ a.button:hover, a.button:focus-visible {
 }
 
 .info .info-item:hover {
-  -webkit-transform: scale(1.05);
-          transform: scale(1.05);
+  -webkit-transform: scale(1.025);
+          transform: scale(1.025);
 }
 
 .info .info-item:hover::after {

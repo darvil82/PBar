@@ -34,6 +34,10 @@ $bar-gradient: linear-gradient(
 }
 
 body {background-color: rgb(54, 54, 54);}
+body.preload * {
+	animation-duration: 0ms !important;
+	transition: 0ms !important;
+}
 span {font-family: inherit;}
 p {margin: 15px 0;}
 
@@ -232,8 +236,8 @@ a.button {
 		font-size: 0.9em;
 		position: relative;
 
-		margin: 30px;
-		padding: 10px; padding-right: 50px;
+		margin: 1.5em;
+		padding: .75em; padding-right: 3.5em;
 		flex-direction: column;
 		transition: all .5s;
 
@@ -260,7 +264,7 @@ a.button {
 			color: var(--color)
 		}
 
-		&:hover { transform: scale(1.05); }
+		&:hover { transform: scale(1.025); }
 		&:hover::after { opacity: 0.15; }
 
 

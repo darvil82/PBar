@@ -37,6 +37,8 @@ function addLink(element, url, target="_blank") {
 }
 
 
+
+
 /** Add the tooltips and links to all the spans in the code blocks */
 (function() {
 	let spans = document.querySelectorAll("code span")	// get all the spans inside codes */
@@ -51,8 +53,13 @@ function addLink(element, url, target="_blank") {
 			addTooltip(span, PBAR_INFO[span.innerHTML][1])
 		}
 	}
-})()
+})();
 
+
+/** Remove the preload class of the body after a small period of time */
+setTimeout(() => {
+	document.body.classList.remove("preload")
+}, 500)
 
 
 function showLanguagePrompt() {

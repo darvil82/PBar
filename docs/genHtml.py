@@ -29,7 +29,7 @@ HTML_CONTENT = """\
 	<script defer src="scripts/main.js"></script>
 	<link rel="stylesheet" href="styles/main.css">
 </head>
-<body>
+<body class="preload">
 	<div class="lang-changer">
 		<svg onclick="showLanguagePrompt()" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-translate" viewBox="0 0 16 16">
 			<path d="M4.545 6.714 4.11 8H3l1.862-5h1.284L8 8H6.833l-.435-1.286H4.545zm1.634-.736L5.5 3.956h-.049l-.679 2.022H6.18z"/>
