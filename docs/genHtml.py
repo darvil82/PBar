@@ -25,9 +25,7 @@ HTML_CONTENT = """\
 	<title> PBar - {bannerSubtitle} </title>
 	<link rel="icon" href="images/favicon.png">
 
-	<script defer src="https://darvil82.github.io/DarviLStuff/web/promptTest/prompt.js"></script>
 	<link rel="stylesheet" href="styles/main.css">
-	<script defer src="scripts/main.js"></script>
 </head>
 <body class="preload">
 	<div class="lang-changer">
@@ -225,6 +223,8 @@ HTML_CONTENT = """\
 		</div>
 	</footer>
 </body>
+	<script src="https://darvil82.github.io/DarviLStuff/web/promptTest/prompt.js"></script>
+	<script src="scripts/main.js"></script>
 </html>
 """
 
