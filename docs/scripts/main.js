@@ -48,7 +48,7 @@ function addLink(element, url, target="_blank") {
 (function() {
 	let spans = document.querySelectorAll("code span")	// get all the spans inside codes */
 
-	for (let i = 0; i < spans.length; i++) {
+	for (let i in spans) {
 		const span = spans[i]
 		if (span.innerHTML in PBAR_INFO) {
 			/* if the content of the element
@@ -67,8 +67,9 @@ setTimeout(() => {
 }, 500)
 
 
-function showLanguagePrompt(currentLang) {
-	const goto = (site) => open(site, "_self")
+function showLanguagePrompt() {
+	const goto = site => open(site + ".html", "_self")
+	let currentLang = location.pathname.split("/").pop().replace(".html", "")	// we just get index, es, pl, etc.
 
 	new Prompt(
 		"Choose a language",
@@ -81,15 +82,14 @@ function showLanguagePrompt(currentLang) {
 				(value, index) => {
 					let page = Object.keys(LANGUAGES)[index]
 					if (page == "en") {
-						goto("index.html")
+						goto("index")
 						return
 					}
 
-					goto(page + ".html")
+					goto(page)
 				}
 			),
 			new PromptButton("Cancel", ["red", "darkred"]),
 		]
-	)
-	.show()
+	).show()
 }
