@@ -54,7 +54,7 @@ def fullyRandom():
 		choice(getConstAttrs(pbar.ColorSet))[1],
 		choice(getConstAttrs(pbar.CharSet))[1],
 		choice(getConstAttrs(pbar.FormatSet))[1],
-		gfrom=choice(["top", "bottom", "left", "right", "centerX", "centerY"])
+		gfrom=choice([pbar.Gfrom.LEFT, pbar.Gfrom.RIGHT, pbar.Gfrom.CENTER_X, pbar.Gfrom.CENTER_Y, pbar.Gfrom.TOP, pbar.Gfrom.BOTTOM]),
 	)
 
 	animate(b)

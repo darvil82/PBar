@@ -1,4 +1,4 @@
-from typing import Callable, SupportsFloat, TypeVar, Optional, Union, Any, SupportsInt
+from typing import Callable, Literal, SupportsFloat, TypeVar, Optional, Union, Any, SupportsInt
 from os import get_terminal_size
 
 __all__ = (
@@ -141,9 +141,15 @@ def mapDict(dictionary: dict, func: Callable) -> dict:
 class Term:
 	"""Class for using terminal sequences a bit easier"""
 	@staticmethod
-	def size() -> tuple[int, int]:
-		"""Get size of the terminal. Columns and rows."""
-		return tuple(get_terminal_size())
+	def size() -> Union[tuple[int, int], Literal[False]]:
+		"""
+		Get size of the terminal. Columns and rows.
+		`False` will be returned if it is not possible to get the size.
+		"""
+		try:
+			return tuple(get_terminal_size())
+		except OSError:
+			return False
 
 
 	@staticmethod

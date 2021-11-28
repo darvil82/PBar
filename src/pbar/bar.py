@@ -1,5 +1,5 @@
 from io import TextIOWrapper
-from typing import Any, Callable, Literal, Optional, SupportsInt, Union, IO
+from typing import Any, Callable, Optional, SupportsInt, Union, IO
 from os import system as runsys, isatty
 from time import time as epochTime, sleep
 from inspect import getsourcelines
@@ -10,8 +10,11 @@ from . cond import Cond
 from . import gen
 
 
-if not isatty(0):	# check if we are running in a tty
-	raise RuntimeError("pbar requires a terminal emulator to work properly")
+NEVER_DRAW = False
+if not Term.size() or not isatty(0):
+	Term.size = lambda: (0, 0)	# we just force it to return a size of 0,0 if it can't get the size
+	NEVER_DRAW = True
+
 runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
 
 
@@ -27,7 +30,7 @@ class PBar:
 			position: tuple[Union[str, int], Union[str, int]]=("center", "center"),
 			colorset: ColorSetEntry=None, charset: CharSetEntry=None,
 			formatset: FormatSetEntry=None, conditions: Union[list[Cond], Cond]=None,
-			gfrom: Literal["auto", "left", "right", "top", "bottom", "centerX", "centerY"]="auto"
+			gfrom: gen.Gfrom=gen.Gfrom.AUTO
 		) -> None:
 		"""
 		### Detailed descriptions:
@@ -82,15 +85,7 @@ class PBar:
 
 		---
 
-		@gfrom: Place from where the full part of the bar will grow:
-
-		- `auto`:		Will automatically select between `left` and `bottom` depending on the size of the bar.
-		- `left`:		Grow from the left side.
-		- `right`:		Grow from the right side.
-		- `top`:		Grow from the top.
-		- `bottom`:		Grow from the bottom.
-		- `centerX`:	Grow from the center horizontally.
-		- `centerY`:	Grow from the center vertically.
+		@gfrom: Place from where the full part of the bar will grow.
 		"""
 		self._requiresClear = False		# This controls if the bar needs to clear its old position before drawing.
 		self.enabled = True				# If disabled, the bar will never draw.
@@ -414,7 +409,7 @@ class PBar:
 
 	def _printStr(self, barString: str):
 		"""Prints string to stream"""
-		if not self.enabled: return
+		if not self.enabled or NEVER_DRAW: return
 		print(
 			Term.CURSOR_SAVE + Term.CURSOR_HIDE
 			+ barString

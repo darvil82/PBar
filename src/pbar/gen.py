@@ -1,8 +1,20 @@
-from typing import Callable, Literal, Optional, Union
+from typing import Callable, Optional, Union
+from enum import Enum, auto
 
 from . utils import capValue, Term
 from . import sets
 
+
+
+class Gfrom(Enum):
+	"""Enum for the different ways to generate a bar."""
+	AUTO = auto()
+	LEFT = auto()
+	RIGHT = auto()
+	TOP = auto()
+	BOTTOM = auto()
+	CENTER_X = auto()
+	CENTER_Y = auto()
 
 
 class BarContent:
@@ -10,30 +22,20 @@ class BarContent:
 	Generate the content of the bar.
 	Call this object to get the content string with the properties supplied.
 	"""
-	def __init__(self, gfrom: Literal["auto", "left", "right", "top", "bottom", "centerX", "centerY"]) -> None:
-		"""
-		@gfrom: Place from where the full part of the bar will grow:
-
-		- `auto`:		Will automatically select between `left` and `bottom` depending on the size of the bar.
-		- `left`:		Grow from the left side.
-		- `right`:		Grow from the right side.
-		- `top`:		Grow from the top.
-		- `bottom`:		Grow from the bottom.
-		- `centerX`:	Grow from the center horizontally.
-		- `centerY`:	Grow from the center vertically.
-		"""
+	def __init__(self, gfrom: Gfrom) -> None:
+		"""@gfrom: Place from where the full part of the bar will grow."""
 		self.gfrom = gfrom
 
 
 	def __call__(self, position: tuple[int, int], size: tuple[int, int], charset: tuple[str, str],
 				 parsedColorset, prange: tuple[int, int]) -> str:
 		"""Generate the content of the bar."""
-		if self.gfrom == "auto":
-			self.gfrom = "left" if size[0]/2 > size[1] else "bottom"
+		if self.gfrom == Gfrom.AUTO:
+			self.gfrom = Gfrom.LEFT if size[0]/2 > size[1] else Gfrom.BOTTOM
 
-		if self.gfrom in {"left", "right", "centerX"}:
+		if self.gfrom in {Gfrom.LEFT, Gfrom.RIGHT, Gfrom.CENTER_X}:
 			genFunc: Callable = self._genHoriz
-		elif self.gfrom in {"bottom", "top", "centerY"}:
+		elif self.gfrom in {Gfrom.TOP, Gfrom.BOTTOM, Gfrom.CENTER_Y}:
 			genFunc: Callable = self._genVert
 		else:
 			raise RuntimeError(f"unknown gfrom {self.gfrom!r}")
@@ -65,17 +67,17 @@ class BarContent:
 				+ string
 			) for row in range(1, height))
 
-		if self.gfrom == "left":
+		if self.gfrom == Gfrom.LEFT:
 			return iterRows(
 				pColorSet["full"] + charFull*SEGMENTS_FULL
 				+ pColorSet["empty"] + charEmpty*SEGMENTS_EMPTY
 			)
-		elif self.gfrom == "right":
+		elif self.gfrom == Gfrom.RIGHT:
 			return iterRows(
 				pColorSet["empty"] + charEmpty*SEGMENTS_EMPTY
 				+ pColorSet["full"] + charFull*SEGMENTS_FULL
 			)
-		elif self.gfrom == "centerX":
+		elif self.gfrom == Gfrom.CENTER_X:
 			"""
 			For the center:
 				1. Print the entire empty bar.
@@ -103,19 +105,19 @@ class BarContent:
 			3. Repeat
 		"""
 
-		if self.gfrom == "top":
+		if self.gfrom == Gfrom.TOP:
 			return (
 				Term.pos(pos)
 				+ (pColorSet["full"] + charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
 				+ (pColorSet["empty"] + charEmpty*width + Term.posRel((-width, 1)))*SEGMENTS_EMPTY
 			)
-		elif self.gfrom == "bottom":
+		elif self.gfrom == Gfrom.BOTTOM:
 			return (
 				Term.pos(pos)
 				+ (pColorSet["empty"] + charEmpty*width + Term.posRel((-width, 1)))*SEGMENTS_EMPTY
 				+ (pColorSet["full"] + charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
 			)
-		elif self.gfrom == "centerY":
+		elif self.gfrom == Gfrom.CENTER_Y:
 			"""
 			For the center:
 				1. Print the entire empty bar.
