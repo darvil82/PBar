@@ -20,7 +20,7 @@ Position = tuple[Union[str, int], Union[str, int]]
 
 
 
-class PBar():
+class PBar:
 	"""Object for managing a progress bar."""
 	def __init__(self,
 			prange: tuple[int, int]=(0, 1), text: str=None, size: tuple[int, int]=(20, 1),
