@@ -503,7 +503,7 @@ def barHelper(position: Position=("center", "center"),
 		}
 	)
 
-	with Term.NewBuffer(True):	# create a new buffer, and hide the cursor
+	with Term.SeqMgr(hideCursor=True):	# create a new buffer, and hide the cursor
 		try:
 			while True:
 				b.position = position

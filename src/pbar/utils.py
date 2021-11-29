@@ -48,26 +48,26 @@ def capValue(value: Num, max: Num=None, min: Num=None) -> Num:
 		return value
 
 
-def convertClrs(clr: Union[dict[Any, Union[str, tuple]], str, tuple], type: str) -> Union[str, tuple, dict, None]:
+def convertClrs(clr: Union[dict[Any, Union[str, tuple]], str, tuple], conversion: str) -> Union[str, tuple, dict, None]:
 	"""
 	Convert color values to HEX and vice-versa
-	@clr:	Color value to convert.
-	@type:	Type of conversion to do ('RGB' or 'HEX')
+	@clr:			Color value to convert.
+	@conversion:	Type of conversion to do ('RGB' or 'HEX')
 	"""
 	if isinstance(clr, dict):	# its a dict, call itself with the value
-		return {key: convertClrs(value, type) for key, value in clr.items()}
+		return mapDict(clr, lambda x: convertClrs(x, conversion))
 	elif isinstance(clr, str):
 		color = clr.lower()
 		if color in _HTML_COLOR_NAMES:	color = _HTML_COLOR_NAMES[color]	# check if its a html color name
 	else:
 		color = clr
 
-	if type == "HEX":
+	if conversion == "HEX":
 		if not isinstance(color, (tuple, list)) or len(color) != 3: return color
 
 		capped = tuple(capValue(value, 255, 0) for value in color)
 		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
-	elif type == "RGB":
+	elif conversion == "RGB":
 		if not isinstance(color, str) or not color.startswith("#"):
 			return color
 
@@ -252,18 +252,40 @@ class Term:
 			+ "".join(Term.pos((0, row)) + char[0]*ts[0] for row in range(ts[1] + 1))
 		)
 
+	class SeqMgr:
+		"""
+		Context manager for alternating different terminal sequences.
+		By default, it changes to a new buffer, moves to the home position, and
+		saves the cursor position.
+		"""
 
-	class NewBuffer:
-		"""
-		Context manager for changing to an alternate buffer, and returning to the original when finishing.
-		(This basically prints `Term.BUFFER_NEW` and `Term.BUFFER_OLD`)
-		"""
-		def __init__(self, hideCursor: bool=False) -> None:
+		def __init__(self, newBuffer: bool=True, hideCursor: bool=False,
+					 homeCursor: bool=True, saveCursor: bool=True) -> None:
+			"""
+			@newBuffer: Create a new terminal buffer, then go back to the old one.
+			@hideCursor: Hide the cursor, then show it.
+			@homeCursor: Move the cursor to the top left corner.
+			@saveCursor: Save the cursor position, then load it.
+			"""
+			self.nbuff = newBuffer
 			self.hcur = hideCursor
+			self.hocur = homeCursor
+			self.scur = saveCursor
 		def __enter__(self) -> str:
-			print(Term.BUFFER_NEW + (Term.CURSOR_HIDE if self.hcur else ""), end="")
+			print(
+				(Term.BUFFER_NEW if self.nbuff else "")
+				+ (Term.CURSOR_HIDE if self.hcur else "")
+				+ (Term.CURSOR_SAVE if self.scur else "")
+				+ (Term.CURSOR_HOME if self.hocur else ""),
+				end=""
+			)
 		def __exit__(self, type, value, traceback) -> None:
-			print(Term.BUFFER_OLD + (Term.CURSOR_SHOW if self.hcur else ""), end="")
+			print(
+				(Term.BUFFER_OLD if self.nbuff else "")
+				+ (Term.CURSOR_SHOW if self.hcur else "")
+				+ (Term.CURSOR_LOAD if self.scur else ""),
+				end=""
+			)
 
 
 	@staticmethod

@@ -140,9 +140,7 @@ def taskWr(something, another_thing):
 
 
 def main():
-	with pbar.Term.NewBuffer():
-		print(pbar.Term.CURSOR_HOME, end="")
-
+	with pbar.Term.SeqMgr():
 		default()
 		modifySizeAndPos()
 		fullyRandom()
