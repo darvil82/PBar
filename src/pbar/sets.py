@@ -1,10 +1,11 @@
 from typing import Optional, Callable, Union
-from . utils import *
+from . import utils
+from . utils import Term
 from . import bar
 
 
-Color = Optional[Union[tuple[int, int, int], str, None]]
-ColorSetEntry = dict[str, Union["ColorSetEntry", Color]]	# type: ignore
+
+ColorSetEntry = dict[str, Union["ColorSetEntry", utils.Color]]	# type: ignore
 CharSetEntry = dict[str, Union["CharSetEntry", str]]		# type: ignore
 FormatSetEntry = dict[str, Union["FormatSetEntry", str]]	# type: ignore
 
@@ -25,7 +26,7 @@ class _BaseSet(dict):
 	EMPTY: dict = {}
 
 	def __init__(self, newSet: dict) -> None:
-		chkInstOf(newSet, dict, name="newSet")
+		utils.chkInstOf(newSet, dict, name="newSet")
 		super().__init__(self._populate(self.EMPTY | newSet))
 
 
@@ -54,7 +55,7 @@ class _BaseSet(dict):
 
 	def mapValues(self, func: Callable) -> dict:
 		"""Return a dict mapped the values of the set to a function."""
-		return mapDict(self, func)
+		return utils.mapDict(self, func)
 
 
 
@@ -318,7 +319,7 @@ class ColorSet(_BaseSet):
 
 
 	def __init__(self, newSet: ColorSetEntry) -> None:
-		super().__init__(convertClrs(newSet or self.DEFAULT, "RGB"))	# Convert all hex values to rgb tuples
+		super().__init__(utils.convertClrs(newSet or self.DEFAULT, "RGB"))	# Convert all hex values to rgb tuples
 
 
 	def parsedValues(self, bg=False) -> dict[str, Union[dict, str]]:
@@ -332,18 +333,7 @@ class UnknownFormattingKeyError(Exception):
 	"""Unknown formatting key used in a formatset string"""
 	def __init__(self, string) -> None:
 		super().__init__(
-			"Unknown formatting key '"
-			+ Term.BOLD + Term.color((255, 0, 0)) + string
-			+ Term.RESET + "'"
-		)
-
-class UnexpectedEndOfStringError(Exception):
-	"""Unexpected end of string when parsing a formatting key"""
-	def __init__(self, string) -> None:
-		super().__init__(
-			f"Unexpected end of string ('{string}"
-			+ Term.color((150, 0, 0), True)
-			+ Term.BOLD + "◄ Expected '>'" + Term.RESET + "')"
+			Term.formatStr(f"Unknown formatting key '<red>*{string}*<reset>'")
 		)
 
 
@@ -424,7 +414,7 @@ class FormatSet(_BaseSet):
 
 
 	@staticmethod
-	def getBarAttrs(cls: "bar.PBar", string: str):
+	def getBarAttr(cls: "bar.PBar", string: str):
 		attrs = {
 			"percentage": cls.percentage,
 			"prange1": cls._range[0],
@@ -444,47 +434,33 @@ class FormatSet(_BaseSet):
 		"""Parse a string that may contain formatting keys"""
 		if string is None: return ""
 
-		foundOpen = False		# Did we find a '<'?
-		foundBackslash = False	# Did we find a '\'?
-		tempStr = ""			# String that contains the current value inside < >
 		endStr = ""				# Final string that will be returned
-		text = FormatSet._rmPoisonChars(string)
+		string = FormatSet._rmPoisonChars(string)
+		loopSkipChars = 0
 
 		# Convert the keys to a final string
-		for char in text:
-			if not foundOpen:
-				if foundBackslash:
-					# Also skip the character next to the slash
-					foundBackslash = False
-					endStr += char
-					continue
-				elif char == "\\":
-					# Found backslash, skip it
-					foundBackslash = True
-					continue
+		for index, char in enumerate(string):
+			if loopSkipChars:
+				loopSkipChars -= 1
+				continue
 
-			if foundOpen:
-				# Found '<'. Now we add every char to tempStr until we find a '>'.
-				if char == ">":
-					# Found '>'. Now just add the formatting keys.
-					if (newValue := FormatSet.getBarAttrs(cls, tempStr)) is None:
-						raise UnknownFormattingKeyError(text)
-					else: endStr += str(newValue)
+			# skip a character if backslashes are used
+			if char == "\\":
+				if index == len(string) - 1:
+					break
+				endStr += string[index + 1]
+				loopSkipChars = 1
+				continue
 
-					foundOpen = False
-					tempStr = ""
-				else:
-					# No '>' encountered, we can just add another character.
-					tempStr += char.lower()
-			elif char == "<":
-				foundOpen = True
-			# elif char == " ":
-			# 	endStr += Term.moveHoriz(1)	# ?: Maybe in a future
-			else:
-				# It is just a normal character that doesn't belong to any formatting key, so just append it to the end string.
-				endStr += char
+			if char == "<":
+				if ">" not in string[index:]:
+					raise utils.UnexpectedEndOfStringError(string)
+				endIndex = string.index(">", index)
+				char = str(FormatSet.getBarAttr(cls, string[index + 1:endIndex]))
 
-		if foundOpen:	raise UnexpectedEndOfStringError(text)
+				loopSkipChars = endIndex - index
+
+			endStr += char
 		return endStr
 
 

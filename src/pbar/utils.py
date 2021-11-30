@@ -6,7 +6,7 @@ __all__ = (
 	"chkSeqOfLen", "isNum", "mapDict", "Term"
 )
 
-
+Color = Optional[Union[tuple[int, int, int], str, None]]
 
 _HTML_COLOR_NAMES: dict = {		# thanks to https://stackoverflow.com/a/1573141/14546524
 	"aliceblue":"#f0f8ff", "antiquewhite":"#faebd7", "aqua":"#00ffff", "aquamarine":"#7fffd4", "azure":"#f0ffff",
@@ -36,6 +36,14 @@ _HTML_COLOR_NAMES: dict = {		# thanks to https://stackoverflow.com/a/1573141/145
 }
 
 
+class UnexpectedEndOfStringError(Exception):
+	"""Unexpected end of string when parsing a formatting key"""
+	def __init__(self, string, expectedChar=">") -> None:
+		super().__init__(Term.formatStr(
+			f"Unexpected end of string ('{string}<reset><bg=150,0,0>*◄ Expected '{expectedChar}'<reset>')"
+		))
+
+
 Num = TypeVar("Num", int, float)
 
 def capValue(value: Num, max: Num=None, min: Num=None) -> Num:
@@ -48,7 +56,7 @@ def capValue(value: Num, max: Num=None, min: Num=None) -> Num:
 		return value
 
 
-def convertClrs(clr: Union[dict[Any, Union[str, tuple]], str, tuple], conversion: str) -> Union[str, tuple, dict, None]:
+def convertClrs(clr: Union[dict[Any, Union[str, Color]], Color], conversion: str) -> Union[str, tuple, dict, None]:
 	"""
 	Convert color values to HEX and vice-versa
 	@clr:			Color value to convert.
@@ -92,9 +100,11 @@ def chkSeqOfLen(obj: Any, length: int, name: str=None) -> bool:
 	chkInstOf(obj, tuple, list)
 	if len(obj) != length:
 		raise ValueError(
-			(name or f"Sequence {Term.color((255, 150, 0))}{obj!r}{Term.RESET}")
-			+ " must have " + Term.color((0, 255, 0)) + str(length) + Term.RESET + " items, "
-			+ "not " + Term.color((255, 0, 0)) + str(len(obj)) + Term.RESET
+			Term.formatStr(
+				(name or f"Sequence <orange>{obj!r}<reset>")
+				+ f" must have <lime>{length}<reset> items, "
+				+ f"not <red>{len(obj)}<reset>"
+			)
 		)
 	return True
 
@@ -104,12 +114,15 @@ def chkInstOf(obj: Any, *typ: Any, name: str=None) -> bool:
 	Check if an object is an instance of any of the other objects specified.
 	If fails, raises exception (`Value | name must be *typ, not obj`).
 	"""
+	if not typ:
+		raise ValueError("No type/s were supplied to check against")
+
 	if not isinstance(obj, typ):
-		raise TypeError(
-			(name or f"Value {Term.color((255, 150, 0))}{obj!r}{Term.RESET}")
-			+ " must be " + ' or '.join(Term.color((0, 255, 0)) + x.__name__ + Term.RESET for x in typ)
-			+ ", not " + Term.color((255, 0, 0)) + obj.__class__.__name__ + Term.RESET
-		)
+		raise TypeError(Term.formatStr(
+			(name or f"Value <orange>{obj!r}<reset>")
+			+ f" must be {' or '.join(Term.formatStr(f'<lime>{x.__name__}<reset>') for x in typ)}"
+			+ f", not <red>{obj.__class__.__name__}<reset>"
+		))
 	return True
 
 
@@ -179,20 +192,18 @@ class Term:
 
 
 	@staticmethod
-	def color(rgb: Optional[tuple[int, int, int]], bg: bool=False) -> str:
+	def color(color: Optional[Union[tuple[int, int, int], str]], bg: bool=False) -> str:
 		"""
 		Color of the cursor.
-		@rgb:	Tuple with three values from 0 to 255. (RED GREEN BLUE)
+		@color:	Tuple with RGB values, a HTML color name, or a hex string.
 		@bg:	This color will be displayed on the background
 		"""
-		if not isinstance(rgb, (tuple, list)):
-			return Term.RESET
-		elif len(rgb) != 3:
-			raise ValueError("Sequence must have 3 items")
+		if not color:
+			return ""
 
-		crgb = [capValue(value, 255, 0) for value in rgb]
-
+		crgb = convertClrs(color, "RGB")
 		type = 48 if bg else 38
+
 		return f"\x1b[{type};2;{crgb[0]};{crgb[1]};{crgb[2]}m"
 
 
@@ -289,18 +300,25 @@ class Term:
 
 
 	@staticmethod
-	def formatString(string: str, reset: bool=True) -> str:  # sourcery no-metrics
+	def formatStr(string: str, reset: bool=True) -> str:  # sourcery no-metrics
 		"""
-		Add format to the string supplied by wrapping text with special characters:
+		Add format to the string supplied by wrapping text with special characters and sequences:
 
-		- `*`: Bold.
-		- `_`: Italic.
-		- `~`: Strikethrough.
-		- `-`: Underline.
-		- `´`: Blink.
-		- `|`: Invert.
-		- `#`: Dim.
-		- `@`: Invisible.
+		- Text formatting:
+		  - `*`: Bold.
+		  - `_`: Italic.
+		  - `~`: Strikethrough.
+		  - `-`: Underline.
+		  - `´`: Blink.
+		  - `|`: Invert.
+		  - `#`: Dim.
+		  - `@`: Invisible.
+
+		- Text coloring:
+		  - Specify a color by using the `<[mode=]color>` syntax.
+			- `mode` should be `fg` (foreground) or `bg` (background). Use this to decide where to apply the color.
+			- `color` can be be specified by typing a HTML color name, comma separated RGB values, or a hex string (including `#`).
+			- Use `<reset>` to reset the text formatting.
 
 		Note: Some of this sequences might not work properly on some terminal emulators.
 
@@ -319,9 +337,12 @@ class Term:
 
 			# skip a character if backslashes are used
 			if char == "\\":
+				if index == len(string) - 1:
+					break
 				endStr += string[index + 1]
 				loopSkipChars = 1
 				continue
+
 
 			# simply add escape characters depending on the state of each format
 			if char == "*":	# bold
@@ -349,7 +370,10 @@ class Term:
 				char = Term.NO_INVISIBLE if invisible else Term.INVISIBLE
 				invisible = not invisible
 
+
 			elif char == "<":
+				if ">" not in string[index:]:
+					raise UnexpectedEndOfStringError(string)
 				endIndex = string.index(">", index)
 				char = Term._parseStrFormatSeq(string[index + 1:endIndex])
 				loopSkipChars = endIndex - index
@@ -361,18 +385,20 @@ class Term:
 
 	@staticmethod
 	def _parseStrFormatSeq(seq: str) -> str:
+		"""Convert a string color format (`([bg=]color)|reset`) to a terminal sequence."""
+
+		seq = seq.replace("<", "").replace(">", "")
+
 		if seq == "reset":
 			return Term.RESET
-		elif "=" not in seq:
-			return ""
 
-		type, color = seq.split("=")
-		type = type == "bg"
+		mode, color = ("fg", seq) if "=" not in seq else seq.split("=")
+		mode = mode == "bg"
 
 		if "," in color:
-			return Term.color([x for x in map(int, color.split(","))], type)
+			return Term.color([x for x in map(int, color.split(","))], mode)
 		elif "#" in color or color in _HTML_COLOR_NAMES:
-			return Term.color(convertClrs(color, "RGB"), type)
+			return Term.color(color, mode)
 		else:
 			return ""
 

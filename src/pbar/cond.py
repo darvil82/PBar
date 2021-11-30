@@ -2,7 +2,7 @@ from shlex import split as strSplit
 
 from . utils import chkInstOf, chkSeqOfLen, isNum
 from . import bar
-from . sets import ColorSetEntry, FormatSetEntry, CharSetEntry, FormatSet
+from . import sets
 
 _OP_EQU = "=="
 _OP_NEQ = "!="
@@ -15,8 +15,9 @@ _OP_IN = "<-"
 
 class Cond:
 	"""Condition manager used by a PBar object."""
-	def __init__(self, condition: str, colorset: ColorSetEntry=None,
-				 charset: CharSetEntry=None, formatset: FormatSetEntry=None) -> None:
+	def __init__(self, condition: str, colorset: sets.ColorSetEntry=None,
+				 charset: sets.CharSetEntry=None,
+				 formatset: sets.FormatSetEntry=None) -> None:
 		"""
 		Apply different customization sets to a bar if the condition supplied succeeds.
 		Text comparisons are case insensitive.
@@ -65,7 +66,7 @@ class Cond:
 	def test(self, cls: "bar.PBar") -> bool:
 		"""Check if the condition succeededs with the values of the PBar object"""
 		op = self.operator
-		val = FormatSet.getBarAttrs(cls, self._attribute)
+		val = sets.FormatSet.getBarAttr(cls, self._attribute)
 		val = val.lower() if isinstance(val, str) else val
 
 		if op == _OP_EQU:
