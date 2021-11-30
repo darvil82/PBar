@@ -39,9 +39,10 @@ _HTML_COLOR_NAMES: dict = {		# thanks to https://stackoverflow.com/a/1573141/145
 class UnexpectedEndOfStringError(Exception):
 	"""Unexpected end of string when parsing a formatting key"""
 	def __init__(self, string, expectedChar=">") -> None:
-		super().__init__(Term.formatStr(
-			f"Unexpected end of string ('{string}<reset><bg=150,0,0>*◄ Expected '{expectedChar}'<reset>')"
-		))
+		super().__init__(
+			"Unexpected end of string. ('" + string
+			+ Term.formatStr(f"<bg=150,0,0>*◄ Expected '{expectedChar}'<reset>')")
+		)
 
 
 Num = TypeVar("Num", int, float)
