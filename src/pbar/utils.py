@@ -309,16 +309,18 @@ class Term:
 		@reset: Will formatting be resetted at the end?
 		"""
 		invert = underline = dim = sthrough = invisible = bold = italic = blink = False
-		ignoreChar = False
+		loopSkipChars = 0
 		endStr = ""
-		for char in string:
+
+		for index, char in enumerate(string):
+			if loopSkipChars:
+				loopSkipChars -= 1
+				continue
+
 			# skip a character if backslashes are used
 			if char == "\\":
-				ignoreChar = True
-				continue
-			if ignoreChar:
-				endStr += char
-				ignoreChar = False
+				endStr += string[index + 1]
+				loopSkipChars = 1
 				continue
 
 			# simply add escape characters depending on the state of each format
@@ -346,8 +348,35 @@ class Term:
 			elif char == "@":	# invisible
 				char = Term.NO_INVISIBLE if invisible else Term.INVISIBLE
 				invisible = not invisible
+
+			elif char == "<":
+				endIndex = string.index(">", index)
+				char = Term._parseStrFormatSeq(string[index + 1:endIndex])
+				loopSkipChars = endIndex - index
+
 			endStr += char
+
 		return endStr + (Term.RESET if reset else "")
+
+
+	@staticmethod
+	def _parseStrFormatSeq(seq: str) -> str:
+		if seq == "reset":
+			return Term.RESET
+		elif "=" not in seq:
+			return ""
+
+		type, color = seq.split("=")
+		type = type == "bg"
+
+		if "," in color:
+			return Term.color([x for x in map(int, color.split(","))], type)
+		elif "#" in color or color in _HTML_COLOR_NAMES:
+			return Term.color(convertClrs(color, "RGB"), type)
+		else:
+			return ""
+
+
 
 
 	# simple sequences that dont require parsing
