@@ -264,6 +264,7 @@ class Term:
 			+ "".join(Term.pos((0, row)) + char[0]*ts[0] for row in range(ts[1] + 1))
 		)
 
+
 	class SeqMgr:
 		"""
 		Context manager for alternating different terminal sequences.
