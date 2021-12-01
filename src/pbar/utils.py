@@ -302,7 +302,7 @@ class Term:
 
 
 	@staticmethod
-	def formatStr(string: str, reset: bool=True) -> str:  # sourcery no-metrics
+	def formatStr(string: str, reset: bool=True, ignoreBackslashes=False) -> str:  # sourcery no-metrics
 		"""
 		Add format to the string supplied by wrapping text with special characters and sequences:
 
@@ -337,8 +337,8 @@ class Term:
 				loopSkipChars -= 1
 				continue
 
-			# skip a character if backslashes are used
-			if char == "\\":
+			if not ignoreBackslashes and char == "\\":
+				# skip a character if backslashes are used
 				if index == len(string) - 1:
 					break
 				endStr += string[index + 1]
