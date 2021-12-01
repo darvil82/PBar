@@ -240,7 +240,7 @@ def rect(pos: tuple[int, int], size: tuple[int, int],
 	"""Generate a rectangle."""
 	return shape(
 		pos,
-		size,
+		(size[0] - 4, size[1] - 1),
 		sets.CharSet({"corner": char, "horiz": char, "vert": char}),
 		sets.ColorSet({"corner": color, "horiz": color, "vert": color}).parsedValues(),
 		char

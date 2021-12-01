@@ -4,10 +4,10 @@ from os import system as runsys, isatty
 from time import time as epochTime, sleep
 from inspect import getsourcelines
 
-from . sets import CharSet, ColorSet, FormatSet, CharSetEntry, ColorSetEntry, FormatSetEntry
-from . utils import *
+from . import utils, gen
+from . utils import Term
 from . cond import Cond
-from . import gen
+from . sets import CharSet, ColorSet, FormatSet, CharSetEntry, ColorSetEntry, FormatSetEntry
 
 
 NEVER_DRAW = False
@@ -152,7 +152,7 @@ class PBar:
 
 	def prangeFromFile(self, fp: IO[str]):
 		"""Modify `prange` with the number of lines of a file."""
-		chkInstOf(fp, TextIOWrapper, name="fp")
+		utils.chkInstOf(fp, TextIOWrapper, name="fp")
 		self.prange = (0, len(fp.readlines()))
 		fp.seek(0)
 
@@ -276,7 +276,7 @@ class PBar:
 		}
 	@config.setter
 	def config(self, config: dict[str, Any]):
-		chkInstOf(config, dict, name="config")
+		utils.chkInstOf(config, dict, name="config")
 		for key in {"prange", "text", "size", "position", "colorset", "charset", "formatset", "conditions", "gfrom", "enabled"}:
 			# Iterate through every key in the dict and populate the config of the class with its values
 			if key not in config:
@@ -289,7 +289,7 @@ class PBar:
 
 	def _getPos(self, position: Position) -> tuple[int, int]:
 		"""Get and process new position requested"""
-		chkSeqOfLen(position, 2)
+		utils.chkSeqOfLen(position, 2)
 
 		TERM_SIZE: tuple[int, int] = Term.size()
 		newpos = []
@@ -297,16 +297,16 @@ class PBar:
 		for index, value in enumerate(position):
 			if value == "center":
 				value = int(TERM_SIZE[index]/2)
-			chkInstOf(value, int, float, name="pos")
+			utils.chkInstOf(value, int, float, name="pos")
 
 			if value < 0:	# if negative value, return Term size - value
 				value = TERM_SIZE[index] + value
 
 			# set maximun and minimun positions
 			if index == 0:
-				value = capValue(value, TERM_SIZE[0] - self._size[0]/2 - 1, self._size[0]/2 + 3)
+				value = utils.capValue(value, TERM_SIZE[0] - self._size[0]/2 - 1, self._size[0]/2 + 3)
 			else:
-				value = capValue(value, TERM_SIZE[1] - self._size[1]/2 - 1, self._size[1]/2 + 2)
+				value = utils.capValue(value, TERM_SIZE[1] - self._size[1]/2 - 1, self._size[1]/2 + 2)
 
 			newpos.append(int(value))
 		return (newpos[0], newpos[1])
@@ -315,25 +315,25 @@ class PBar:
 	@staticmethod
 	def _getSize(size: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
 		"""Get and process new length requested"""
-		chkSeqOfLen(size, 2)
+		utils.chkSeqOfLen(size, 2)
 		width, height = map(int, size)
-		return (capValue(int(width), min=1),
-				capValue(int(height), min=1))
+		return (utils.capValue(int(width), min=1),
+				utils.capValue(int(height), min=1))
 
 
 	@staticmethod
 	def _getRange(range: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
 		"""Return a capped range"""
-		chkSeqOfLen(range, 2)
+		utils.chkSeqOfLen(range, 2)
 		start, stop = map(int, range)
-		return (capValue(start, stop, 0),
-				capValue(stop, min=1))
+		return (utils.capValue(start, stop, 0),
+				utils.capValue(stop, min=1))
 
 
 	@staticmethod
 	def _getConds(conditions: Union[list[Cond], Cond]) -> list[Cond]:
 		if isinstance(conditions, (tuple, list)):
-			for item in conditions:	chkInstOf(item, Cond)
+			for item in conditions:	utils.chkInstOf(item, Cond)
 			return conditions
 		elif isinstance(conditions, Cond):
 			return (conditions, )
@@ -435,7 +435,7 @@ def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=T
 	@titleComments: If True, comments on a statement starting with "#bTitle:" will be treated as titles for the progress bar.
 	@overwriteRange: If True, overwrites the prange of the bar.
 	"""
-	chkInstOf(barObj, PBar, name="pbarObj")
+	utils.chkInstOf(barObj, PBar, name="pbarObj")
 
 	def getTitleComment(string: str) -> Optional[str]:
 		"""Returns the text after "#bTitle:" from the string supplied. Returns None if there is no comment."""
@@ -475,7 +475,7 @@ def animate(barObj: PBar, rng: range=range(100), delay: float=0.05) -> None:
 	@rng: range object to set for the bar.
 	@delay: Time in seconds between each time the bar draws.
 	"""
-	chkInstOf(rng, range, name="rng")
+	utils.chkInstOf(rng, range, name="rng")
 	steps = rng.step
 	barObj.prange = rng.start, rng.stop
 	for _ in rng:

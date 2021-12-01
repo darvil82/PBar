@@ -1,9 +1,6 @@
 from shlex import split as strSplit
 
-from . utils import chkInstOf, chkSeqOfLen, isNum
-from . import bar
-from . import sets
-
+from . import bar, sets, utils
 _OP_EQU = "=="
 _OP_NEQ = "!="
 _OP_GTR = ">"
@@ -40,16 +37,16 @@ class Cond:
 		"""
 		vs = self._chkCond(condition)
 		self._attribute, self.operator = vs[0:2]
-		self._value = float(vs[2]) if isNum(vs[2]) else vs[2].lower()	# convert to float if its a num
+		self._value = float(vs[2]) if utils.isNum(vs[2]) else vs[2].lower()	# convert to float if its a num
 		self.newSets = (charset, colorset, formatset)
 
 
 	@staticmethod
 	def _chkCond(cond: str):
 		"""Check types and if the operator supplied is valid"""
-		chkInstOf(cond, str, name="condition")
+		utils.chkInstOf(cond, str, name="condition")
 		splitted = strSplit(cond)	# splits with strings in mind ('test "a b c" hey' > ["test", "a b c", "hey"])
-		chkSeqOfLen(splitted, 3, "condition")
+		utils.chkSeqOfLen(splitted, 3, "condition")
 
 		if splitted[1] not in {_OP_EQU, _OP_NEQ, _OP_GTR, _OP_LSS,	# check if the operator is valid
 							   _OP_GEQ, _OP_LEQ, _OP_IN}:

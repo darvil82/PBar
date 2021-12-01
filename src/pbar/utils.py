@@ -57,6 +57,11 @@ def capValue(value: Num, max: Num=None, min: Num=None) -> Num:
 		return value
 
 
+def getConstantAttrs(obj: Any) -> tuple:
+	"""Get the constant attributes of an object. (Uppercase attrs)"""
+	return tuple(a for a in dir(obj) if a.isupper())
+
+
 def convertClrs(clr: Union[dict[Any, Union[str, Color]], Color], conversion: str) -> Union[str, tuple, dict, None]:
 	"""
 	Convert color values to HEX and vice-versa
