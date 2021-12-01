@@ -327,6 +327,7 @@ class Term:
 		Note: When disabling `Dim`, bold will also be disabled.
 
 		@reset: Will formatting be resetted at the end?
+		@ignoreBackslashes: Ignore backslashes in the string.
 		"""
 		invert = underline = dim = sthrough = invisible = bold = italic = blink = False
 		loopSkipChars = 0
