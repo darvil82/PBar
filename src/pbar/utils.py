@@ -374,12 +374,12 @@ class Term:
 				invisible = not invisible
 
 
-			elif char == "<":
-				if ">" not in string[index:]:
+			elif char == "<":	# a color sequence is going to be used
+				if ">" not in string[index:]:	# if the sequence is not closed, raise error
 					raise UnexpectedEndOfStringError(string)
-				endIndex = string.index(">", index)
-				char = Term._parseStrFormatSeq(string[index + 1:endIndex])
-				loopSkipChars = endIndex - index
+				endIndex = string.index(">", index)	# we get the index of the end of the sequence
+				char = Term._parseStrFormatSeq(string[index + 1:endIndex])	# parse the sequence
+				loopSkipChars = endIndex - index	# we now tell the loop to skip the parsed text
 
 			endStr += char
 
@@ -390,20 +390,20 @@ class Term:
 	def _parseStrFormatSeq(seq: str) -> str:
 		"""Convert a string color format (`([bg=]color)|reset`) to a terminal sequence."""
 
-		seq = seq.replace("<", "").replace(">", "")
+		seq = seq.replace("<", "").replace(">", "")	# remove any possible <> characters
 
 		if seq == "reset":
 			return Term.RESET
 
-		mode, color = ("fg", seq) if "=" not in seq else seq.split("=")
+		mode, color = ("fg", seq) if "=" not in seq else seq.split("=")	# if there is no equal sign, the mode is foreground
 		mode = mode == "bg"
 
-		if "," in color:
+		if "," in color:	# found a comma. We are dealing with RGB values
 			return Term.color([x for x in map(int, color.split(","))], mode)
-		elif "#" in color or color in _HTML_COLOR_NAMES:
+		elif "#" in color or color in _HTML_COLOR_NAMES:	# its a hex color or a HTML color name
 			return Term.color(color, mode)
 		else:
-			return ""
+			return ""	# invalid color format
 
 
 
