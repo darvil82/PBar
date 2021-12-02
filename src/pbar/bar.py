@@ -116,6 +116,7 @@ class PBar:
 		"""Print the progress bar on screen."""
 		if self._requiresClear:
 			# Clear the bar at the old position and length
+			self._pos = self._getPos(self._pos)	# This is to make sure the position is valid. I'm sorry, I know this is a bit of a hack.
 			clsb = self._genClearedBar(*self._oldValues)
 			self._oldValues = [self._pos, self._size, self._formatset]	# Reset the old values
 			self._printStr(clsb + self._genBar())	# we print the "cleared" bar and the new bar

@@ -62,7 +62,7 @@ def getConstantAttrs(obj: Any) -> tuple:
 	return tuple(a for a in dir(obj) if a.isupper())
 
 
-def convertClrs(clr: Union[dict[Any, Union[str, Color]], Color], conversion: str) -> Union[str, tuple, dict, None]:
+def convertClrs(clr: Union[dict[Any, Union[str, Color]], Color], conversion: str) -> Union[str, tuple, dict]:
 	"""
 	Convert color values to HEX and vice-versa
 	@clr:			Color value to convert.
