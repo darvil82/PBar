@@ -37,7 +37,7 @@ class Cond:
 		>>> Cond("text <- 'error'", ColorSet.ERROR, formatset=FormatSet.TITLE_SUBTITLE)
 		"""
 		vs = self._chkCond(condition)
-		self._attribute, self.operator = vs[0:2]
+		self._attribute, self.operator = vs[:2]
 		self._value = float(vs[2]) if utils.isNum(vs[2]) else vs[2].lower()	# convert to float if its a num
 		self.newSets = (charset, colorset, formatset)
 

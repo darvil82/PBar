@@ -27,11 +27,10 @@ try:
 			}
 		}
 		mybar.step()			# Step over the prange and draw bar
-	else:
-		mybar.text = "Done!"	# Change the text of the bar
-		mybar.colorset |= {
-			"text":		(0, 255, 0)
-		}
+	mybar.text = "Done!"	# Change the text of the bar
+	mybar.colorset |= {
+		"text":		(0, 255, 0)
+	}
 
 except KeyboardInterrupt:
 	mybar.text = "Interrupted!"
