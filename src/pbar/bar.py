@@ -97,11 +97,11 @@ class PBar:
 
 		self._range = PBar._getRange(prange)
 		self._text = sets.FormatSet._rmPoisonChars(text) if text is not None else ""
-		self._formatset = sets.FormatSet(formatset)
-		self._size = PBar._getSize(size)
-		self._charset = sets.CharSet(charset)
-		self._colorset = sets.ColorSet(colorset)
+		self._size = self._getSize(size)
 		self._pos = self._getPos(position)
+		self._colorset = sets.ColorSet(colorset)
+		self._charset = sets.CharSet(charset)
+		self._formatset = sets.FormatSet(formatset)
 		self._conditions = PBar._getConds(conditions)
 		self.gfrom = gfrom
 		self.inverted = inverted
@@ -227,7 +227,7 @@ class PBar:
 		return self._size
 	@size.setter
 	def size(self, size: tuple[int, int]):
-		newsize = PBar._getSize(size)
+		newsize = self._getSize(size)
 		if newsize != self._size:
 			self._oldValues[1] = self._size
 			self._requiresClear = True
@@ -297,34 +297,43 @@ class PBar:
 		"""Get and process new position requested"""
 		utils.chkSeqOfLen(position, 2)
 
-		TERM_SIZE: tuple[int, int] = Term.size()
+		termSize = Term.size()
 		newpos = []
 
 		for index, value in enumerate(position):
 			if value == "center":
-				value = int(TERM_SIZE[index]/2)
+				value = int(termSize[index]/2)
 			utils.chkInstOf(value, int, float, name="pos")
 
 			if value < 0:	# if negative value, return Term size - value
-				value = TERM_SIZE[index] + value
+				value = termSize[index] + value
 
 			# set maximun and minimun positions
 			if index == 0:
-				value = utils.capValue(value, TERM_SIZE[0] - self._size[0]/2 - 1, self._size[0]/2 + 3)
+				value = utils.capValue(value, termSize[0] - self._size[0]/2 - 1, self._size[0]/2 + 3)
 			else:
-				value = utils.capValue(value, TERM_SIZE[1] - self._size[1]/2 - 1, self._size[1]/2 + 2)
+				value = utils.capValue(value, termSize[1] - self._size[1]/2 - 1, self._size[1]/2 + 2)
 
 			newpos.append(int(value))
 		return (newpos[0], newpos[1])
 
 
-	@staticmethod
-	def _getSize(size: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
+	def _getSize(self, size: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
 		"""Get and process new length requested"""
 		utils.chkSeqOfLen(size, 2)
-		width, height = map(int, size)
-		return (utils.capValue(int(width), min=1),
-				utils.capValue(int(height), min=1))
+
+		termSize = Term.size()
+		newsize = list(size)
+
+		newsize[0] = termSize[0] if newsize[0] == "max" else newsize[0]
+		newsize[1] = termSize[1] if newsize[1] == "max" else newsize[1]
+
+		width, height = map(int, newsize)
+
+		return (
+			utils.capValue(int(width), termSize[0] - 4, 1),
+			utils.capValue(int(height), termSize[1] - 3, 1)
+		)
 
 
 	@staticmethod
