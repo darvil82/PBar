@@ -1,7 +1,7 @@
 from typing import Callable, Optional, Union
 from enum import Enum, auto
 
-from . utils import capValue, Term
+from . utils import Color, capValue, Term
 from . import sets
 
 
@@ -22,9 +22,10 @@ class BarContent:
 	Generate the content of the bar.
 	Call this object to get the content string with the properties supplied.
 	"""
-	def __init__(self, gfrom: Gfrom) -> None:
+	def __init__(self, gfrom: Gfrom, invert: bool=True) -> None:
 		"""@gfrom: Place from where the full part of the bar will grow."""
 		self.gfrom = gfrom
+		self.invert = invert
 
 
 	def __call__(self, position: tuple[int, int], size: tuple[int, int], charset: tuple[str, str],
@@ -40,17 +41,20 @@ class BarContent:
 		else:
 			raise RuntimeError(f"unknown gfrom {self.gfrom!r}")
 
-		chars = charset["full"], charset["empty"]
+		setEntry = ("empty", "full") if self.invert else ("full", "empty")
 
 		return genFunc(
-			position, size, chars,
-			parsedColorset, prange
+			position, size,
+			(charset[setEntry[0]], charset[setEntry[1]]),
+			(parsedColorset[setEntry[0]], parsedColorset[setEntry[1]]),
+			prange
 		)
 
 
-	def _genHoriz(self, pos, size, chars, pColorSet, prange) -> str:
+	def _genHoriz(self, pos, size, chars, colors, prange) -> str:
 		width, height = size
 		charFull, charEmpty = chars
+		colorFull, colorEmpty = colors
 		SEGMENTS_FULL = int((prange[0] / prange[1])*width)
 		SEGMENTS_EMPTY = width - SEGMENTS_FULL
 
@@ -69,13 +73,13 @@ class BarContent:
 
 		if self.gfrom == Gfrom.LEFT:
 			return iterRows(
-				pColorSet["full"] + charFull*SEGMENTS_FULL
-				+ pColorSet["empty"] + charEmpty*SEGMENTS_EMPTY
+				colorFull + charFull*SEGMENTS_FULL
+				+ colorEmpty + charEmpty*SEGMENTS_EMPTY
 			)
 		elif self.gfrom == Gfrom.RIGHT:
 			return iterRows(
-				pColorSet["empty"] + charEmpty*SEGMENTS_EMPTY
-				+ pColorSet["full"] + charFull*SEGMENTS_FULL
+				colorEmpty + charEmpty*SEGMENTS_EMPTY
+				+ colorFull + charFull*SEGMENTS_FULL
 			)
 		elif self.gfrom == Gfrom.CENTER_X:
 			"""
@@ -85,16 +89,17 @@ class BarContent:
 				3. Print the completed bar chars.
 			"""
 			return iterRows(
-				pColorSet["empty"] + charEmpty*width
+				colorEmpty + charEmpty*width
 				+ Term.moveHoriz(-width/2 - SEGMENTS_FULL/2)
-				+ pColorSet["full"] + charFull*SEGMENTS_FULL
+				+ colorFull + charFull*SEGMENTS_FULL
 			)
 
 
-	def _genVert(self, pos, size, chars, pColorSet, prange) -> str:
+	def _genVert(self, pos, size, chars, colors, prange) -> str:
 		width, height = size[0], size[1] - 1
 		pos = pos[0], pos[1] + 1
 		charFull, charEmpty = chars
+		colorFull, colorEmpty = colors
 		SEGMENTS_FULL = int(capValue((prange[0] / prange[1])*height, max=height))
 		SEGMENTS_EMPTY = capValue(height - SEGMENTS_FULL, min=0)
 
@@ -108,14 +113,14 @@ class BarContent:
 		if self.gfrom == Gfrom.TOP:
 			return (
 				Term.pos(pos)
-				+ (pColorSet["full"] + charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
-				+ (pColorSet["empty"] + charEmpty*width + Term.posRel((-width, 1)))*SEGMENTS_EMPTY
+				+ colorFull + (charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
+				+ colorEmpty + (charEmpty*width + Term.posRel((-width, 1)))*SEGMENTS_EMPTY
 			)
 		elif self.gfrom == Gfrom.BOTTOM:
 			return (
 				Term.pos(pos)
-				+ (pColorSet["empty"] + charEmpty*width + Term.posRel((-width, 1)))*SEGMENTS_EMPTY
-				+ (pColorSet["full"] + charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
+				+ colorEmpty + (charEmpty*width + Term.posRel((-width, 1)))*SEGMENTS_EMPTY
+				+ colorFull + (charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
 			)
 		elif self.gfrom == Gfrom.CENTER_Y:
 			"""
@@ -126,9 +131,9 @@ class BarContent:
 			"""
 			return (
 				Term.pos(pos)
-				+ (pColorSet["empty"] + charEmpty*width + Term.posRel((-width, 1)))*height
+				+ colorEmpty + (charEmpty*width + Term.posRel((-width, 1)))*height
 				+ Term.moveVert(-height/2 - SEGMENTS_FULL/2)
-				+ (pColorSet["full"] + charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
+				+ colorFull + (charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
 			)
 
 
@@ -236,7 +241,7 @@ def bText(position: tuple[int, int], size: tuple[int, int],
 
 
 def rect(pos: tuple[int, int], size: tuple[int, int],
-		 char: str, color: Union[tuple, str]) -> str:
+		 char: str="█", color: Color="white") -> str:
 	"""Generate a rectangle."""
 	return shape(
 		pos,

@@ -4,10 +4,9 @@ from os import system as runsys, isatty
 from time import time as epochTime, sleep
 from inspect import getsourcelines
 
-from . import utils, gen
+from . import utils, gen, sets
 from . utils import Term
 from . cond import Cond
-from . sets import CharSet, ColorSet, FormatSet, CharSetEntry, ColorSetEntry, FormatSetEntry
 
 
 NEVER_DRAW = False
@@ -28,9 +27,9 @@ class PBar:
 	def __init__(self,
 			prange: tuple[int, int]=(0, 1), text: str=None, size: tuple[int, int]=(20, 1),
 			position: tuple[Union[str, int], Union[str, int]]=("center", "center"),
-			colorset: ColorSetEntry=None, charset: CharSetEntry=None,
-			formatset: FormatSetEntry=None, conditions: Union[list[Cond], Cond]=None,
-			gfrom: gen.Gfrom=gen.Gfrom.AUTO
+			colorset: sets.ColorSetEntry=None, charset: sets.CharSetEntry=None,
+			formatset: sets.FormatSetEntry=None, conditions: Union[list[Cond], Cond]=None,
+			gfrom: gen.Gfrom=gen.Gfrom.AUTO, inverted: bool=False
 		) -> None:
 		"""
 		### Detailed descriptions:
@@ -86,6 +85,10 @@ class PBar:
 		---
 
 		@gfrom: Place from where the full part of the bar will grow.
+
+		---
+
+		@inverted: If `True`, the bar will be drawn from the end to the beginning.
 		"""
 		self._requiresClear = False		# This controls if the bar needs to clear its old position before drawing.
 		self.enabled = True				# If disabled, the bar will never draw.
@@ -93,14 +96,15 @@ class PBar:
 		self._isOnScreen = False		# Is the bar on screen?
 
 		self._range = PBar._getRange(prange)
-		self._text = FormatSet._rmPoisonChars(text) if text is not None else ""
-		self._formatset = FormatSet(formatset)
+		self._text = sets.FormatSet._rmPoisonChars(text) if text is not None else ""
+		self._formatset = sets.FormatSet(formatset)
 		self._size = PBar._getSize(size)
-		self._charset = CharSet(charset)
-		self._colorset = ColorSet(colorset)
+		self._charset = sets.CharSet(charset)
+		self._colorset = sets.ColorSet(colorset)
 		self._pos = self._getPos(position)
 		self._conditions = PBar._getConds(conditions)
 		self.gfrom = gfrom
+		self.inverted = inverted
 
 		self._oldValues = [self._pos, self._size, self._formatset]	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
@@ -183,34 +187,34 @@ class PBar:
 		return self._text
 	@text.setter
 	def text(self, text: str):
-		self._text = FormatSet._rmPoisonChars(text)
+		self._text = sets.FormatSet._rmPoisonChars(text)
 
 
 	@property
-	def colorset(self) -> ColorSet:
+	def colorset(self) -> sets.ColorSet:
 		"""Set of colors for the bar."""
 		return self._colorset
 	@colorset.setter
-	def colorset(self, colorset: ColorSetEntry):
-		self._colorset = ColorSet(colorset)
+	def colorset(self, colorset: sets.ColorSetEntry):
+		self._colorset = sets.ColorSet(colorset)
 
 
 	@property
-	def charset(self) -> CharSet:
+	def charset(self) -> sets.CharSet:
 		"""Set of characters for the bar."""
 		return self._charset
 	@charset.setter
-	def charset(self, charset: CharSetEntry):
-		self._charset = CharSet(charset)
+	def charset(self, charset: sets.CharSetEntry):
+		self._charset = sets.CharSet(charset)
 
 
 	@property
-	def formatset(self) -> FormatSet:
+	def formatset(self) -> sets.FormatSet:
 		"""Formatting used for the bar."""
 		return self._formatset
 	@formatset.setter
-	def formatset(self, formatset: FormatSetEntry):
-		newset = FormatSet(formatset)
+	def formatset(self, formatset: sets.FormatSetEntry):
+		newset = sets.FormatSet(formatset)
 		if newset != self._formatset:
 			self._oldValues[2] = self._formatset
 			self._requiresClear = True
@@ -272,12 +276,14 @@ class PBar:
 			"formatset":	self._formatset,
 			"conditions":	self._conditions,
 			"gfrom":		self.gfrom,
+			"inverted":		self.inverted,
 			"enabled":		self.enabled
 		}
 	@config.setter
 	def config(self, config: dict[str, Any]):
 		utils.chkInstOf(config, dict, name="config")
-		for key in {"prange", "text", "size", "position", "colorset", "charset", "formatset", "conditions", "gfrom", "enabled"}:
+		for key in {"prange", "text", "size", "position", "colorset",
+					"charset", "formatset", "conditions", "gfrom", "inverted", "enabled"}:
 			# Iterate through every key in the dict and populate the config of the class with its values
 			if key not in config:
 				raise ValueError(f"config dict is missing the {key!r} key")
@@ -351,10 +357,10 @@ class PBar:
 
 
 
-	def _genClearedBar(self, pos: tuple[int, int], size: tuple[int, int], formatset: FormatSet) -> str:
+	def _genClearedBar(self, pos: tuple[int, int], size: tuple[int, int], formatset: sets.FormatSet) -> str:
 		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
 		if not self._isOnScreen:	return ""
-		parsedColorSet = ColorSet(ColorSet.EMPTY).parsedValues()
+		parsedColorSet = sets.ColorSet(sets.ColorSet.EMPTY).parsedValues()
 
 		size = size[0], size[1] + 1
 		POSITION = (pos[0] - int(size[0]/2),
@@ -363,7 +369,7 @@ class PBar:
 		barShape = gen.shape(
 			(POSITION[0] - 2, POSITION[1]),
 			size,
-			CharSet.EMPTY,
+			sets.CharSet.EMPTY,
 			parsedColorSet
 		)
 
@@ -393,7 +399,7 @@ class PBar:
 			size, self._charset, parsedColorSet
 		)
 
-		barContent = gen.BarContent(self.gfrom)(
+		barContent = gen.BarContent(self.gfrom, self.inverted)(
 			POSITION,
 			size, self.charset, parsedColorSet, self._range
 		)
@@ -493,7 +499,7 @@ def barHelper(position: Position=("center", "center"),
 	"""
 	b = PBar(	# we create a bar just to make stuff easier
 		size=size,
-		formatset=FormatSet.EMPTY,
+		formatset=sets.FormatSet.EMPTY,
 		colorset={
 			"vert": "#090",
 			"horiz": "#090",

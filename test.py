@@ -55,6 +55,7 @@ def fullyRandom():
 		choice(getConstAttrs(pbar.CharSet))[1],
 		choice(getConstAttrs(pbar.FormatSet))[1],
 		gfrom=choice([pbar.Gfrom.LEFT, pbar.Gfrom.RIGHT, pbar.Gfrom.CENTER_X, pbar.Gfrom.CENTER_Y, pbar.Gfrom.TOP, pbar.Gfrom.BOTTOM]),
+		inverted=choice([True, False]),
 	)
 
 	animate(b)

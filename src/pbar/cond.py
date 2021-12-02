@@ -1,6 +1,7 @@
 from shlex import split as strSplit
-
 from . import bar, sets, utils
+
+
 _OP_EQU = "=="
 _OP_NEQ = "!="
 _OP_GTR = ">"

@@ -8,7 +8,7 @@
 - [PyPI](https://pypi.org/manage/project/pbar2)
 """
 
-__version__ = "1.13.0.post1"
+__version__ = "1.14.0"
 
 from . bar import PBar, animate, taskWrapper, barHelper
 from . sets import CharSet, FormatSet, ColorSet
