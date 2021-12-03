@@ -3,9 +3,10 @@
 
 ### Library to display customizable progress bars on the terminal easily, for Python3.9+
 
-- [GitHub Repository](https://github.com/DarviL82/PBar)
 - [Wiki](https://github.com/DarviL82/PBar/wiki)
+- [GitHub Repository](https://github.com/DarviL82/PBar)
 - [PyPI](https://pypi.org/manage/project/pbar2)
+- [Website](https://darvil82.github.io/PBar)
 """
 
 __version__ = "1.14.0"

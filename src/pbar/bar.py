@@ -17,7 +17,7 @@ if not Term.size() or not isatty(0):
 runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
 
 
-Position = tuple[Union[str, int], Union[str, int]]
+Position = Size = tuple[Union[str, int], Union[str, int]]
 
 
 
@@ -97,8 +97,8 @@ class PBar:
 
 		self._range = PBar._getRange(prange)
 		self._text = sets.FormatSet._rmPoisonChars(text) if text is not None else ""
-		self._size = self._getSize(size)
-		self._pos = self._getPos(position)
+		self._size = size
+		self._pos = position
 		self._colorset = sets.ColorSet(colorset)
 		self._charset = sets.CharSet(charset)
 		self._formatset = sets.FormatSet(formatset)
@@ -109,7 +109,7 @@ class PBar:
 		self._oldValues = [self._pos, self._size, self._formatset]	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
 
-	# --------- Properties / Methods the user should use. ----------
+	# -------------------- Properties / Methods the user should use. --------------------
 
 
 	def draw(self):
@@ -228,11 +228,7 @@ class PBar:
 		return self._size
 	@size.setter
 	def size(self, size: tuple[int, int]):
-		newsize = self._getSize(size)
-		if newsize != self._size:
-			self._oldValues[1] = self._size
-			self._requiresClear = True
-			self._size = newsize
+		self._size = size
 
 
 	@property
@@ -241,12 +237,7 @@ class PBar:
 		return self._pos
 	@position.setter
 	def position(self, position: Position):
-		newpos = self._getPos(position)
-		# we dont need to update the position and ask to redraw if the value supplied is the same
-		if newpos != self._pos:
-			self._oldValues[0] = self._pos
-			self._requiresClear = True		# Position has been changed, we need to clear the bar at the old position
-			self._pos = newpos
+		self._pos = position
 
 
 	@property
@@ -291,50 +282,8 @@ class PBar:
 			setattr(self, key, config[key])
 
 
-	# --------- ///////////////////////////////////////// ----------
+	# -------------------- ///////////////////////////////////////// --------------------
 
-
-	def _getPos(self, position: Position) -> tuple[int, int]:
-		"""Get and process new position requested"""
-		utils.chkSeqOfLen(position, 2)
-
-		termSize = Term.size()
-		newpos = []
-
-		for index, value in enumerate(position):
-			if value == "center":
-				value = int(termSize[index]/2)
-			utils.chkInstOf(value, int, float, name="pos")
-
-			if value < 0:	# if negative value, return Term size - value
-				value = termSize[index] + value
-
-			# set maximun and minimun positions
-			if index == 0:
-				value = utils.capValue(value, termSize[0] - self._size[0]/2 - 1, self._size[0]/2 + 3)
-			else:
-				value = utils.capValue(value, termSize[1] - self._size[1]/2 - 1, self._size[1]/2 + 2)
-
-			newpos.append(int(value))
-		return (newpos[0], newpos[1])
-
-
-	def _getSize(self, size: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
-		"""Get and process new length requested"""
-		utils.chkSeqOfLen(size, 2)
-
-		termSize = Term.size()
-		newsize = list(size)
-
-		newsize[0] = termSize[0] if newsize[0] == "max" else newsize[0]
-		newsize[1] = termSize[1] if newsize[1] == "max" else newsize[1]
-
-		width, height = map(int, newsize)
-
-		return (
-			utils.capValue(int(width), termSize[0] - 4, 1),
-			utils.capValue(int(height), termSize[1] - 3, 1)
-		)
 
 
 	@staticmethod
@@ -361,9 +310,52 @@ class PBar:
 		for cond in self._conditions:
 			if not cond.test(self):	# if a condition succeeds, apply its newsets
 				continue
-			if cond.newSets[0]:	self.charset = cond.newSets[0]
-			if cond.newSets[1]:	self.colorset = cond.newSets[1]
+			if cond.newSets[0]:	self.colorset = cond.newSets[0]
+			if cond.newSets[1]:	self.charset = cond.newSets[1]
 			if cond.newSets[2]:	self.formatset = cond.newSets[2]
+
+
+
+	@staticmethod
+	def getComputedPosition(position: Position, size: Size) -> tuple[int, int]:
+		"""Get and process new position requested"""
+		termSize = Term.size()
+		newpos = []
+
+		for index, value in enumerate(position):
+			if value == "center":
+				value = int(termSize[index]/2)
+
+			if value < 0:	# if negative value, return Term size - value
+				value = termSize[index] + value
+
+			# set maximun and minimun positions
+			if index == 0:
+				value = utils.capValue(value, termSize[0] - size[0]/2 - 1, size[0]/2 + 3)
+			else:
+				value = utils.capValue(value, termSize[1] - size[1]/2, size[1]/2 + 1)
+
+			newpos.append(int(value))
+		return (newpos[0] - size[0]/2, newpos[1] - size[1]/2)
+
+
+
+	@staticmethod
+	def getComputedSize(size: Size):
+		"""Get and process new length requested"""
+		termSize = Term.size()
+		newsize = list(size)
+
+		newsize[0] = termSize[0] if newsize[0] == "max" else newsize[0]
+		newsize[1] = termSize[1] if newsize[1] == "max" else newsize[1]
+
+		width, height = map(int, newsize)
+
+		return (
+			utils.capValue(int(width), termSize[0] - 5, 1),
+			utils.capValue(int(height), termSize[1] , 1)
+		)
+
 
 
 
@@ -394,28 +386,39 @@ class PBar:
 		return barText + barShape
 
 
+
+	def checkProps(self) -> tuple[tuple[int, int], tuple[int, int]]:
+		if self._conditions:	self._chkConds()
+
+		newSize = self.getComputedSize(self._size)
+		newPos = self.getComputedPosition(self._pos, newSize)
+
+		return (
+			newPos, newSize
+		)
+
+
+
 	def _genBar(self) -> str:
 		"""Generate the progress bar"""
-		if self._conditions:	self._chkConds()
-		size = self._size[0], self._size[1] + 1
-		POSITION = (self._pos[0] - int(size[0]/2),
-					self._pos[1] - int(size[1]/2))
+		position, size = self.checkProps()
+
 
 		parsedColorSet = self._colorset.parsedValues()
 
 		# Build all the parts of the progress bar
 		barShape = gen.shape(
-			(POSITION[0] - 2, POSITION[1]),
+			(position[0] - 2, position[1]),
 			size, self._charset, parsedColorSet
 		)
 
 		barContent = gen.BarContent(self.gfrom, self.inverted)(
-			POSITION,
+			position,
 			size, self.charset, parsedColorSet, self._range
 		)
 
 		barText = gen.bText(
-			POSITION,
+			position,
 			size, parsedColorSet, self._formatset.parsedValues(self)
 		)
 
