@@ -106,7 +106,7 @@ class PBar:
 		self.gfrom = gfrom
 		self.inverted = inverted
 
-		self._oldValues = [self._pos, self._size, self._formatset]	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
+		self._oldValues = (self._pos, self._size, self._formatset)	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
 
 	# -------------------- Properties / Methods the user should use. --------------------
@@ -116,12 +116,12 @@ class PBar:
 		"""Print the progress bar on screen."""
 		if self._requiresClear:
 			# Clear the bar at the old position and length
-			self._pos = self._getPos(self._pos)	# This is to make sure the position is valid. I'm sorry, I know this is a bit of a hack.
 			clsb = self._genClearedBar(*self._oldValues)
-			self._oldValues = [self._pos, self._size, self._formatset]	# Reset the old values
 			self._printStr(clsb + self._genBar())	# we print the "cleared" bar and the new bar
 		else:
 			self._printStr(self._genBar())	# Draw the bar
+
+		self._oldValues = (self._pos, self._size, self._formatset)	# Reset the old values
 
 		self._requiresClear = False
 
@@ -216,10 +216,10 @@ class PBar:
 	@formatset.setter
 	def formatset(self, formatset: sets.FormatSetEntry):
 		newset = sets.FormatSet(formatset)
-		if newset != self._formatset:
-			self._oldValues[2] = self._formatset
-			self._requiresClear = True
-			self._formatset = newset
+		if newset == self._formatset:
+			return
+		self._requiresClear = True
+		self._formatset = newset
 
 
 	@property
@@ -228,7 +228,19 @@ class PBar:
 		return self._size
 	@size.setter
 	def size(self, size: tuple[int, int]):
+		if self._size == size:
+			return
+		self._requiresClear = True
 		self._size = size
+
+
+	@property
+	def computedValues(self) -> tuple[tuple[int, int], tuple[int, int]]:
+		"""Computed position and size of the progress bar."""
+		size = PBar._getComputedSize(self._size)
+		pos = PBar._getComputedPosition(self._pos, size)
+
+		return pos, size
 
 
 	@property
@@ -237,6 +249,9 @@ class PBar:
 		return self._pos
 	@position.setter
 	def position(self, position: Position):
+		if self._pos == position:
+			return
+		self._requiresClear = True
 		self._pos = position
 
 
@@ -285,7 +300,6 @@ class PBar:
 	# -------------------- ///////////////////////////////////////// --------------------
 
 
-
 	@staticmethod
 	def _getRange(range: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
 		"""Return a capped range"""
@@ -315,9 +329,8 @@ class PBar:
 			if cond.newSets[2]:	self.formatset = cond.newSets[2]
 
 
-
 	@staticmethod
-	def getComputedPosition(position: Position, size: Size) -> tuple[int, int]:
+	def _getComputedPosition(position: Position, cSize: tuple[int, int]) -> tuple[int, int]:
 		"""Get and process new position requested"""
 		termSize = Term.size()
 		newpos = []
@@ -331,70 +344,62 @@ class PBar:
 
 			# set maximun and minimun positions
 			if index == 0:
-				value = utils.capValue(value, termSize[0] - size[0]/2, size[0]/2)
+				value = utils.capValue(value, termSize[0] - cSize[0]/2 - 1, cSize[0]/2 + 1)
 			else:
-				value = utils.capValue(value, termSize[1] - size[1]/2, size[1]/2 + 1)
+				value = utils.capValue(value, termSize[1] - cSize[1]/2 - 1, cSize[1]/2 + 1)
 
 			newpos.append(int(value))
-		return newpos[0] - int(size[0]/2), newpos[1] - int(size[1]/2)
-
+		return newpos[0] - int(cSize[0]/2), newpos[1] - int(cSize[1]/2)
 
 
 	@staticmethod
-	def getComputedSize(size: Size):
+	def _getComputedSize(size: Size):
 		"""Get and process new length requested"""
 		termSize = Term.size()
 		newsize = list(size)
 
-		newsize[0] = termSize[0] if newsize[0] == "max" else newsize[0]
-		newsize[1] = termSize[1] if newsize[1] == "max" else newsize[1]
+		for index in range(2):
+			newsize[index] = termSize[index] + newsize[index] if newsize[index] < 0 else newsize[index]
 
 		width, height = map(int, newsize)
 
 		return (
 			utils.capValue(int(width), termSize[0] - 2, 1),
-			utils.capValue(int(height), termSize[1] - 2, 1) + 1		# we add one to make sure it has the correct height
+			utils.capValue(int(height), termSize[1] - 2, 1)
 		)
 
 
+	def checkProps(self) -> tuple[tuple[int, int], tuple[int, int]]:
+		"""Check the properties of the bar and return the computed values."""
+		if self._conditions:	self._chkConds()
+
+		return self.computedValues
 
 
-	def _genClearedBar(self, pos: tuple[int, int], size: tuple[int, int], formatset: sets.FormatSet) -> str:
+	def _genClearedBar(self, position: tuple[int, int],
+					   size: tuple[int, int], formatset: sets.FormatSet) -> str:
 		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
 		if not self._isOnScreen:	return ""
+		size = PBar._getComputedSize(size)
+		position = PBar._getComputedPosition(position, size)
 		parsedColorSet = sets.ColorSet(sets.ColorSet.EMPTY).parsedValues()
 
-		size = size[0], size[1] + 1
-		POSITION = (pos[0] - int(size[0]/2),
-					pos[1] - int(size[1]/2))
-
 		barShape = gen.shape(
-			(POSITION[0] - 2, POSITION[1]),
-			size,
+			position,
+			(size[0] + 2, size[1] + 2),
 			sets.CharSet.EMPTY,
 			parsedColorSet
 		)
 
 		barText = gen.bText(
-			POSITION,
-			size,
+			(position[0] + 2, position[1]),
+			(size[0] - 2, size[1] + 2),
 			parsedColorSet,
 			formatset.parsedValues(self).emptyValues()
 		)
 
 		self._isOnScreen = False
 		return barText + barShape
-
-
-
-	def checkProps(self) -> tuple[tuple[int, int], tuple[int, int]]:
-		if self._conditions:	self._chkConds()
-
-		newSize = self.getComputedSize(self._size)
-		newPos = self.getComputedPosition(self._pos, newSize)
-
-		return newPos, newSize
-
 
 
 	def _genBar(self) -> str:
@@ -405,17 +410,19 @@ class PBar:
 		# Build all the parts of the progress bar
 		barShape = gen.shape(
 			position,
-			size, self._charset, parsedColorSet
+			(size[0] + 2, size[1] + 2),
+			self._charset, parsedColorSet
 		)
 
 		barContent = gen.BarContent(self.gfrom, self.inverted)(
 			(position[0] + 2, position[1] + 1),
-			(size[0] - 2, size[1] - 1),
-			self.charset, parsedColorSet, self._range
+			(size[0] - 2, size[1]),
+			self._charset, parsedColorSet, self._range
 		)
 
 		barText = gen.bText(
-			(position[0] + 2, position[1]), (size[0] - 2, size[1]),
+			(position[0] + 2, position[1]),
+			(size[0] - 2, size[1] + 2),
 			parsedColorSet, self._formatset.parsedValues(self)
 		)
 
@@ -520,12 +527,14 @@ def barHelper(position: Position=("center", "center"),
 		prange=(34, 100)
 	)
 
+	b.formatset |= {"title": f"uValues: {b.position} {b.size}"}
+
 	with Term.SeqMgr(hideCursor=True):	# create a new buffer, and hide the cursor
 		try:
 			while True:
 				b.position = position
-				rPos = b.checkProps()[0]
-				b.formatset = {"subtitle": f"X:{rPos[0]} Y:{rPos[1]}"}
+				rPos, rSize = b.computedValues
+				b.formatset |= {"subtitle": f"cValues: {rPos} {rSize}"}
 
 				xLine = Term.pos((0, rPos[1])) + "═"*rPos[0]
 				yLine = "".join(Term.pos((rPos[0], x)) + "║" for x in range(rPos[1]))
@@ -543,4 +552,4 @@ def barHelper(position: Position=("center", "center"),
 			pass
 
 	del b	# delete the bar we created
-	return rPos	# return the latest position of the helper
+	return rPos, rSize	# return the latest position and size of the helper
