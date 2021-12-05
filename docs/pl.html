@@ -82,8 +82,8 @@
 		</div>
 		<div class="show code right">
 			<code>
-<span class="func">@</span><span class="obj">pbar</span>.<span class="func">taskWrapper</span>(<span class="var">myBar</span>, <span class="func">locals</span>())
-<span class="kw">def</span><span class="func"> my_task</span>():
+<span class="func">@</span><span class="obj">pbar</span>.<span class="func">taskWrapper</span>
+<span class="kw">def</span><span class="func"> my_task</span>(<span class="var">myBar</span>):
 	<span class="func">get_data</span>()
 	<span class="func">process_stuff</span>()
 	<span class="func">show_data</span>()
@@ -98,7 +98,7 @@
 		<h1 class="show-title">Boje się <span class='func'>@dekoratorów</span>, czy jest jakaś inna opcja?</h1>
 		<div class="show code left">
 			<code>
-<span class="kw">def</span><span class="func"> my_task</span>():
+<span class="kw">def</span><span class="func"> my_task</span>(<span class="var">myBar</span>):
 	<span class="func">get_data</span>()
 	<span class="var">myBar</span>.<span class="func">step</span>()
 	<span class="func">process_stuff</span>()
