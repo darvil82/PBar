@@ -2,7 +2,6 @@ from io import TextIOWrapper
 from typing import Any, Callable, Optional, SupportsInt, Union, IO
 from os import system as runsys, isatty
 from time import time as epochTime, sleep
-from inspect import getsourcelines
 
 from . import utils, gen, sets
 from . utils import Term
@@ -433,86 +432,6 @@ class PBar:
 			flush=True,	# flush file to make sure the bar draws
 			end=""
 		)
-
-
-
-
-def taskWrapper(barObj: PBar, overwriteRange=True) -> Callable:
-	"""
-	Use as a decorator. Takes a PBar object, sets its prange depending on the quantity of
-	function and method calls inside the functions. Increments to the next step on every
-	function and method call.
-
-	The returned function will have barObj in its signiture.
-
-	```
-	import time
-
-	@taskWrapper(PBar())
-	def myTasks(pbar):
-		pbar.text = "This is a progress bar"
-		time.sleep(1)
-		pbar.text = "Loading important assets"
-		time.sleep(1)
-		pbar.text = "Doing something very useful"
-		time.sleep(1)
-	```
-
-	@barObj: PBar object to use.
-	@overwriteRange: If True, overwrites the prange of the bar.
-	"""
-	utils.chkInstOf(barObj, PBar, name="pbarObj")
-
-	def insertAfterPair(bytecode, opcode, new):
-		i = 0
-		found = 0
-		while i < len(bytecode):
-			if bytecode[i] == opcode:
-				bytecode = bytecode[:i+2] + new + bytecode[i+2:]
-				i += len(new)
-				found += 1
-			i+=1
-
-		return bytecode, found
-
-	def wrapper(func):
-		code = func.__code__
-		bytecode = code.co_code
-
-		consts = code.co_consts + (barObj,)
-		barConstIndex = len(consts)-1
-
-		names = code.co_names + ("step",)
-		barMethIndex = len(names)-1
-
-		# Bytecode is
-		# LOAD_CONST	barConstIndex
-		# LOAD_METHOD	barMethIndex
-		# CALL_METHOD	0
-		# POP_TOP		null
-		insertion = b"\x64" + barConstIndex.to_bytes(1, 'big') + b"\xa0" + barMethIndex.to_bytes(1, 'big') + b"\xa1\x00"
-
-		# DO NOT FLIP THESE BECAUSE IT WILL MAKE THE PROGRAM FREEZE
-		maxRange = 0
-		# Insert after all CALL_METHOD
-		bytecode, count = insertAfterPair(bytecode, 161, insertion)
-		maxRange += count
-		# Insert after all CALL_FUNCTION
-		bytecode, count = insertAfterPair(bytecode, 131, insertion)
-		maxRange += count
-
-		if overwriteRange:
-			barObj.prange = (0, maxRange)
-
-		func.__code__ = func.__code__.replace(co_code=bytecode, co_consts=consts, co_names=names)
-
-		def inner(*args, **kwargs):
-			barObj.draw()
-			func(barObj, *args, **kwargs)
-
-		return inner
-
-	return wrapper
 
 
 def animate(barObj: PBar, rng: range=range(100), delay: float=0.05) -> None:
