@@ -10,7 +10,7 @@ def _isinstance_indexsafe(array, index, T) -> bool:
     return isinstance(array[index], T)
 
 
-def taskWrapper(func=None, overwriteRange=True) -> Callable:
+def taskWrapper(func=None, /, *, overwriteRange=True) -> Callable:
     """
     Use as a decorator. Takes a PBar object, sets its prange depending on the quantity of
     function and method calls inside the functions. Increments to the next step on every
@@ -21,7 +21,7 @@ def taskWrapper(func=None, overwriteRange=True) -> Callable:
     ```
     import time
 
-    @taskWrapper(PBar())
+    @taskWrapper()
     def myTasks(pbar):
             pbar.text = "This is a progress bar"
             time.sleep(1)
@@ -105,4 +105,7 @@ def taskWrapper(func=None, overwriteRange=True) -> Callable:
 
         return inner
 
-    return wrapper
+    if func is None:
+        return wrapper
+
+    return wrapper(func)
