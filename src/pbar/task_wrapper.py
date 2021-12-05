@@ -61,9 +61,12 @@ def taskWrapper(func=None, /, *, overwriteRange=True) -> Callable:
         # LOAD_METHOD	barMethIndex
         # CALL_METHOD	0
         # POP_TOP		null
-        insertion = b"\x64" + \
-            barConstIndex.to_bytes(1, 'big') + b"\xa0" + \
-            barMethIndex.to_bytes(1, 'big') + b"\xa1\x00\x01\x00"
+        insertion = (
+            b"\x64" + barConstIndex.to_bytes(1, 'big')
+            + b"\xa0" + barMethIndex.to_bytes(1, 'big')
+            + b"\xa1\x00"
+            + b"\x01\x00"
+        )
 
         # DO NOT FLIP THESE BECAUSE IT WILL MAKE THE PROGRAM FREEZE
         maxRange = 0
