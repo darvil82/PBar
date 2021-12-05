@@ -1,6 +1,6 @@
 from io import TextIOWrapper
 from typing import Any, Callable, Optional, SupportsInt, Union, IO
-from os import system as runsys, isatty
+from os import isatty
 from time import time as epochTime, sleep
 from inspect import getsourcelines
 
@@ -14,7 +14,7 @@ if not Term.size() or not isatty(0):
 	Term.size = lambda: (0, 0)	# we just force it to return a size of 0,0 if it can't get the size
 	NEVER_DRAW = True
 
-runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
+
 
 
 Position = Size = tuple[Union[str, int], Union[str, int]]
@@ -164,7 +164,7 @@ class PBar:
 
 	@property
 	def prange(self) -> tuple[int, int]:
-		"""Range for the bar progress."""
+		"""Range for the progress of the bar."""
 		return (self._range[0], self._range[1])
 	@prange.setter
 	def prange(self, range: tuple[int, int]):
@@ -331,12 +331,12 @@ class PBar:
 
 			# set maximun and minimun positions
 			if index == 0:
-				value = utils.capValue(value, termSize[0] - size[0]/2 - 1, size[0]/2 + 3)
+				value = utils.capValue(value, termSize[0] - size[0]/2, size[0]/2)
 			else:
 				value = utils.capValue(value, termSize[1] - size[1]/2, size[1]/2 + 1)
 
 			newpos.append(int(value))
-		return (newpos[0] - size[0]/2, newpos[1] - size[1]/2)
+		return newpos[0] - int(size[0]/2), newpos[1] - int(size[1]/2)
 
 
 
@@ -352,8 +352,8 @@ class PBar:
 		width, height = map(int, newsize)
 
 		return (
-			utils.capValue(int(width), termSize[0] - 5, 1),
-			utils.capValue(int(height), termSize[1] , 1)
+			utils.capValue(int(width), termSize[0] - 2, 1),
+			utils.capValue(int(height), termSize[1] - 2, 1) + 1		# we add one to make sure it has the correct height
 		)
 
 
@@ -393,33 +393,30 @@ class PBar:
 		newSize = self.getComputedSize(self._size)
 		newPos = self.getComputedPosition(self._pos, newSize)
 
-		return (
-			newPos, newSize
-		)
+		return newPos, newSize
 
 
 
 	def _genBar(self) -> str:
 		"""Generate the progress bar"""
 		position, size = self.checkProps()
-
-
 		parsedColorSet = self._colorset.parsedValues()
 
 		# Build all the parts of the progress bar
 		barShape = gen.shape(
-			(position[0] - 2, position[1]),
+			position,
 			size, self._charset, parsedColorSet
 		)
 
 		barContent = gen.BarContent(self.gfrom, self.inverted)(
-			position,
-			size, self.charset, parsedColorSet, self._range
+			(position[0] + 2, position[1] + 1),
+			(size[0] - 2, size[1] - 1),
+			self.charset, parsedColorSet, self._range
 		)
 
 		barText = gen.bText(
-			position,
-			size, parsedColorSet, self._formatset.parsedValues(self)
+			(position[0] + 2, position[1]), (size[0] - 2, size[1]),
+			parsedColorSet, self._formatset.parsedValues(self)
 		)
 
 		self._isOnScreen = True
@@ -519,14 +516,15 @@ def barHelper(position: Position=("center", "center"),
 			"corner": "#090",
 			"text":	"#ff6400",
 			"empty": "#090"
-		}
+		},
+		prange=(34, 100)
 	)
 
 	with Term.SeqMgr(hideCursor=True):	# create a new buffer, and hide the cursor
 		try:
 			while True:
 				b.position = position
-				rPos = b.position
+				rPos = b.checkProps()[0]
 				b.formatset = {"subtitle": f"X:{rPos[0]} Y:{rPos[1]}"}
 
 				xLine = Term.pos((0, rPos[1])) + "═"*rPos[0]
@@ -540,7 +538,7 @@ def barHelper(position: Position=("center", "center"),
 					+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET,
 					end=""
 				)
-				sleep(0.01)
+				sleep(0.025)
 		except KeyboardInterrupt:
 			pass
 

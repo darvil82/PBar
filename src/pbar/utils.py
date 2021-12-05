@@ -1,3 +1,4 @@
+from os import system as runsys
 from typing import Callable, Literal, SupportsFloat, TypeVar, Optional, Union, Any, SupportsInt
 from os import get_terminal_size
 
@@ -159,6 +160,8 @@ def mapDict(dictionary: dict, func: Callable) -> dict:
 
 class Term:
 	"""Class for using terminal sequences a bit easier"""
+	runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
+
 	@staticmethod
 	def size() -> Union[tuple[int, int], Literal[False]]:
 		"""

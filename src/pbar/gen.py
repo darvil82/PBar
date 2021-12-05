@@ -69,7 +69,7 @@ class BarContent:
 			return "".join((
 				Term.pos(pos, (0, row))
 				+ string
-			) for row in range(1, height))
+			) for row in range(height))
 
 		if self.gfrom == Gfrom.LEFT:
 			return iterRows(
@@ -96,8 +96,7 @@ class BarContent:
 
 
 	def _genVert(self, pos, size, chars, colors, prange) -> str:
-		width, height = size[0], size[1] - 1
-		pos = pos[0], pos[1] + 1
+		width, height = size
 		charFull, charEmpty = chars
 		colorFull, colorEmpty = colors
 		SEGMENTS_FULL = int(capValue((prange[0] / prange[1])*height, max=height))
@@ -142,7 +141,7 @@ class BarContent:
 def shape(position: tuple[int, int], size: tuple[int, int], charset,
 		  parsedColorset: dict, filled: Optional[str] = " ") -> str:
 	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
-	width, height = size[0] + 2, size[1]
+	width, height = size
 
 	charVert = (	# Vertical characters, normally "|" at both sides.
 		parsedColorset["vert"]["left"] + charset["vert"]["left"],
@@ -229,13 +228,13 @@ def bText(position: tuple[int, int], size: tuple[int, int],
 		+ formatset["left"]
 	) if formatset["left"] else ""
 
-	txtInside = (
+	textInside = (
 		Term.pos(position, (width/2 - len(txtInside)/2, height/2))
 		+ parsedColorset["text"]["inside"]
 		+ txtInside
 	)
 
-	return textTitle + textSubtitle + textRight + textLeft + txtInside
+	return textTitle + textSubtitle + textRight + textLeft + textInside
 
 
 
@@ -244,8 +243,7 @@ def rect(pos: tuple[int, int], size: tuple[int, int],
 		 char: str="█", color: Color="white") -> str:
 	"""Generate a rectangle."""
 	return shape(
-		pos,
-		(size[0] - 4, size[1] - 1),
+		pos, size,
 		sets.CharSet({"corner": char, "horiz": char, "vert": char}),
 		sets.ColorSet({"corner": color, "horiz": color, "vert": color}).parsedValues(),
 		char
