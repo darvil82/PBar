@@ -462,25 +462,36 @@ def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=T
 		return string[index:].strip()
 
 	def wrapper(func):
-		lines = getsourcelines(func)[0][2:]	# Get the source lines of code of the decorated function
+		code = func.__code__
+		bytecode = code.co_code
 
-		def wrapper2(**kwargs):	# this is the function that the decorated func will 'convert' into
-			barObj.prange = (0, len(lines)) if overwriteRange else barObj.prange
+		consts = code.co_consts + (barObj,)
+		barConstIndex = len(consts)-1
 
-			for inst in lines:	# Iterate through every line in the source code of the decorated function
-				instComment = getTitleComment(inst)
-				if titleComments and instComment:	barObj.text = instComment	# set text of the bar as the comment after #bTitle: (if any)
+		names = code.co_names + ("step",)
+		barMethIndex = len(names)-1
 
-				barObj.draw()
+		byte_loc = 0
 
-				try:
-					eval(inst, scope | kwargs)	# we merge the passed kwargs to the scope dictionary, so that the decorated function can reach them
-				except SyntaxError:
-					raise RuntimeError("Multi-line expressions are not supported inside functions decorated with taskWrapper")
+		# Code is equal to
+		# LOAD_CONST	barConstIndex
+		# LOAD_METHOD	barMethIndex
+		# CALL_METHOD	0
+		# POP_TOP		null
+		insertion = b"\x64" + barConstIndex.to_bytes(1, 'big') + b"\xa0" + barMethIndex.to_bytes(1, 'big') + b"\xa1\x00"
 
-				barObj.step()
+		# Updates the progress bar when POP_TOP opcode is run
+		barObj.prange = (0, bytecode.count(b"\x01\x00"))
+		bytecode = bytecode.replace(b"\x01\x00", b"\x01\x00"+insertion)
 
-		return wrapper2
+		func.__code__ = func.__code__.replace(co_code=bytecode, co_consts=consts, co_names=names)
+
+		def inner(*args, **kwargs):
+			barObj.draw()
+			func(*args, **kwargs)
+
+		return inner
+
 	return wrapper
 
 
