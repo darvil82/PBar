@@ -34,7 +34,6 @@ def taskWrapper(func=None, /, *, overwriteRange=True) -> Callable:
     @barObj: PBar object to use.
     @overwriteRange: If True, overwrites the prange of the bar.
     """
-    # utils.chkInstOf(barObj, PBar, name="pbarObj")
 
     def insertAfterPair(bytecode, opcode, new):
         i = 0
