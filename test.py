@@ -2,7 +2,6 @@
 This is a shitty test file.
 """
 
-
 from typing import Any
 from random import choice, randint, choices
 import string
@@ -118,7 +117,7 @@ def condtionals():
 
 
 @pbar.taskWrapper
-def taskWr(pbar, something, another_thing):
+def taskWr(bar, something, another_thing):
 	print(pbar.Term.clear())
 	sleep(.5)
 	sleep(.5)
@@ -141,13 +140,13 @@ def taskWr(pbar, something, another_thing):
 
 
 def main():
-	with pbar.Term.SeqMgr() as pbar:
+	with pbar.Term.SeqMgr():
 		default()
 		modifySizeAndPos()
 		fullyRandom()
 		tryAllSets()
 		condtionals()
-		taskWr(pbar, something="Something", another_thing="Another thing")
+		taskWr(pbar.PBar(), something="Something", another_thing="Another thing")
 
 
 
