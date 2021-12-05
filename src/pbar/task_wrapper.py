@@ -21,7 +21,7 @@ def taskWrapper(func=None, /, *, overwriteRange=True) -> Callable:
     ```
     import time
 
-    @taskWrapper()
+    @taskWrapper
     def myTasks(pbar):
             pbar.text = "This is a progress bar"
             time.sleep(1)
