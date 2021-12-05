@@ -437,29 +437,27 @@ class PBar:
 
 
 
-def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=True) -> Callable:
+def taskWrapper(barObj: PBar, overwriteRange=True) -> Callable:
 	"""
 	Use as a decorator. Takes a PBar object, sets its prange depending on the quantity of
-	statements inside the decorated function, and `steps` the bar over after every function statement.
-
-	Note:
-	 - Multi-line statements are not supported.
-	 - It is only possible to send keyword arguments to the decorated function.
+	function and method calls inside the functions. Increments to the next step on every
+	function and method call.
 
 	@barObj: PBar object to use.
-	@scope: Dictionary containing the scope local variables.
-	@titleComments: If True, comments on a statement starting with "#bTitle:" will be treated as titles for the progress bar.
 	@overwriteRange: If True, overwrites the prange of the bar.
 	"""
 	utils.chkInstOf(barObj, PBar, name="pbarObj")
 
-	def getTitleComment(string: str) -> Optional[str]:
-		"""Returns the text after "#bTitle:" from the string supplied. Returns None if there is no comment."""
-		try:
-			index = string.rindex("#bTitle:") + 8	# we just get the index of this string by adding 8 to get the comment
-		except ValueError:
-			return None
-		return string[index:].strip()
+	def insertAfterPair(bytecode, opcode, new):
+		i = 0
+		found = 0
+		while i < len(bytecode):
+			if bytecode[i] == opcode:
+				bytecode = bytecode[:i+2] + new + bytecode[i+2:]
+				found += 1
+
+			i+=1
+		return bytecode, found
 
 	def wrapper(func):
 		code = func.__code__
@@ -473,22 +471,31 @@ def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=T
 
 		byte_loc = 0
 
-		# Code is equal to
+		# Bytecode is
 		# LOAD_CONST	barConstIndex
 		# LOAD_METHOD	barMethIndex
 		# CALL_METHOD	0
 		# POP_TOP		null
 		insertion = b"\x64" + barConstIndex.to_bytes(1, 'big') + b"\xa0" + barMethIndex.to_bytes(1, 'big') + b"\xa1\x00"
 
-		# Updates the progress bar when POP_TOP opcode is run
-		barObj.prange = (0, bytecode.count(b"\x01\x00"))
-		bytecode = bytecode.replace(b"\x01\x00", b"\x01\x00"+insertion)
+
+		# DO NOT FLIP THESE BECAUSE IT WILL MAKE THE PROGRAM FREEZE
+		maxRange = 0
+		# Replace all CALL_METHOD
+		bytecode, count = insertAfterPair(bytecode, 161, insertion)
+		maxRange += count
+		# Replace all CALL_FUNCTION
+		bytecode, count = insertAfterPair(bytecode, 131, insertion)
+		maxRange += count
+
+		if overwriteRange:
+			barObj.prange = (0, maxRange)
 
 		func.__code__ = func.__code__.replace(co_code=bytecode, co_consts=consts, co_names=names)
 
 		def inner(*args, **kwargs):
 			barObj.draw()
-			func(*args, **kwargs)
+			func(barObj, *args, **kwargs)
 
 		return inner
 
