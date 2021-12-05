@@ -88,8 +88,6 @@ def taskWrapper(func=None, /, *, overwriteRange=True) -> Callable:
                     f"{func.__name__} requies a Pbar instance to be the first argument"
                 )
 
-            print(func.__code__.co_varnames)
-
             func.__code__ = (
                 func.__code__.replace(
                     co_consts=func.__code__.co_consts + (barObj,)
