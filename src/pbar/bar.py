@@ -43,6 +43,8 @@ class PBar:
 
 		@size: Tuple that specifies the width and height of the bar.
 
+		- Negative values will set the size to the space between the bar and the terminal edge (`-1` will stick to the edge).
+
 		---
 
 		@position: Tuple containing the position (X and Y axles of the center) of the progress bar on the terminal.
