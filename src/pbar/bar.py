@@ -443,6 +443,21 @@ def taskWrapper(barObj: PBar, overwriteRange=True) -> Callable:
 	function and method calls inside the functions. Increments to the next step on every
 	function and method call.
 
+	The returned function will have barObj in its signiture.
+
+	```
+	import time
+
+	@taskWrapper(PBar())
+	def myTasks(pbar):
+		pbar.text = "This is a progress bar"
+		time.sleep(1)
+		pbar.text = "Loading important assets"
+		time.sleep(1)
+		pbar.text = "Doing something very useful"
+		time.sleep(1)
+	```
+
 	@barObj: PBar object to use.
 	@overwriteRange: If True, overwrites the prange of the bar.
 	"""
@@ -454,9 +469,10 @@ def taskWrapper(barObj: PBar, overwriteRange=True) -> Callable:
 		while i < len(bytecode):
 			if bytecode[i] == opcode:
 				bytecode = bytecode[:i+2] + new + bytecode[i+2:]
+				i += len(new)
 				found += 1
-
 			i+=1
+
 		return bytecode, found
 
 	def wrapper(func):
@@ -469,8 +485,6 @@ def taskWrapper(barObj: PBar, overwriteRange=True) -> Callable:
 		names = code.co_names + ("step",)
 		barMethIndex = len(names)-1
 
-		byte_loc = 0
-
 		# Bytecode is
 		# LOAD_CONST	barConstIndex
 		# LOAD_METHOD	barMethIndex
@@ -478,13 +492,12 @@ def taskWrapper(barObj: PBar, overwriteRange=True) -> Callable:
 		# POP_TOP		null
 		insertion = b"\x64" + barConstIndex.to_bytes(1, 'big') + b"\xa0" + barMethIndex.to_bytes(1, 'big') + b"\xa1\x00"
 
-
 		# DO NOT FLIP THESE BECAUSE IT WILL MAKE THE PROGRAM FREEZE
 		maxRange = 0
-		# Replace all CALL_METHOD
+		# Insert after all CALL_METHOD
 		bytecode, count = insertAfterPair(bytecode, 161, insertion)
 		maxRange += count
-		# Replace all CALL_FUNCTION
+		# Insert after all CALL_FUNCTION
 		bytecode, count = insertAfterPair(bytecode, 131, insertion)
 		maxRange += count
 

@@ -120,17 +120,17 @@ def condtionals():
 @pbar.taskWrapper(pbar.PBar(), locals(), True)
 def taskWr(something, another_thing):
 	print(pbar.Term.clear())
-	sleep(.5)	#bTitle: Something
-	sleep(.5)	#bTitle: Another thing
-	sleep(.5)	#bTitle: huhh
-	sleep(.5)	#bTitle: hohoho
-	print(something)	#bTitle: idk
-	sleep(.5)	#bTitle: idk
-	sleep(.5)	#bTitle: ijoadwjio
-	sleep(.5)	#bTitle: i literally dont know
+	sleep(.5)
+	sleep(.5)
+	sleep(.5)
+	sleep(.5)
+	print(something)
+	sleep(.5)
+	sleep(.5)
+	sleep(.5)
 	print(another_thing)
 	sleep(.5)
-	sleep(.5)	#bTitle: the last one
+	sleep(.5)
 
 
 
