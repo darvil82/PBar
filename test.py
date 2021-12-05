@@ -117,8 +117,8 @@ def condtionals():
 
 
 
-@pbar.taskWrapper(pbar.PBar(), locals(), True)
-def taskWr(something, another_thing):
+@pbar.taskWrapper
+def taskWr(pbar, something, another_thing):
 	print(pbar.Term.clear())
 	sleep(.5)
 	sleep(.5)
@@ -141,13 +141,13 @@ def taskWr(something, another_thing):
 
 
 def main():
-	with pbar.Term.SeqMgr():
+	with pbar.Term.SeqMgr() as pbar:
 		default()
 		modifySizeAndPos()
 		fullyRandom()
 		tryAllSets()
 		condtionals()
-		taskWr(something="Something", another_thing="Another thing")
+		taskWr(pbar, something="Something", another_thing="Another thing")
 
 
 
