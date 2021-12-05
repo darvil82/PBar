@@ -2,7 +2,6 @@ from io import TextIOWrapper
 from typing import Any, Callable, Optional, SupportsInt, Union, IO
 from os import system as runsys, isatty
 from time import time as epochTime, sleep
-from inspect import getsourcelines
 
 from . import utils, gen, sets
 from . utils import Term
@@ -433,55 +432,6 @@ class PBar:
 			flush=True,	# flush file to make sure the bar draws
 			end=""
 		)
-
-
-
-
-def taskWrapper(barObj: PBar, scope: dict, titleComments=False, overwriteRange=True) -> Callable:
-	"""
-	Use as a decorator. Takes a PBar object, sets its prange depending on the quantity of
-	statements inside the decorated function, and `steps` the bar over after every function statement.
-
-	Note:
-	 - Multi-line statements are not supported.
-	 - It is only possible to send keyword arguments to the decorated function.
-
-	@barObj: PBar object to use.
-	@scope: Dictionary containing the scope local variables.
-	@titleComments: If True, comments on a statement starting with "#bTitle:" will be treated as titles for the progress bar.
-	@overwriteRange: If True, overwrites the prange of the bar.
-	"""
-	utils.chkInstOf(barObj, PBar, name="pbarObj")
-
-	def getTitleComment(string: str) -> Optional[str]:
-		"""Returns the text after "#bTitle:" from the string supplied. Returns None if there is no comment."""
-		try:
-			index = string.rindex("#bTitle:") + 8	# we just get the index of this string by adding 8 to get the comment
-		except ValueError:
-			return None
-		return string[index:].strip()
-
-	def wrapper(func):
-		lines = getsourcelines(func)[0][2:]	# Get the source lines of code of the decorated function
-
-		def wrapper2(**kwargs):	# this is the function that the decorated func will 'convert' into
-			barObj.prange = (0, len(lines)) if overwriteRange else barObj.prange
-
-			for inst in lines:	# Iterate through every line in the source code of the decorated function
-				instComment = getTitleComment(inst)
-				if titleComments and instComment:	barObj.text = instComment	# set text of the bar as the comment after #bTitle: (if any)
-
-				barObj.draw()
-
-				try:
-					eval(inst, scope | kwargs)	# we merge the passed kwargs to the scope dictionary, so that the decorated function can reach them
-				except SyntaxError:
-					raise RuntimeError("Multi-line expressions are not supported inside functions decorated with taskWrapper")
-
-				barObj.step()
-
-		return wrapper2
-	return wrapper
 
 
 def animate(barObj: PBar, rng: range=range(100), delay: float=0.05) -> None:

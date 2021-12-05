@@ -10,7 +10,8 @@
 
 __version__ = "1.14.0"
 
-from . bar import PBar, animate, taskWrapper, barHelper
+from . bar import PBar, animate, barHelper
+from . task_wrapper import taskWrapper
 from . sets import CharSet, FormatSet, ColorSet
 from . cond import Cond
 from . gen import Gfrom
