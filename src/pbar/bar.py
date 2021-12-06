@@ -210,10 +210,7 @@ class PBar:
 		return self._formatset
 	@formatset.setter
 	def formatset(self, formatset: sets.FormatSetEntry):
-		newset = sets.FormatSet(formatset)
-		if newset == self._formatset:
-			return
-		self._formatset = newset
+		self._formatset = sets.FormatSet(formatset)
 
 
 	@property
@@ -222,8 +219,6 @@ class PBar:
 		return self._size
 	@size.setter
 	def size(self, size: tuple[int, int]):
-		if self._size == size:
-			return
 		self._size = size
 
 
@@ -242,8 +237,6 @@ class PBar:
 		return self._pos
 	@position.setter
 	def position(self, position: Position):
-		if self._pos == position:
-			return
 		self._pos = position
 
 
