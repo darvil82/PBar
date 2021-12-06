@@ -259,17 +259,17 @@ class PBar:
 	def config(self) -> dict:
 		"""All the values of the progress bar stored in a dict."""
 		return {
-			"prange":		self._range,
-			"text":			self._text,
-			"size":			self._size,
-			"position":		self._pos,
-			"colorset":		self._colorset,
-			"charset":		self._charset,
-			"formatset":	self._formatset,
-			"conditions":	self._conditions,
-			"gfrom":		self.gfrom,
-			"inverted":		self.inverted,
-			"enabled":		self.enabled
+			"prange": self._range,
+			"text": self._text,
+			"size": self._size,
+			"position": self._pos,
+			"colorset": self._colorset,
+			"charset": self._charset,
+			"formatset": self._formatset,
+			"conditions": self._conditions,
+			"gfrom": self.gfrom,
+			"inverted": self.inverted,
+			"enabled": self.enabled
 		}
 	@config.setter
 	def config(self, config: dict[str, Any]):
