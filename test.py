@@ -48,7 +48,7 @@ def fullyRandom():
 	b = pbar.PBar(
 		(randint(0, 200), randint(0, 200)),
 		randomString(),
-		(randint(0, int(termSize[0]/2)), randint(0, int(termSize[1]/2))),
+		(randint(0, termSize[0]//2), randint(0, termSize[1]//2)),
 		(randint(0, termSize[0]), randint(0, termSize[1])),
 		choice(getConstAttrs(pbar.ColorSet))[1],
 		choice(getConstAttrs(pbar.CharSet))[1],
@@ -109,7 +109,7 @@ def condtionals():
 		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1]),
 		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1]),
 		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1]),
-		pbar.Cond(f"text == {randomString()}"),
+		pbar.Cond(f"text == '{randomString()}'"),
 	)
 	b = pbar.PBar(prange=(0, 100), conditions=conds)
 	animate(b)

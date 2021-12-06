@@ -1,8 +1,8 @@
 from typing import Callable, Optional, Union
 from enum import Enum, auto
 
-from . utils import Color, capValue, Term
-from . import sets
+from . import sets, utils
+from . utils import Term, capValue
 
 
 
@@ -69,7 +69,7 @@ class BarContent:
 			return "".join((
 				Term.pos(pos, (0, row))
 				+ string
-			) for row in range(1, height))
+			) for row in range(height))
 
 		if self.gfrom == Gfrom.LEFT:
 			return iterRows(
@@ -96,8 +96,7 @@ class BarContent:
 
 
 	def _genVert(self, pos, size, chars, colors, prange) -> str:
-		width, height = size[0], size[1] - 1
-		pos = pos[0], pos[1] + 1
+		width, height = size
 		charFull, charEmpty = chars
 		colorFull, colorEmpty = colors
 		SEGMENTS_FULL = int(capValue((prange[0] / prange[1])*height, max=height))
@@ -142,7 +141,7 @@ class BarContent:
 def shape(position: tuple[int, int], size: tuple[int, int], charset,
 		  parsedColorset: dict, filled: Optional[str] = " ") -> str:
 	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
-	width, height = size[0] + 2, size[1]
+	width, height = size[0] - 2, size[1] - 1
 
 	charVert = (	# Vertical characters, normally "|" at both sides.
 		parsedColorset["vert"]["left"] + charset["vert"]["left"],
@@ -168,11 +167,11 @@ def shape(position: tuple[int, int], size: tuple[int, int], charset,
 	)
 
 	mid: str = "".join((	# generate all the rows of the bar. If filled is None, we just make the cursor jump to the right
-		Term.pos(position, (0, row))
+		Term.pos(position, (0, row+1))
 		+ charVert[0]
 		+ (Term.moveHoriz(width) if filled is None else filled[0]*width)
 		+ charVert[1]
-	) for row in range(1, height))
+	) for row in range(height))
 
 	bottom: str = (
 		Term.pos(position, (0, height))
@@ -187,20 +186,15 @@ def shape(position: tuple[int, int], size: tuple[int, int], charset,
 
 
 def bText(position: tuple[int, int], size: tuple[int, int],
-		  parsedColorset: dict[str, Union[dict, str]], formatset) -> str:
+		  parsedColorset: dict[str, Union[dict, str]], formatset: sets.FormatSet) -> str:
 	"""Generates all text for the bar"""
 	width, height = size
 
-	def stripText(string: str, maxlen: int) -> str:
-		"""Return a string with three dots at the end if the len of it is larger than the maxlen specified."""
-		if maxlen < 3:	return ""
-		return string[:maxlen-3] + "..." if len(string) > maxlen else string
-
 	# set the max number of characters that a string should have on each part of the bar
 	txtMaxWidth = width + 2
-	txtSubtitle = stripText(formatset["subtitle"], txtMaxWidth)
-	txtInside = stripText(formatset["inside"], txtMaxWidth - 4)
-	txtTitle = stripText(formatset["title"], txtMaxWidth)
+	txtSubtitle = utils.stripText(formatset["subtitle"], txtMaxWidth)
+	txtInside = utils.stripText(formatset["inside"], txtMaxWidth - 4)
+	txtTitle = utils.stripText(formatset["title"], txtMaxWidth)
 
 	# position each text on its correct position relative to the bar
 	textTitle = (
@@ -210,7 +204,7 @@ def bText(position: tuple[int, int], size: tuple[int, int],
 	)
 
 	textSubtitle = (
-		Term.pos(position, (width - len(txtSubtitle) + 1, height))
+		Term.pos(position, (width - len(txtSubtitle) + 1, height - 1))
 		+ parsedColorset["text"]["subtitle"]
 		+ txtSubtitle
 	)
@@ -219,33 +213,30 @@ def bText(position: tuple[int, int], size: tuple[int, int],
 		Term.pos(position, (width + 3, height/2))
 		+ parsedColorset["text"]["right"]
 		+ formatset["right"]
-		+ Term.CLEAR_RIGHT
 	) if formatset["right"] else ""
 
 	textLeft = (
 		Term.pos(position, (-len(formatset["left"]) - 3, height/2))
-		+ Term.CLEAR_LEFT
 		+ parsedColorset["text"]["left"]
 		+ formatset["left"]
 	) if formatset["left"] else ""
 
-	txtInside = (
+	textInside = (
 		Term.pos(position, (width/2 - len(txtInside)/2, height/2))
 		+ parsedColorset["text"]["inside"]
 		+ txtInside
 	)
 
-	return textTitle + textSubtitle + textRight + textLeft + txtInside
+	return textTitle + textSubtitle + textRight + textLeft + textInside
 
 
 
 
 def rect(pos: tuple[int, int], size: tuple[int, int],
-		 char: str="█", color: Color="white") -> str:
+		 char: str="█", color: utils.Color="white") -> str:
 	"""Generate a rectangle."""
 	return shape(
-		pos,
-		(size[0] - 4, size[1] - 1),
+		pos, size,
 		sets.CharSet({"corner": char, "horiz": char, "vert": char}),
 		sets.ColorSet({"corner": color, "horiz": color, "vert": color}).parsedValues(),
 		char
