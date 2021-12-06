@@ -322,19 +322,19 @@ class PBar:
 
 		for index, value in enumerate(position):
 			if value == "center":
-				value = int(termSize[index]/2)
+				value = termSize[index]//2
 
 			if value < 0:	# if negative value, return Term size - value
 				value = termSize[index] + value
 
 			# set maximun and minimun positions
-			if index == 0:
-				value = utils.capValue(value, termSize[0] - cSize[0]/2 - 1, cSize[0]/2 + 1)
-			else:
-				value = utils.capValue(value, termSize[1] - cSize[1]/2 - 1, cSize[1]/2 + 1)
+			value = utils.capValue(value,
+				termSize[index] - cSize[index]/2 - 1,
+				cSize[index]/2 + 1
+			)
 
-			newpos.append(int(value))
-		return newpos[0] - int(cSize[0]/2), newpos[1] - int(cSize[1]/2)
+			newpos.append(int(value) - cSize[index]//2)
+		return tuple(newpos)
 
 
 	@staticmethod
