@@ -91,7 +91,6 @@ class PBar:
 
 		@inverted: If `True`, the bar will be drawn from the end to the beginning.
 		"""
-		self._requiresClear = False		# This controls if the bar needs to clear its old position before drawing.
 		self.enabled = True				# If disabled, the bar will never draw.
 		self._time = epochTime()		# The elapsed time since the bar created.
 		self._isOnScreen = False		# Is the bar on screen?
@@ -469,7 +468,7 @@ def barHelper(position: Position=("center", "center"),
 		prange=(34, 100)
 	)
 
-	b.formatset |= {"title": f"uValues: {b.position} {b.size}"}
+	b.formatset |= {"title": f"uValues: {position} {size}"}
 
 	with Term.SeqMgr(hideCursor=True):	# create a new buffer, and hide the cursor
 		try:
@@ -489,7 +488,7 @@ def barHelper(position: Position=("center", "center"),
 					+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET,
 					end=""
 				)
-				sleep(0.025)
+				sleep(0.01)
 		except KeyboardInterrupt:
 			pass
 
