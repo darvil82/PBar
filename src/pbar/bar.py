@@ -1,5 +1,5 @@
 from io import TextIOWrapper
-from typing import Any, Callable, Optional, SupportsInt, Union, IO
+from typing import Any, Optional, SupportsInt, Union, IO
 from os import isatty
 from time import time as epochTime, sleep
 
@@ -107,7 +107,7 @@ class PBar:
 		self.gfrom = gfrom
 		self.inverted = inverted
 
-		self._oldValues = (self._pos, self._size, self._formatset)	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
+		self._oldValues = (*self.computedValues, self._formatset)	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
 
 	# -------------------- Properties / Methods the user should use. --------------------
@@ -115,16 +115,11 @@ class PBar:
 
 	def draw(self):
 		"""Print the progress bar on screen."""
-		if self._requiresClear:
-			# Clear the bar at the old position and length
-			clsb = self._genClearedBar(*self._oldValues)
-			self._printStr(clsb + self._genBar())	# we print the "cleared" bar and the new bar
-		else:
-			self._printStr(self._genBar())	# Draw the bar
+		# Clear the bar at the old position and length
+		clsb = self._genClearedBar(*self._oldValues)
+		self._printStr(clsb + self._genBar())	# we print the "cleared" bar and the new bar
 
-		self._oldValues = (self._pos, self._size, self._formatset)	# Reset the old values
-
-		self._requiresClear = False
+		self._oldValues = (*self.computedValues, self._formatset)	# Reset the old values
 
 
 	def step(self, steps: int=1, text=None):
@@ -140,7 +135,7 @@ class PBar:
 
 	def clear(self):
 		"""Clear the progress bar."""
-		self._printStr(self._genClearedBar(self._pos, self._size, self._formatset))
+		self._printStr(self._genClearedBar(*self._oldValues))
 
 
 	def resetETime(self):
@@ -219,7 +214,6 @@ class PBar:
 		newset = sets.FormatSet(formatset)
 		if newset == self._formatset:
 			return
-		self._requiresClear = True
 		self._formatset = newset
 
 
@@ -231,7 +225,6 @@ class PBar:
 	def size(self, size: tuple[int, int]):
 		if self._size == size:
 			return
-		self._requiresClear = True
 		self._size = size
 
 
@@ -252,7 +245,6 @@ class PBar:
 	def position(self, position: Position):
 		if self._pos == position:
 			return
-		self._requiresClear = True
 		self._pos = position
 
 
@@ -379,10 +371,8 @@ class PBar:
 
 	def _genClearedBar(self, position: tuple[int, int],
 					   size: tuple[int, int], formatset: sets.FormatSet) -> str:
-		"""Generate a cleared progress bar. `values[0]` is the position, and `values[1]` is the size"""
+		"""Generate a cleared progress bar. The position and size values should be already computed."""
 		if not self._isOnScreen:	return ""
-		size = PBar._getComputedSize(size)
-		position = PBar._getComputedPosition(position, size)
 		parsedColorSet = sets.ColorSet(sets.ColorSet.EMPTY).parsedValues()
 
 		barShape = gen.shape(
