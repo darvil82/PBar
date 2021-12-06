@@ -98,27 +98,27 @@ class ColorSet(_BaseSet):
 	}
 
 	DARVIL: ColorSetEntry = {
-		'empty':	'#0067c2',
-		'full':		'springGreen',
-		'vert':		'#f76f98',
-		'horiz':	'#f76f98',
-		'corner':	'#f76f98',
-		'text': {
-			'right':	'springGreen',
-			'title':	'#f76f98',
-			'subtitle':	'#f76f98',
-			'left':		'springGreen',
-			'inside':	'springGreen'
+		"empty":	"#0067c2",
+		"full":		"springGreen",
+		"vert":		"#f76f98",
+		"horiz":	"#f76f98",
+		"corner":	"#f76f98",
+		"text": {
+			"right":	"springGreen",
+			"title":	"#f76f98",
+			"subtitle":	"#f76f98",
+			"left":		"springGreen",
+			"inside":	"springGreen"
 		}
 	}
 
 	RED: ColorSetEntry = {
-		'empty':	'darkRed',
-		'full':		'red',
-		'vert':		'#ff6464',
-		'horiz':	'#ff6464',
-		'corner':	'#ff6464',
-		'text':		'#ff6464'
+		"empty":	"darkRed",
+		"full":		"red",
+		"vert":		"#ff6464",
+		"horiz":	"#ff6464",
+		"corner":	"#ff6464",
+		"text":		"#ff6464"
 	}
 
 	GREEN: ColorSetEntry = {
@@ -131,21 +131,21 @@ class ColorSet(_BaseSet):
 	}
 
 	YELLOW: ColorSetEntry = {
-		'full':		"yellow",
-		'empty':	"#a77227",
-		'horiz':	"#dab77b",
-		'vert':		"#dab77b",
-		'corner':	"#dab77b",
-		'text':		"#dab77b"
+		"full":		"yellow",
+		"empty":	"#a77227",
+		"horiz":	"#dab77b",
+		"vert":		"#dab77b",
+		"corner":	"#dab77b",
+		"text":		"#dab77b"
 	}
 
 	FLAG_ES: ColorSetEntry = {
-		'corner':	"red",
-		'horiz':	"red",
-		'vert':		"yellow",
-		'full':		"yellow",
-		'empty':	"#9a7600",
-		'text':	{
+		"corner":	"red",
+		"horiz":	"red",
+		"vert":		"yellow",
+		"full":		"yellow",
+		"empty":	"#9a7600",
+		"text":	{
 			"inside":	"yellow",
 			"right":	"yellow",
 			"left":		"yellow",
