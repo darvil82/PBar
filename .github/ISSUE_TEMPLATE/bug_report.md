@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 <!--
-Before submitting, please make sure that your version is the latest! To check that, get the value `__version__` in the PBar package, and compare it with the latest version on PyPI (https://pypi.org/project/PBar2/). If it is your version, time to submit!
+Before submitting, please make sure that your version is the latest! To update use `pip install --upgrade pbar2`. If you are using the latest, time to submit!
 -->
 
 ## **Describe the bug**
