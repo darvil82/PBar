@@ -461,14 +461,14 @@ def barHelper(position: Position=("center", "center"),
 		prange=(34, 100)
 	)
 
-	b.formatset |= {"title": f"uValues: {position} {size}"}
+	b.formatset |= {"title": f"uValues: pos{position} size{size}"}
 
 	with Term.SeqMgr(hideCursor=True):	# create a new buffer, and hide the cursor
 		try:
 			while True:
 				b.position = position
 				rPos, rSize = b.computedValues
-				b.formatset |= {"subtitle": f"cValues: {rPos} {rSize}"}
+				b.formatset |= {"subtitle": f"cValues: pos{rPos} size{rSize}"}
 
 				xLine = Term.pos((0, rPos[1])) + "═"*rPos[0]
 				yLine = "".join(Term.pos((rPos[0], x)) + "║" for x in range(rPos[1]))
