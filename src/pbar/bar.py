@@ -3,9 +3,8 @@ from typing import Any, Optional, SupportsInt, Union, IO
 from os import isatty
 from time import time as epochTime, sleep
 
-from . import utils, gen, sets
+from . import utils, gen, sets, cond
 from . utils import Term
-from . cond import Cond
 
 
 NEVER_DRAW = False
@@ -27,7 +26,7 @@ class PBar:
 			prange: tuple[int, int]=(0, 1), text: str=None, size: tuple[int, int]=(20, 1),
 			position: tuple[Union[str, int], Union[str, int]]=("center", "center"),
 			colorset: sets.ColorSetEntry=None, charset: sets.CharSetEntry=None,
-			formatset: sets.FormatSetEntry=None, conditions: Union[list[Cond], Cond]=None,
+			formatset: sets.FormatSetEntry=None, conditions: Union[list[cond.Cond], cond.Cond]=None,
 			gfrom: gen.Gfrom=gen.Gfrom.AUTO, inverted: bool=False
 		) -> None:
 		"""
@@ -251,7 +250,7 @@ class PBar:
 		"""Conditions for the bar."""
 		return self._conditions
 	@conditions.setter
-	def conditions(self, conditions: Optional[Union[list[Cond], Cond]]):
+	def conditions(self, conditions: Optional[Union[list[cond.Cond], cond.Cond]]):
 		self._conditions = PBar._getConds(conditions)
 
 
@@ -295,11 +294,11 @@ class PBar:
 
 
 	@staticmethod
-	def _getConds(conditions: Union[list[Cond], Cond]) -> list[Cond]:
+	def _getConds(conditions: Union[list[cond.Cond], cond.Cond]) -> list[cond.Cond]:
 		if isinstance(conditions, (tuple, list)):
-			for item in conditions:	utils.chkInstOf(item, Cond)
+			for item in conditions:	utils.chkInstOf(item, cond.Cond)
 			return conditions
-		elif isinstance(conditions, Cond):
+		elif isinstance(conditions, cond.Cond):
 			return (conditions, )
 		else:
 			return ()
@@ -307,11 +306,7 @@ class PBar:
 
 	def _chkConds(self) -> None:
 		for cond in self._conditions:
-			if not cond.test(self):	# if a condition succeeds, apply its newsets
-				continue
-			if cond.newSets[0]:	self.colorset = cond.newSets[0]
-			if cond.newSets[1]:	self.charset = cond.newSets[1]
-			if cond.newSets[2]:	self.formatset = cond.newSets[2]
+			cond.chkAndApply(self)
 
 
 	@staticmethod

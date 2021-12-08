@@ -1,23 +1,29 @@
 from shlex import split as strSplit
+from typing import Callable
+
 from . import bar, sets, utils
 
 
-_OP_EQU = "=="
-_OP_NEQ = "!="
-_OP_GTR = ">"
-_OP_LSS = "<"
-_OP_GEQ = ">="
-_OP_LEQ = "<="
-_OP_IN = "<-"
+_OPs = {
+	"EQ": "==",
+	"NE": "!=",
+	"GT": ">",
+	"GE": ">=",
+	"LT": "<",
+	"LE": "<=",
+	"IN": "<-",
+}
 
 
 class Cond:
 	"""Condition manager used by a PBar object."""
 	def __init__(self, condition: str, colorset: sets.ColorSetEntry=None,
 				 charset: sets.CharSetEntry=None,
-				 formatset: sets.FormatSetEntry=None) -> None:
+				 formatset: sets.FormatSetEntry=None,
+				 callback: Callable[["bar.PBar"], None]=None) -> None:
 		"""
-		Apply different customization sets to a bar if the condition supplied succeeds.
+		Apply different customization sets to a bar, or call a callback
+		if the condition supplied succeeds.
 		Text comparisons are case insensitive.
 
 		The condition string must be composed of three values separated by spaces:
@@ -35,11 +41,14 @@ class Cond:
 		>>> Cond("percentage >= 50", ColorSet.DARVIL)
 
 		>>> Cond("text <- 'error'", ColorSet.ERROR, formatset=FormatSet.TITLE_SUBTITLE)
+
+		>>> Cond("etime >= 10", callback=lambda b: b.text = "Loading for 10 seconds!")
 		"""
 		vs = self._chkCond(condition)
 		self._attribute, self.operator = vs[:2]
 		self._value = float(vs[2]) if utils.isNum(vs[2]) else vs[2].lower()	# convert to float if its a num
 		self.newSets = (colorset, charset, formatset)
+		self.callback = callback
 
 
 	@staticmethod
@@ -49,8 +58,7 @@ class Cond:
 		splitted = strSplit(cond)	# splits with strings in mind ('test "a b c" hey' > ["test", "a b c", "hey"])
 		utils.chkSeqOfLen(splitted, 3, "condition")
 
-		if splitted[1] not in {_OP_EQU, _OP_NEQ, _OP_GTR, _OP_LSS,	# check if the operator is valid
-							   _OP_GEQ, _OP_LEQ, _OP_IN}:
+		if splitted[1] not in _OPs.values():
 			raise RuntimeError(f"Invalid operator {splitted[1]!r}")
 
 		return splitted
@@ -58,28 +66,33 @@ class Cond:
 
 	def __repr__(self) -> str:
 		"""Returns `Cond('attrib operator value', *newSets)`"""
-		return (f"{self.__class__.__name__}('{self._attribute} {self.operator} {self._value}', {self.newSets})")
+		return (f"{self.__class__.__name__}('{self._attribute} {self.operator} {self._value}', {self.newSets}, {self.callback})")
 
 
-	def test(self, cls: "bar.PBar") -> bool:
-		"""Check if the condition succeededs with the values of the PBar object"""
+	def test(self, barObj: "bar.PBar") -> bool:
+		"""Check if the condition succeeds with the values of the PBar object"""
 		op = self.operator
-		val = sets.FormatSet.getBarAttr(cls, self._attribute)
+		val = sets.FormatSet.getBarAttr(barObj, self._attribute)
 		val = val.lower() if isinstance(val, str) else val
 
-		if op == _OP_EQU:
-			return val == self._value
-		elif op == _OP_NEQ:
-			return val != self._value
-		elif op == _OP_GTR:
-			return val > self._value
-		elif op == _OP_LSS:
-			return val < self._value
-		elif op == _OP_GEQ:
-			return val >= self._value
-		elif op == _OP_LEQ:
-			return val <= self._value
-		elif op == _OP_IN:
-			return self._value in val
-		else:
-			return False
+		# yeah, I would have used a dict for this, but not all operators are supported for all types
+		if op == _OPs["EQ"]:	return val == self._value
+		elif op == _OPs["NE"]:	return val != self._value
+		elif op == _OPs["GT"]:	return val > self._value
+		elif op == _OPs["GE"]:	return val >= self._value
+		elif op == _OPs["LT"]:	return val < self._value
+		elif op == _OPs["LE"]:	return val <= self._value
+		elif op == _OPs["IN"]:	return val in self._value
+		else:	return False
+
+
+	def chkAndApply(self, barObj: "bar.PBar") -> None:
+		"""Apply the new sets and run the callback if the condition succeeds"""
+		if not self.test(barObj):
+			return
+
+		if self.newSets[0]:	barObj.colorset = self.newSets[0]
+		if self.newSets[1]:	barObj.charset = self.newSets[1]
+		if self.newSets[2]:	barObj.formatset = self.newSets[2]
+
+		if self.callback:	self.callback(barObj)
