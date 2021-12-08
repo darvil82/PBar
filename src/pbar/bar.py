@@ -397,7 +397,7 @@ class PBar:
 		utils.out(
 			Term.CURSOR_SAVE + Term.CURSOR_HIDE
 			+ barString
-			+ Term.CURSOR_LOAD + Term.CURSOR_SHOW
+			+ Term.CURSOR_LOAD + Term.CURSOR_SHOW + Term.RESET
 		)
 
 
