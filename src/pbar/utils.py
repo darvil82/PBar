@@ -1,6 +1,7 @@
 from os import system as runsys
 from typing import Callable, Literal, SupportsFloat, TypeVar, Optional, Union, Any, SupportsInt
 from os import get_terminal_size
+from time import sleep
 
 __all__ = (
 	"capValue", "convertClrs", "chkInstOf",
@@ -146,6 +147,11 @@ def isNum(obj: SupportsFloat) -> bool:
 	except ValueError:
 		return False
 	return True
+
+
+def out(*obj, end: str="", sep=""):
+	"""Print to stdout."""
+	print(*obj, sep=sep, end=end, flush=True)
 
 
 def mapDict(dictionary: dict, func: Callable) -> dict:
@@ -299,19 +305,17 @@ class Term:
 			self.hocur = homeCursor
 			self.scur = saveCursor
 		def __enter__(self) -> str:
-			print(
+			out(
 				(Term.BUFFER_NEW if self.nbuff else "")
 				+ (Term.CURSOR_HIDE if self.hcur else "")
 				+ (Term.CURSOR_SAVE if self.scur else "")
-				+ (Term.CURSOR_HOME if self.hocur else ""),
-				end=""
+				+ (Term.CURSOR_HOME if self.hocur else "")
 			)
 		def __exit__(self, type, value, traceback) -> None:
-			print(
+			out(
 				(Term.BUFFER_OLD if self.nbuff else "")
 				+ (Term.CURSOR_SHOW if self.hcur else "")
-				+ (Term.CURSOR_LOAD if self.scur else ""),
-				end=""
+				+ (Term.CURSOR_LOAD if self.scur else "")
 			)
 
 
@@ -420,39 +424,53 @@ class Term:
 			return ""	# invalid color format
 
 
+	@staticmethod
+	def flash(times: int=1, delay: float=0.1) -> None:
+		"""
+		Flash the terminal screen.
+		@times: How many times to flash the screen.
+		@delay: Delay between flashes. In seconds.
+		"""
+		for t in range(times):
+			out(Term.INVERT_ALL)
+			sleep(delay)
+			out(Term.NO_INVERT_ALL)
+			if t != times - 1:	sleep(delay)
 
 
 	# simple sequences that dont require parsing
 	# text formatting
-	INVERT: str =		"\x1b[7m"
-	NO_INVERT: str =	"\x1b[27m"
-	UNDERLINE: str =	"\x1b[4m"
-	NO_UNDERLINE: str =	"\x1b[24m"
-	DIM: str =			"\x1b[2m"
-	NO_DIM: str =		"\x1b[22m"
-	STHROUGH: str = 	"\x1b[9m"
-	NO_STHROUGH: str = 	"\x1b[29m"
-	INVISIBLE: str =	"\x1b[8m"
-	NO_INVISIBLE: str =	"\x1b[28m"
-	BOLD: str =			"\x1b[1m"
-	NO_BOLD: str =		"\x1b[22m"
-	ITALIC: str =		"\x1b[3m"
-	NO_ITALIC: str =	"\x1b[23m"
-	BLINK: str =		"\x1b[5m"
-	NO_BLINK: str =		"\x1b[25m"
-	RESET: str =		"\x1b[0m"
+	INVERT: str = "\x1b[7m"
+	NO_INVERT: str = "\x1b[27m"
+	UNDERLINE: str = "\x1b[4m"
+	NO_UNDERLINE: str = "\x1b[24m"
+	DIM: str = "\x1b[2m"
+	NO_DIM: str = "\x1b[22m"
+	STHROUGH: str = "\x1b[9m"
+	NO_STHROUGH: str = "\x1b[29m"
+	INVISIBLE: str = "\x1b[8m"
+	NO_INVISIBLE: str = "\x1b[28m"
+	BOLD: str = "\x1b[1m"
+	NO_BOLD: str = "\x1b[22m"
+	ITALIC: str = "\x1b[3m"
+	NO_ITALIC: str = "\x1b[23m"
+	BLINK: str = "\x1b[5m"
+	NO_BLINK: str = "\x1b[25m"
+	RESET: str = "\x1b[0m"
 
 	# special
-	CLEAR_LINE: str =	"\x1b[2K"
-	CLEAR_RIGHT: str =	"\x1b[0K"
-	CLEAR_LEFT: str =	"\x1b[1K"
-	CLEAR_DOWN: str =	"\x1b[0J"
-	CLEAR_ALL: str =	"\x1b[2J"
-	CLEAR_SCROLL: str =	"\x1b[3J"
-	CURSOR_SHOW: str =	"\x1b[?25h"
-	CURSOR_HIDE: str =	"\x1b[?25l"
-	CURSOR_SAVE: str =	"\x1b7"
-	CURSOR_LOAD: str =	"\x1b8"
-	BUFFER_NEW: str =	"\x1b[?1049h"
-	BUFFER_OLD: str =	"\x1b[?1049l"
-	CURSOR_HOME: str =	"\x1b[H"
+	CLEAR_LINE: str = "\x1b[2K"
+	CLEAR_RIGHT: str = "\x1b[0K"
+	CLEAR_LEFT: str = "\x1b[1K"
+	CLEAR_DOWN: str = "\x1b[0J"
+	CLEAR_ALL: str = "\x1b[2J"
+	CLEAR_SCROLL: str = "\x1b[3J"
+	CURSOR_SHOW: str = "\x1b[?25h"
+	CURSOR_HIDE: str = "\x1b[?25l"
+	CURSOR_SAVE: str = "\x1b7"
+	CURSOR_LOAD: str = "\x1b8"
+	BUFFER_NEW: str = "\x1b[?1049h"
+	BUFFER_OLD: str = "\x1b[?1049l"
+	CURSOR_HOME: str = "\x1b[H"
+	INVERT_ALL: str = "\x1b[?5h"
+	NO_INVERT_ALL: str ="\x1b[?5l"

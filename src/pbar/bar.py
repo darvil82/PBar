@@ -413,12 +413,10 @@ class PBar:
 	def _printStr(self, barString: str):
 		"""Prints string to stream"""
 		if not self.enabled or NEVER_DRAW: return
-		print(
+		utils.out(
 			Term.CURSOR_SAVE + Term.CURSOR_HIDE
 			+ barString
-			+ Term.CURSOR_LOAD + Term.CURSOR_SHOW,
-			flush=True,	# flush file to make sure the bar draws
-			end=""
+			+ Term.CURSOR_LOAD + Term.CURSOR_SHOW
 		)
 
 
@@ -471,12 +469,11 @@ def barHelper(position: Position=("center", "center"),
 				yLine = "".join(Term.pos((rPos[0], x)) + "║" for x in range(rPos[1]))
 				center = Term.pos(rPos) + "╝"
 
-				print(
+				utils.out(
 					Term.CLEAR_ALL
 					+ b._genBar()	# the bar itself
 					+ Term.color((255, 100, 0)) + xLine + yLine + center	# x and y lines
-					+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET,
-					end=""
+					+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET
 				)
 				sleep(0.01)
 		except KeyboardInterrupt:
