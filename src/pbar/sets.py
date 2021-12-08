@@ -14,10 +14,10 @@ _IGNORE_CHARS = "\x1b\n\r\b\a\f\v"
 
 class UnknownSetKeyError(Exception):
 	"""A key supplied in a dictionary is unknown for the set class that will use it"""
-	def __init__(self, key, setcls) -> None:
-		msg = f"Unknown key {key!r} for {setcls.__class__.__name__!r}"
-		clsKeys = "', '".join(setcls.EMPTY)
-		super().__init__(f"{msg}. Available valid keys: '{clsKeys}'.")
+	def __init__(self, key, setbarObj) -> None:
+		msg = f"Unknown key {key!r} for {setbarObj.__class__.__name__!r}"
+		barObjKeys = "', '".join(setbarObj.EMPTY)
+		super().__init__(f"{msg}. Available valid keys: '{barObjKeys}'.")
 
 
 class _BaseSet(dict):
@@ -412,13 +412,13 @@ class FormatSet(_BaseSet):
 
 
 	@staticmethod
-	def getBarAttr(cls: "bar.PBar", string: str):
+	def getBarAttr(barObj: "bar.PBar", string: str):
 		attrs = {
-			"percentage": cls.percentage,
-			"prange1": cls._range[0],
-			"prange2": cls._range[1],
-			"etime": cls.etime,
-			"text": FormatSet._rmPoisonChars(cls._text) if cls._text else ""
+			"percentage": barObj.percentage,
+			"prange1": barObj._range[0],
+			"prange2": barObj._range[1],
+			"etime": barObj.etime,
+			"text": FormatSet._rmPoisonChars(barObj._text) if barObj._text else ""
 		}
 
 		if string not in attrs:	raise UnknownFormattingKeyError(string)
@@ -426,9 +426,8 @@ class FormatSet(_BaseSet):
 		return attrs[string]
 
 
-
 	@staticmethod
-	def parseString(cls: "bar.PBar", string: str) -> str:
+	def parseString(barObj: "bar.PBar", string: str) -> str:
 		"""Parse a string that may contain formatting keys"""
 		if string is None: return ""
 
@@ -454,7 +453,7 @@ class FormatSet(_BaseSet):
 				if ">" not in string[index:]:
 					raise utils.UnexpectedEndOfStringError(string)
 				endIndex = string.index(">", index)
-				char = str(FormatSet.getBarAttr(cls, string[index + 1:endIndex]))
+				char = str(FormatSet.getBarAttr(barObj, string[index + 1:endIndex]))
 
 				loopSkipChars = endIndex - index
 
@@ -462,9 +461,9 @@ class FormatSet(_BaseSet):
 		return endStr
 
 
-	def parsedValues(self, cls: "bar.PBar") -> "FormatSet":
+	def parsedValues(self, barObj: "bar.PBar") -> "FormatSet":
 		"""Returns a new FormatSet with all values parsed with the properties of the PBar object specified"""
-		return FormatSet(self.mapValues(lambda val: self.parseString(cls, val)))
+		return FormatSet(self.mapValues(lambda val: self.parseString(barObj, val)))
 
 
 	def emptyValues(self) -> "FormatSet":

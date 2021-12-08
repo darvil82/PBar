@@ -113,9 +113,11 @@ class PBar:
 
 	def draw(self):
 		"""Print the progress bar on screen."""
-		# Clear the bar at the old position and length
-		clsb = self._genClearedBar(*self._oldValues)
-		self._printStr(clsb + self._genBar())	# we print the "cleared" bar and the new bar
+
+		self._printStr(
+			self._genClearedBar(*self._oldValues)	# Clear the bar at the old position and size
+			+ self._genBar()	# draw at the new position and size
+		)
 
 		self._oldValues = (*self.computedValues, self._formatset)	# Reset the old values
 
