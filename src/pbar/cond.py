@@ -26,6 +26,10 @@ class Cond:
 		if the condition supplied succeeds.
 		Text comparisons are case insensitive.
 
+		The callback function will be called with the PBar object that will use this Cond.
+
+		---
+
 		The condition string must be composed of three values separated by spaces:
 
 		1. Attribute key (Formatting keys for `pbar.FormatSet`)
@@ -42,7 +46,7 @@ class Cond:
 
 		>>> Cond("text <- 'error'", ColorSet.ERROR, formatset=FormatSet.TITLE_SUBTITLE)
 
-		>>> Cond("etime >= 10", callback=lambda b: b.text = "Loading for 10 seconds!")
+		>>> Cond("etime >= 10", callback=myFunction)
 		"""
 		vs = self._chkCond(condition)
 		self._attribute, self.operator = vs[:2]
