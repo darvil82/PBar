@@ -17,10 +17,12 @@ _OPs = {
 
 class Cond:
 	"""Condition manager used by a PBar object."""
-	def __init__(self, condition: str, colorset: sets.ColorSetEntry=None,
-				 charset: sets.CharSetEntry=None,
-				 formatset: sets.FormatSetEntry=None,
-				 callback: Callable[["bar.PBar"], None]=None) -> None:
+	def __init__(self,
+			condition: str, colorset: sets.ColorSetEntry = None,
+			charset: sets.CharSetEntry = None,
+			formatset: sets.FormatSetEntry = None,
+			callback: Callable[["bar.PBar"], None] = None
+		) -> None:
 		"""
 		Apply different customization sets to a bar, or call a callback
 		if the condition supplied succeeds.
@@ -86,7 +88,7 @@ class Cond:
 		elif op == _OPs["GE"]:	return val >= self._value
 		elif op == _OPs["LT"]:	return val < self._value
 		elif op == _OPs["LE"]:	return val <= self._value
-		elif op == _OPs["IN"]:	return val in self._value
+		elif op == _OPs["IN"]:	return self._value in val
 		else:	return False
 
 

@@ -22,14 +22,16 @@ class BarContent:
 	Generate the content of the bar.
 	Call this object to get the content string with the properties supplied.
 	"""
-	def __init__(self, gfrom: Gfrom, invert: bool=True) -> None:
+	def __init__(self, gfrom: Gfrom, invert: bool = True) -> None:
 		"""@gfrom: Place from where the full part of the bar will grow."""
 		self.gfrom = gfrom
 		self.invert = invert
 
 
-	def __call__(self, position: tuple[int, int], size: tuple[int, int], charset: tuple[str, str],
-				 parsedColorset, prange: tuple[int, int]) -> str:
+	def __call__(self,
+			position: tuple[int, int], size: tuple[int, int],
+			charset: tuple[str, str], parsedColorset, prange: tuple[int, int]
+		) -> str:
 		"""Generate the content of the bar."""
 		if self.gfrom == Gfrom.AUTO:
 			self.gfrom = Gfrom.LEFT if size[0]/2 > size[1] else Gfrom.BOTTOM
@@ -138,8 +140,10 @@ class BarContent:
 
 
 
-def shape(position: tuple[int, int], size: tuple[int, int], charset,
-		  parsedColorset: dict, filled: Optional[str] = " ") -> str:
+def shape(
+		position: tuple[int, int], size: tuple[int, int], charset,
+		parsedColorset: dict, filled: Optional[str] = " "
+	) -> str:
 	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
 	width, height = size[0] - 2, size[1] - 1
 
@@ -185,8 +189,10 @@ def shape(position: tuple[int, int], size: tuple[int, int], charset,
 
 
 
-def bText(position: tuple[int, int], size: tuple[int, int],
-		  parsedColorset: dict[str, Union[dict, str]], formatset: sets.FormatSet) -> str:
+def bText(
+		position: tuple[int, int], size: tuple[int, int],
+		parsedColorset: dict[str, Union[dict, str]], formatset: sets.FormatSet
+	) -> str:
 	"""Generates all text for the bar"""
 	width, height = size
 
@@ -232,8 +238,10 @@ def bText(position: tuple[int, int], size: tuple[int, int],
 
 
 
-def rect(pos: tuple[int, int], size: tuple[int, int],
-		 char: str="█", color: utils.Color="white") -> str:
+def rect(
+		pos: tuple[int, int], size: tuple[int, int],
+		char: str="█", color: utils.Color="white"
+	) -> str:
 	"""Generate a rectangle."""
 	return shape(
 		pos, size,

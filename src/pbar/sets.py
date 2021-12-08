@@ -418,7 +418,7 @@ class FormatSet(_BaseSet):
 			"prange1": barObj._range[0],
 			"prange2": barObj._range[1],
 			"etime": barObj.etime,
-			"text": FormatSet._rmPoisonChars(barObj._text) if barObj._text else ""
+			"text": FormatSet._rmPoisonChars(barObj.text) if barObj.text else ""
 		}
 
 		if string not in attrs:	raise UnknownFormattingKeyError(string)

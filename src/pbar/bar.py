@@ -1,7 +1,7 @@
 from io import TextIOWrapper
-from typing import Any, Optional, SupportsInt, Union, IO
 from os import isatty
 from time import time as epochTime, sleep
+from typing import Any, Optional, SupportsInt, Union, IO
 
 from . import utils, gen, sets, cond
 from . utils import Term
@@ -16,6 +16,7 @@ if not Term.size() or not isatty(0):
 
 
 Position = Size = tuple[Union[str, int], Union[str, int]]
+Conditions = Union[list[cond.Cond], cond.Cond]
 
 
 
@@ -23,11 +24,16 @@ Position = Size = tuple[Union[str, int], Union[str, int]]
 class PBar:
 	"""Object for managing a progress bar."""
 	def __init__(self,
-			prange: tuple[int, int]=(0, 1), text: str=None, size: tuple[int, int]=(20, 1),
-			position: tuple[Union[str, int], Union[str, int]]=("center", "center"),
-			colorset: sets.ColorSetEntry=None, charset: sets.CharSetEntry=None,
-			formatset: sets.FormatSetEntry=None, conditions: Union[list[cond.Cond], cond.Cond]=None,
-			gfrom: gen.Gfrom=gen.Gfrom.AUTO, inverted: bool=False
+			prange: tuple[int, int] = (0, 1),
+			text: str = None,
+			size: Size = (20, 1),
+			position: Position = ("center", "center"),
+			colorset: sets.ColorSetEntry = None,
+			charset: sets.CharSetEntry = None,
+			formatset: sets.FormatSetEntry = None,
+			conditions: Conditions = None,
+			gfrom: gen.Gfrom = gen.Gfrom.AUTO,
+			inverted: bool = False
 		) -> None:
 		"""
 		### Detailed descriptions:
@@ -95,9 +101,9 @@ class PBar:
 		self._isOnScreen = False		# Is the bar on screen?
 
 		self._range = PBar._getRange(prange)
-		self._text = sets.FormatSet._rmPoisonChars(text) if text is not None else ""
-		self._size = size
-		self._pos = position
+		self.text = sets.FormatSet._rmPoisonChars(text) if text is not None else ""
+		self.size = size
+		self.position = position
 		self._colorset = sets.ColorSet(colorset)
 		self._charset = sets.CharSet(charset)
 		self._formatset = sets.FormatSet(formatset)
@@ -122,7 +128,7 @@ class PBar:
 		self._oldValues = (*self.computedValues, self._formatset)	# Reset the old values
 
 
-	def step(self, steps: int=1, text=None):
+	def step(self, steps: int = 1, text: str = None):
 		"""
 		Add `steps` to the first value in prange, then draw the bar.
 		@steps: Value to add to the first value in prange.
@@ -179,15 +185,6 @@ class PBar:
 
 
 	@property
-	def text(self) -> str:
-		"""Text to be displayed on the bar."""
-		return self._text
-	@text.setter
-	def text(self, text: str):
-		self._text = sets.FormatSet._rmPoisonChars(text)
-
-
-	@property
 	def colorset(self) -> sets.ColorSet:
 		"""Set of colors for the bar."""
 		return self._colorset
@@ -215,30 +212,12 @@ class PBar:
 
 
 	@property
-	def size(self):
-		"""Size of the progress bar."""
-		return self._size
-	@size.setter
-	def size(self, size: tuple[int, int]):
-		self._size = size
-
-
-	@property
 	def computedValues(self) -> tuple[tuple[int, int], tuple[int, int]]:
 		"""Computed position and size of the progress bar."""
-		size = PBar._getComputedSize(self._size)
-		pos = PBar._getComputedPosition(self._pos, size)
+		size = PBar._getComputedSize(self.size)
+		pos = PBar._getComputedPosition(self.position, size)
 
 		return pos, size
-
-
-	@property
-	def position(self):
-		"""Position of the progress bar."""
-		return self._pos
-	@position.setter
-	def position(self, position: Position):
-		self._pos = position
 
 
 	@property
@@ -252,7 +231,7 @@ class PBar:
 		"""Conditions for the bar."""
 		return self._conditions
 	@conditions.setter
-	def conditions(self, conditions: Optional[Union[list[cond.Cond], cond.Cond]]):
+	def conditions(self, conditions: Optional[Conditions]):
 		self._conditions = PBar._getConds(conditions)
 
 
@@ -261,9 +240,9 @@ class PBar:
 		"""All the values of the progress bar stored in a dict."""
 		return {
 			"prange": self._range,
-			"text": self._text,
-			"size": self._size,
-			"position": self._pos,
+			"text": self.text,
+			"size": self.size,
+			"position": self.position,
 			"colorset": self._colorset,
 			"charset": self._charset,
 			"formatset": self._formatset,
@@ -296,7 +275,7 @@ class PBar:
 
 
 	@staticmethod
-	def _getConds(conditions: Union[list[cond.Cond], cond.Cond]) -> list[cond.Cond]:
+	def _getConds(conditions: Optional[Conditions]) -> list[cond.Cond]:
 		if isinstance(conditions, (tuple, list)):
 			for item in conditions:	utils.chkInstOf(item, cond.Cond)
 			return conditions
@@ -358,8 +337,10 @@ class PBar:
 		return self.computedValues
 
 
-	def _genClearedBar(self, position: tuple[int, int],
-					   size: tuple[int, int], formatset: sets.FormatSet) -> str:
+	def _genClearedBar(
+			self, position: tuple[int, int],
+			size: tuple[int, int], formatset: sets.FormatSet
+		) -> str:
 		"""Generate a cleared progress bar. The position and size values should be already computed."""
 		if not self._isOnScreen:	return ""
 		parsedColorSet = sets.ColorSet(sets.ColorSet.EMPTY).parsedValues()
@@ -420,7 +401,9 @@ class PBar:
 		)
 
 
-def animate(barObj: PBar, rng: range=range(100), delay: float=0.05) -> None:
+
+
+def animate(barObj: PBar, rng: range = range(100), delay: float = 0.05) -> None:
 	"""
 	Animates the given PBar object by filling it by the range given, with a delay.
 	@barObj: PBar object to use.
@@ -435,8 +418,10 @@ def animate(barObj: PBar, rng: range=range(100), delay: float=0.05) -> None:
 		sleep(delay)
 
 
-def barHelper(position: Position=("center", "center"),
-			  size: tuple[int, int]=(20, 1)) -> Position:
+def barHelper(
+		position: Position = ("center", "center"),
+		size: tuple[int, int] = (20, 1)
+	) -> Position:
 	"""
 	Draw a bar helper on screen indefinitely until the user exits.
 	Returns the position of the bar helper.

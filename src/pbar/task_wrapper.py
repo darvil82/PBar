@@ -1,16 +1,16 @@
-from typing import Callable
+from typing import Any, Callable, Sequence
 
 from . bar import PBar
 
 
 
-def _isinstance_indexsafe(array, index, T) -> bool:
+def _isinstance_indexsafe(array: Sequence, index: int, T: Any) -> bool:
 	if index >= len(array):
 		return False
 	return isinstance(array[index], T)
 
 
-def taskWrapper(func=None, /, *, overwriteRange=True) -> Callable:
+def taskWrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Callable:
 	"""
 	Use as a decorator. Takes a PBar object, sets its prange depending on the quantity of
 	function and method calls inside the functions. Increments to the next step on every
@@ -35,7 +35,7 @@ def taskWrapper(func=None, /, *, overwriteRange=True) -> Callable:
 	@overwriteRange: If True, overwrites the prange of the bar.
 	"""
 
-	def insertAfterPair(bytecode, opcode, new):
+	def insertAfterPair(bytecode: bytes, opcode: int, new: bytes):
 		i = 0
 		found = 0
 		while i < len(bytecode):
@@ -47,7 +47,7 @@ def taskWrapper(func=None, /, *, overwriteRange=True) -> Callable:
 
 		return bytecode, found
 
-	def wrapper(func):
+	def wrapper(func: Callable):
 		code = func.__code__
 		bytecode = code.co_code
 
@@ -83,9 +83,9 @@ def taskWrapper(func=None, /, *, overwriteRange=True) -> Callable:
 
 		def inner(*args, **kwargs):
 			if _isinstance_indexsafe(args, 0, PBar):
-				barObj = args[0]
+				barObj: PBar = args[0]
 			elif _isinstance_indexsafe(args, 1, PBar):
-				barObj = args[1]
+				barObj: PBar = args[1]
 			else:
 				raise TypeError(
 					f"{func.__name__} requires a PBar instance to be the first argument"

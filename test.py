@@ -135,10 +135,6 @@ def taskWr(bar, something, another_thing):
 
 
 
-
-
-
-
 def main():
 	with pbar.Term.SeqMgr():
 		default()
@@ -147,8 +143,6 @@ def main():
 		tryAllSets()
 		condtionals()
 		taskWr(pbar.PBar(), something="Something", another_thing="Another thing")
-
-
 
 
 if __name__ == '__main__':
