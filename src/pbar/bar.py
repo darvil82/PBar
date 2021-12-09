@@ -101,7 +101,7 @@ class PBar:
 		self._isOnScreen = False		# Is the bar on screen?
 
 		self._range = PBar._getRange(prange)
-		self.text = sets.FormatSet._rmPoisonChars(text) if text is not None else ""
+		self.text = text if text is not None else ""
 		self.size = size
 		self.position = position
 		self._colorset = sets.ColorSet(colorset)

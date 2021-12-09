@@ -14,10 +14,10 @@ _IGNORE_CHARS = "\x1b\n\r\b\a\f\v"
 
 class UnknownSetKeyError(Exception):
 	"""A key supplied in a dictionary is unknown for the set class that will use it"""
-	def __init__(self, key, setbarObj) -> None:
-		msg = f"Unknown key {key!r} for {setbarObj.__class__.__name__!r}"
-		barObjKeys = "', '".join(setbarObj.EMPTY)
-		super().__init__(f"{msg}. Available valid keys: '{barObjKeys}'.")
+	def __init__(self, key, setObj) -> None:
+		msg = f"Unknown key {key!r} for {setObj.__class__.__name__!r}"
+		setKeys = "', '".join(setObj.EMPTY)
+		super().__init__(f"{msg}. Available valid keys: '{setKeys}'.")
 
 
 class _BaseSet(dict):
