@@ -34,7 +34,8 @@ def taskWrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Cal
 	```
 
 	@barObj: PBar object to use.
-	@overwriteRange: If True, overwrites the prange of the bar.
+	@overwriteRange: If False, the decorator will not overwrite the
+	prange of the bar, instead, it will just step over the range.
 
 	---
 
