@@ -58,20 +58,20 @@ class PBar:
 
 		---
 
+		@colorset: Set of colors to use when drawing the progress bar.
+
+		To use one of the included sets, use any of the constant values in `pbar.ColorSet`.
+
+		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom colors.
+
+		---
+
 		@charset: Set of characters to use when drawing the progress bar.
 
 		To use one of the included sets, use any of the constant values in `pbar.CharSet`. Keep in mind that some fonts might not have
 		the characters used in some charsets.
 
 		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom characters.
-
-		---
-
-		@colorset: Set of colors to use when drawing the progress bar.
-
-		To use one of the included sets, use any of the constant values in `pbar.ColorSet`.
-
-		Since this value is just a dictionary, it is possible to use custom sets, which should specify the custom colors.
 
 		---
 

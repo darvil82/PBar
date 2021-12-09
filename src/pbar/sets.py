@@ -458,7 +458,7 @@ class FormatSet(_BaseSet):
 				loopSkipChars = endIndex - index
 
 			endStr += char
-		return endStr
+		return endStr.strip()
 
 
 	def parsedValues(self, barObj: "bar.PBar") -> "FormatSet":
