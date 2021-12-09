@@ -1,4 +1,4 @@
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Sequence, Tuple
 
 from . bar import PBar
 
@@ -15,8 +15,8 @@ def taskWrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Cal
 	### EXPERIMENTAL*
 
 	Use as a decorator. Takes a PBar object, sets its prange depending on the quantity of
-	function and method calls inside the functions. Increments to the next step on every
-	function and method call.
+	function and method calls inside the function. Increments to the next step of the prange
+	of the bar on every function and method call.
 
 	The returned function will have `barObj` in its signature.
 
@@ -42,7 +42,7 @@ def taskWrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Cal
 	may cause unexpected behaviour and errors.
 	"""
 
-	def insertAfterPair(bytecode: bytes, opcode: int, new: bytes):
+	def insertAfterPair(bytecode: bytes, opcode: int, new: bytes) -> Tuple[bytes, int]:
 		i = 0
 		found = 0
 		while i < len(bytecode):
