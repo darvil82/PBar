@@ -12,6 +12,8 @@ def _isinstance_indexsafe(array: Sequence, index: int, T: Any) -> bool:
 
 def taskWrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Callable:
 	"""
+	### EXPERIMENTAL*
+
 	Use as a decorator. Takes a PBar object, sets its prange depending on the quantity of
 	function and method calls inside the functions. Increments to the next step on every
 	function and method call.
@@ -33,6 +35,11 @@ def taskWrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Cal
 
 	@barObj: PBar object to use.
 	@overwriteRange: If True, overwrites the prange of the bar.
+
+	---
+
+	\*: This function modifies the bytecode of the decorated function. Complex expressions
+	may cause unexpected behaviour and errors.
 	"""
 
 	def insertAfterPair(bytecode: bytes, opcode: int, new: bytes):
