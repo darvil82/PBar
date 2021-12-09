@@ -24,12 +24,12 @@ def taskWrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Cal
 	import time
 
 	@taskWrapper
-	def myTasks(pbar):
-		pbar.text = "This is a progress bar"
+	def myTasks(myBar: PBar):
+		myBar.text = "This is a progress bar"
 		time.sleep(1)
-		pbar.text = "Loading important assets"
+		myBar.text = "Loading important assets"
 		time.sleep(1)
-		pbar.text = "Doing something very useful"
+		myBar.text = "Doing something very useful"
 		time.sleep(1)
 	```
 
