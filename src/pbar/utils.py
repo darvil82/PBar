@@ -13,7 +13,7 @@ from typing import (
 
 __all__ = (
 	"capValue", "getConstantAttrs", "stripText",
-	"convertClrs", "chkInstOf", "chkSeqOfLen",
+	"convertColor", "chkInstOf", "chkSeqOfLen",
 	"isNum", "out", "mapDict", "Term"
 )
 
@@ -198,15 +198,13 @@ def stripText(string: str, maxlen: int) -> str:
 	return string[:maxlen-3] + "..." if len(string) > maxlen else string
 
 
-def convertClrs(clr: Union[dict[Any, Union[str, Color]], Color], conversion: str) -> Union[str, tuple, dict]:
+def convertColor(clr: Color, conversion: str) -> Union[str, tuple]:
 	"""
 	Convert color values to HEX and vice-versa
 	@clr:			Color value to convert.
 	@conversion:	Type of conversion to do ('RGB' or 'HEX')
 	"""
-	if isinstance(clr, dict):	# its a dict, call itself with the value
-		return mapDict(clr, lambda x: convertClrs(x, conversion))
-	elif isinstance(clr, str):
+	if isinstance(clr, str):
 		color = clr.lower()
 		if color in _HTML_COLOR_NAMES:	color = _HTML_COLOR_NAMES[color]	# check if its a html color name
 	else:
@@ -352,7 +350,7 @@ class Term:
 		if not color:
 			return ""
 
-		crgb = convertClrs(color, "RGB")
+		crgb = convertColor(color, "RGB")
 		type = 48 if bg else 38
 
 		return f"\x1b[{type};2;{crgb[0]};{crgb[1]};{crgb[2]}m"
