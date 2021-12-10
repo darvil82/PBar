@@ -179,7 +179,7 @@ class ColorSet(_BaseSet):
 
 
 	def __init__(self, newSet: ColorSetEntry) -> None:
-		super().__init__(newSet or self.DEFAULT)	# Convert all hex values to rgb tuples
+		super().__init__(newSet or self.DEFAULT)
 
 
 	def parsedValues(self, bg=False) -> dict[str, Union[dict, str]]:
