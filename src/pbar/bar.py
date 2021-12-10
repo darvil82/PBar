@@ -144,6 +144,13 @@ class PBar:
 		self._printStr(self._genClearedBar(*self._oldValues))
 
 
+	def done(self, text: str = None):
+		"""Set the progress bar to 100% and draw it."""
+		self.percentage = 100
+		if text is not None: self.text = text
+		self.draw()
+
+
 	def resetETime(self):
 		"""Reset the elapsed time counter."""
 		self._time = epochTime()	# Just set _time to the current time.
