@@ -15,7 +15,7 @@ if not Term.size() or not isatty(0):
 
 
 
-Position = Size = tuple[Union[str, int], Union[str, int]]
+Position = tuple[Union[str, int], Union[str, int]]
 Conditions = Union[list[cond.Cond], cond.Cond]
 
 
@@ -26,7 +26,7 @@ class PBar:
 	def __init__(self,
 			prange: tuple[int, int] = (0, 1),
 			text: str = None,
-			size: Size = (20, 1),
+			size: tuple[int, int] = (20, 1),
 			position: Position = ("center", "center"),
 			colorset: sets.ColorSetEntry = None,
 			charset: sets.CharSetEntry = None,
@@ -321,7 +321,7 @@ class PBar:
 
 
 	@staticmethod
-	def _getComputedSize(size: Size):
+	def _getComputedSize(size: tuple[int, int]) -> tuple[int, int]:
 		"""Get and process new length requested"""
 		termSize = Term.size()
 		newsize = list(size)
