@@ -175,7 +175,7 @@ def shape(
 		+ charVert[0]
 		+ (Term.moveHoriz(width) if filled is None else filled[0]*width)
 		+ charVert[1]
-	) for row in range(height))
+	) for row in range(height - 1))
 
 	bottom: str = (
 		Term.pos(position, (0, height))
