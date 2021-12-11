@@ -131,7 +131,7 @@ dmypy.json
 
 
 # stuff
-shit.py
+shit*
 buildpkg.sh
 
 # vscode

@@ -22,7 +22,7 @@ class BarContent:
 	Generate the content of the bar.
 	Call this object to get the content string with the properties supplied.
 	"""
-	def __init__(self, gfrom: Gfrom, invert: bool = True) -> None:
+	def __init__(self, gfrom: Gfrom = Gfrom.AUTO, invert: bool = False) -> None:
 		"""@gfrom: Place from where the full part of the bar will grow."""
 		self.gfrom = gfrom
 		self.invert = invert
@@ -191,47 +191,48 @@ def shape(
 
 def bText(
 		position: tuple[int, int], size: tuple[int, int],
-		parsedColorset: dict[str, Union[dict, str]], formatset: sets.FormatSet
+		parsedColorset: dict[str, Union[dict, str]],
+		parsedFormatset: sets.FormatSet
 	) -> str:
 	"""Generates all text for the bar"""
 	width, height = size
 
 	# set the max number of characters that a string should have on each part of the bar
 	txtMaxWidth = width + 2
-	txtSubtitle = utils.stripText(formatset["subtitle"], txtMaxWidth)
-	txtInside = utils.stripText(formatset["inside"], txtMaxWidth - 4)
-	txtTitle = utils.stripText(formatset["title"], txtMaxWidth)
+	txtSubtitle = utils.stripText(parsedFormatset["subtitle"], txtMaxWidth)
+	txtInside = utils.stripText(parsedFormatset["inside"], txtMaxWidth - 4)
+	txtTitle = utils.stripText(parsedFormatset["title"], txtMaxWidth)
 
 	# position each text on its correct position relative to the bar
 	textTitle = (
 		Term.pos(position, (-1, 0))
 		+ parsedColorset["text"]["title"]
 		+ txtTitle
-	) if formatset["title"] else ""
+	) if parsedFormatset["title"] else ""
 
 	textSubtitle = (
 		Term.pos(position, (width - len(txtSubtitle) + 1, height - 1))
 		+ parsedColorset["text"]["subtitle"]
 		+ txtSubtitle
-	) if formatset["subtitle"] else ""
+	) if parsedFormatset["subtitle"] else ""
 
 	textRight = (
 		Term.pos(position, (width + 3, height/2))
 		+ parsedColorset["text"]["right"]
-		+ formatset["right"]
-	) if formatset["right"] else ""
+		+ parsedFormatset["right"]
+	) if parsedFormatset["right"] else ""
 
 	textLeft = (
-		Term.pos(position, (-len(formatset["left"]) - 3, height/2))
+		Term.pos(position, (-len(parsedFormatset["left"]) - 3, height/2))
 		+ parsedColorset["text"]["left"]
-		+ formatset["left"]
-	) if formatset["left"] else ""
+		+ parsedFormatset["left"]
+	) if parsedFormatset["left"] else ""
 
 	textInside = (
 		Term.pos(position, (width/2 - len(txtInside)/2, height/2))
 		+ parsedColorset["text"]["inside"]
 		+ txtInside
-	) if formatset["inside"] else ""
+	) if parsedFormatset["inside"] else ""
 
 	return textTitle + textSubtitle + textRight + textLeft + textInside
 
