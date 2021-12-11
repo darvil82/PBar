@@ -207,13 +207,13 @@ def bText(
 		Term.pos(position, (-1, 0))
 		+ parsedColorset["text"]["title"]
 		+ txtTitle
-	)
+	) if formatset["title"] else ""
 
 	textSubtitle = (
 		Term.pos(position, (width - len(txtSubtitle) + 1, height - 1))
 		+ parsedColorset["text"]["subtitle"]
 		+ txtSubtitle
-	)
+	) if formatset["subtitle"] else ""
 
 	textRight = (
 		Term.pos(position, (width + 3, height/2))
@@ -231,7 +231,7 @@ def bText(
 		Term.pos(position, (width/2 - len(txtInside)/2, height/2))
 		+ parsedColorset["text"]["inside"]
 		+ txtInside
-	)
+	) if formatset["inside"] else ""
 
 	return textTitle + textSubtitle + textRight + textLeft + textInside
 

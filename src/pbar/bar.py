@@ -111,7 +111,7 @@ class PBar:
 		self.gfrom = gfrom
 		self.inverted = inverted
 
-		self._oldValues = (*self.computedValues, self._formatset)	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
+		self._oldValues = (*self.computedValues, self._formatset.parsedValues(self))	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
 
 	# -------------------- Properties / Methods the user should use. --------------------
@@ -125,7 +125,7 @@ class PBar:
 			+ self._genBar()	# draw at the new position and size
 		)
 
-		self._oldValues = (*self.computedValues, self._formatset)	# Reset the old values
+		self._oldValues = (*self.computedValues, self._formatset.parsedValues(self))	# Reset the old values
 
 
 	def step(self, steps: int = 1, text: str = None):
@@ -363,7 +363,7 @@ class PBar:
 			(position[0] + 2, position[1]),
 			(size[0] - 2, size[1] + 2),
 			parsedColorSet,
-			formatset.parsedValues(self).emptyValues()
+			formatset.emptyValues()
 		)
 
 		self._isOnScreen = False
