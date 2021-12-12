@@ -1,21 +1,20 @@
 from io import TextIOWrapper
-from os import isatty
 from time import time as epochTime, sleep
-from typing import Any, Optional, SupportsInt, Union, IO
+from typing import Literal, Optional, SupportsInt, Union, IO
 
 from . import utils, gen, sets, cond
 from . utils import Term
 
 
 NEVER_DRAW = False
-if not Term.size() or not isatty(0):
+if not Term.isSupported():
 	Term.size = lambda: (0, 0)	# we just force it to return a size of 0,0 if it can't get the size
 	NEVER_DRAW = True
 
 
 
 
-Position = tuple[Union[str, int], Union[str, int]]
+Position = tuple[Union[Literal["center"], int], Union[Literal["center"], int]]
 Conditions = Union[list[cond.Cond], cond.Cond]
 
 
@@ -156,14 +155,6 @@ class PBar:
 		self._time = epochTime()	# Just set _time to the current time.
 
 
-	@classmethod
-	def fromConfig(cls, other: Union["PBar", dict]) -> "PBar":
-		"""Return a PBar object with the new configuration given from another PBar or dict."""
-		pb = cls()
-		pb.config = other.config if isinstance(other, PBar) else other
-		return pb
-
-
 	def prangeFromFile(self, fp: IO[str]):
 		"""Modify `prange` with the number of lines of a file."""
 		utils.chkInstOf(fp, TextIOWrapper, name="fp")
@@ -187,7 +178,7 @@ class PBar:
 	@percentage.setter
 	def percentage(self, percentage: int):
 		crange = self._range
-		perc = crange[1]/100 * percentage
+		perc = crange[1]//100 * percentage
 		self.prange = (perc, crange[1])
 
 
@@ -221,8 +212,8 @@ class PBar:
 	@property
 	def computedValues(self) -> tuple[tuple[int, int], tuple[int, int]]:
 		"""Computed position and size of the progress bar."""
-		size = PBar._getComputedSize(self.size)
-		pos = PBar._getComputedPosition(self.position, size)
+		size = gen.getComputedSize(self.size)
+		pos = gen.getComputedPosition(self.position, size)
 
 		return pos, size
 
@@ -234,39 +225,12 @@ class PBar:
 
 
 	@property
-	def conditions(self) -> tuple:
+	def conditions(self) -> list[cond.Cond]:
 		"""Conditions for the bar."""
 		return self._conditions
 	@conditions.setter
 	def conditions(self, conditions: Optional[Conditions]):
 		self._conditions = PBar._getConds(conditions)
-
-
-	@property
-	def config(self) -> dict:
-		"""All the values of the progress bar stored in a dict."""
-		return {
-			"prange": self._range,
-			"text": self.text,
-			"size": self.size,
-			"position": self.position,
-			"colorset": self._colorset,
-			"charset": self._charset,
-			"formatset": self._formatset,
-			"conditions": self._conditions,
-			"gfrom": self.gfrom,
-			"inverted": self.inverted,
-			"enabled": self.enabled
-		}
-	@config.setter
-	def config(self, config: dict[str, Any]):
-		utils.chkInstOf(config, dict, name="config")
-		for key in {"prange", "text", "size", "position", "colorset",
-					"charset", "formatset", "conditions", "gfrom", "inverted", "enabled"}:
-			# Iterate through every key in the dict and populate the config of the class with its values
-			if key not in config:
-				raise ValueError(f"config dict is missing the {key!r} key")
-			setattr(self, key, config[key])
 
 
 	# -------------------- ///////////////////////////////////////// --------------------
@@ -287,54 +251,14 @@ class PBar:
 			for item in conditions:	utils.chkInstOf(item, cond.Cond)
 			return conditions
 		elif isinstance(conditions, cond.Cond):
-			return (conditions, )
+			return [conditions, ]
 		else:
-			return ()
+			return []
 
 
 	def _chkConds(self) -> None:
 		for cond in self._conditions:
 			cond.chkAndApply(self)
-
-
-	@staticmethod
-	def _getComputedPosition(position: Position, cSize: tuple[int, int]) -> tuple[int, int]:
-		"""Get and process new position requested"""
-		termSize = Term.size()
-		newpos = []
-
-		for index, value in enumerate(position):
-			if value == "center":
-				value = termSize[index]//2
-
-			if value < 0:	# if negative value, return Term size - value
-				value = termSize[index] + value
-
-			# set maximun and minimun positions
-			value = utils.capValue(value,
-				termSize[index] - cSize[index]/2 - 1,
-				cSize[index]/2 + 1
-			)
-
-			newpos.append(int(value) - cSize[index]//2)
-		return tuple(newpos)
-
-
-	@staticmethod
-	def _getComputedSize(size: tuple[int, int]) -> tuple[int, int]:
-		"""Get and process new length requested"""
-		termSize = Term.size()
-		newsize = list(size)
-
-		for index in range(2):
-			newsize[index] = termSize[index] + newsize[index] if newsize[index] < 0 else newsize[index]
-
-		width, height = map(int, newsize)
-
-		return (
-			utils.capValue(int(width), termSize[0] - 2, 1),
-			utils.capValue(int(height), termSize[1] - 2, 1)
-		)
 
 
 	def checkProps(self) -> tuple[tuple[int, int], tuple[int, int]]:
@@ -428,7 +352,7 @@ def animate(barObj: PBar, rng: range = range(100), delay: float = 0.05) -> None:
 def barHelper(
 		position: Position = ("center", "center"),
 		size: tuple[int, int] = (20, 1)
-	) -> Position:
+	) -> tuple[tuple[int, int], tuple[int, int]]:
 	"""
 	Draw a bar helper on screen indefinitely until the user exits.
 	Returns the position of the bar helper.

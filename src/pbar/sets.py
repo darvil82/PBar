@@ -1,4 +1,4 @@
-from typing import Callable, Union
+from typing import Callable, Optional, Union
 from . import utils, bar
 from . utils import Term
 
@@ -178,11 +178,11 @@ class ColorSet(_BaseSet):
 	}
 
 
-	def __init__(self, newSet: ColorSetEntry) -> None:
+	def __init__(self, newSet: Optional[ColorSetEntry]) -> None:
 		super().__init__(newSet or self.DEFAULT)
 
 
-	def parsedValues(self, bg=False) -> dict[str, Union[dict, str]]:
+	def parsedValues(self, bg=False) -> dict:
 		"""Convert all values in the ColorSet to parsed color sequences for the terminal"""
 		return self.mapValues(lambda val: Term.color(val, bg))
 
@@ -309,12 +309,12 @@ class CharSet(_BaseSet):
 	}
 
 
-	def __init__(self, newSet: CharSetEntry) -> None:
+	def __init__(self, newSet: Optional[CharSetEntry]) -> None:
 		super().__init__(newSet or self.DEFAULT)
 		self |= self._strip()	# we update with the stripped strings
 
 
-	def _strip(self) -> "CharSet":
+	def _strip(self) -> CharSetEntry:
 		def clean(value) -> str:
 			if len(value) > 1:
 				value = value[0]	# if the string is larger than one, just get the first char
@@ -395,7 +395,7 @@ class FormatSet(_BaseSet):
 	}
 
 
-	def __init__(self, newSet: FormatSetEntry) -> None:
+	def __init__(self, newSet: Optional[FormatSetEntry]) -> None:
 		super().__init__(newSet or self.DEFAULT)
 
 

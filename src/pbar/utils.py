@@ -1,4 +1,4 @@
-from os import system as runsys, get_terminal_size
+from os import system as runsys, get_terminal_size, isatty
 from time import sleep
 from typing import (
 	Callable,
@@ -211,23 +211,25 @@ def convertColor(clr: Color, conversion: str) -> Union[str, tuple]:
 		color = clr
 
 	if conversion == "HEX":
-		if not isinstance(color, (tuple, list)) or len(color) != 3: return color
+		if isinstance(color, str) and color.startswith("#"):
+			return color
+		if not isinstance(color, (tuple, list)) or len(color) != 3:
+			raise ValueError(f"Invalid color value: {color}")
 
 		capped = tuple(capValue(value, 255, 0) for value in color)
 		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
 	elif conversion == "RGB":
-		if not isinstance(color, str) or not color.startswith("#"):
+		if isinstance(color, (tuple, list)):
 			return color
+		if not isinstance(color, str) or not color.startswith("#"):
+			raise ValueError(f"Invalid color value: {color}")
 
 		clrs = color.lstrip("#")
 
 		if len(clrs) == 3:
 			clrs = "".join(c*2 for c in clrs)	# if size of hex color is 3, just duplicate chars to make it 6
 
-		try:
-			return tuple(int(clrs[i:i+2], 16) for i in (0, 2, 4))
-		except ValueError:
-			return color
+		return tuple(int(clrs[i:i+2], 16) for i in (0, 2, 4))
 	else:
 		return ""
 
@@ -301,15 +303,20 @@ class Term:
 	runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
 
 	@staticmethod
-	def size() -> Union[tuple[int, int], Literal[False]]:
-		"""
-		Get size of the terminal. Columns and rows.
-		`False` will be returned if it is not possible to get the size.
-		"""
+	def isSupported() -> bool:
+		"""Return False if terminal is not supported."""
 		try:
-			return tuple(get_terminal_size())
+			get_terminal_size()
 		except OSError:
 			return False
+
+		return isatty(0)
+
+
+	@staticmethod
+	def size() -> tuple[int, int]:
+		"""Get size of the terminal. Columns and rows."""
+		return tuple(get_terminal_size())
 
 
 	@staticmethod
@@ -436,7 +443,7 @@ class Term:
 			self.hcur = hideCursor
 			self.hocur = homeCursor
 			self.scur = saveCursor
-		def __enter__(self) -> str:
+		def __enter__(self) -> None:
 			out(
 				(Term.BUFFER_NEW if self.nbuff else "")
 				+ (Term.CURSOR_HIDE if self.hcur else "")
@@ -546,12 +553,15 @@ class Term:
 			return Term.RESET
 
 		mode, color = ("fg", seq) if "=" not in seq else seq.split("=")	# if there is no equal sign, the mode is foreground
-		mode = mode == "bg"
+		isBg = mode == "bg"
 
 		if "," in color:	# found a comma. We are dealing with RGB values
-			return Term.color([x for x in map(int, color.split(","))], mode)
+			return Term.color(
+				tuple(map(int, color.split(",")))[:3],
+				isBg
+			)
 		elif "#" in color or color in _HTML_COLOR_NAMES:	# its a hex color or a HTML color name
-			return Term.color(color, mode)
+			return Term.color(color, isBg)
 		else:
 			return ""	# invalid color format
 

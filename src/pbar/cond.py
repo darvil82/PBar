@@ -81,15 +81,18 @@ class Cond:
 		val = sets.FormatSet.getBarAttr(barObj, self._attribute)
 		val = val.lower() if isinstance(val, str) else val
 
-		# yeah, I would have used a dict for this, but not all operators are supported for all types
-		if op == _OPs["EQ"]:	return val == self._value
-		elif op == _OPs["NE"]:	return val != self._value
-		elif op == _OPs["GT"]:	return val > self._value
-		elif op == _OPs["GE"]:	return val >= self._value
-		elif op == _OPs["LT"]:	return val < self._value
-		elif op == _OPs["LE"]:	return val <= self._value
-		elif op == _OPs["IN"]:	return self._value in val
-		else:	return False
+		# we use lambdas because some values may not be compatible with some operators
+		operators: dict[str, Callable] = {
+			_OPs["EQ"]: lambda: val == self._value,
+			_OPs["NE"]: lambda: val != self._value,
+			_OPs["GT"]: lambda: val > self._value,
+			_OPs["GE"]: lambda: val >= self._value,
+			_OPs["LT"]: lambda: val < self._value,
+			_OPs["LE"]: lambda: val <= self._value,
+			_OPs["IN"]: lambda: self._value in val,
+		}
+
+		return operators.get(op, lambda: False)()
 
 
 	def chkAndApply(self, barObj: "bar.PBar") -> None:

@@ -1,7 +1,7 @@
-from typing import Callable, Optional, Union
+from typing import Callable, Optional
 from enum import Enum, auto
 
-from . import sets, utils
+from . import sets, utils, bar
 from . utils import Term, capValue
 
 
@@ -30,7 +30,7 @@ class BarContent:
 
 	def __call__(self,
 			position: tuple[int, int], size: tuple[int, int],
-			charset: tuple[str, str], parsedColorset, prange: tuple[int, int]
+			charset: sets.CharSet, parsedColorset, prange: tuple[int, int]
 		) -> str:
 		"""Generate the content of the bar."""
 		if self.gfrom == Gfrom.AUTO:
@@ -95,6 +95,8 @@ class BarContent:
 				+ Term.moveHoriz(-width/2 - SEGMENTS_FULL/2)
 				+ colorFull + charFull*SEGMENTS_FULL
 			)
+		else:
+			return ""
 
 
 	def _genVert(self, pos, size, chars, colors, prange) -> str:
@@ -136,6 +138,8 @@ class BarContent:
 				+ Term.moveVert(-height/2 - SEGMENTS_FULL/2)
 				+ colorFull + (charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
 			)
+		else:
+			return ""
 
 
 
@@ -187,12 +191,10 @@ def shape(
 	return top + mid + bottom
 
 
-
-
 def bText(
 		position: tuple[int, int], size: tuple[int, int],
-		parsedColorset: dict[str, Union[dict, str]],
-		parsedFormatset: sets.FormatSet
+		parsedColorset: dict,
+		parsedFormatset: dict
 	) -> str:
 	"""Generates all text for the bar"""
 	width, height = size
@@ -237,16 +239,66 @@ def bText(
 	return textTitle + textSubtitle + textRight + textLeft + textInside
 
 
-
-
 def rect(
-		pos: tuple[int, int], size: tuple[int, int],
+		pos: "bar.Position", size: tuple[int, int],
 		char: str="█", color: utils.Color="white"
 	) -> str:
 	"""Generate a rectangle."""
+	size = getComputedSize(size)
+	pos = getComputedPosition(pos, size)
+
 	return shape(
 		pos, size,
 		sets.CharSet({"corner": char, "horiz": char, "vert": char}),
 		sets.ColorSet({"corner": color, "horiz": color, "vert": color}).parsedValues(),
 		char
+	) + Term.RESET
+
+
+def getComputedPosition(position: "bar.Position", cSize: tuple[int, int]) -> tuple[int, int]:
+	"""
+	Return a computed position based on the given position,
+	the size supplied by the user, and the size of the terminal
+	"""
+	termSize = Term.size()
+	newpos = list(position)
+
+	for index, value in enumerate(position):
+		if isinstance(value, str):
+			if value == "center":
+				value = termSize[index]//2
+			else:
+				raise ValueError("Position value must be an integer or 'center'")
+
+		if value < 0:	# if negative value, return Term size - value
+			value = termSize[index] + value
+
+		# set maximun and minimun positions
+		value = utils.capValue(
+			value,
+			termSize[index] - cSize[index]/2 - 1,
+			cSize[index]/2 + 1
+		)
+
+		newpos[index] = int(value) - cSize[index]//2
+	return tuple(newpos)
+
+
+def getComputedSize(size: tuple[int, int]) -> tuple[int, int]:
+	"""Return a computed size based on the given size, and the size of the terminal"""
+	termSize = Term.size()
+	newsize = list(size)
+
+	for index in range(2):
+		newsize[index] = (
+			termSize[index] + size[index]
+			if size[index] < 0
+			else size[index]
+		)
+
+	width, height = map(int, newsize)
+
+	return (
+		utils.capValue(int(width), termSize[0] - 2, 1),
+		utils.capValue(int(height), termSize[1] - 2, 1)
 	)
