@@ -31,7 +31,7 @@ class PBar:
 			charset: sets.CharSetEntry = None,
 			formatset: sets.FormatSetEntry = None,
 			conditions: Conditions = None,
-			gfrom = None,
+			gfrom: gen.BarGenerator = gen.Gfrom.Auto,
 			inverted: bool = False
 		) -> None:
 		"""

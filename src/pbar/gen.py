@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Optional
 
 from . import sets, utils, bar
@@ -8,12 +8,13 @@ from . utils import Term, capValue
 
 
 class BarGenerator(ABC):
+	@abstractmethod
 	def generate(self, bar: "BarContent") -> str:
 		pass
 
 
 class Gfrom:
-	"""Generators manager."""
+	"""Generators container."""
 	Auto: BarGenerator
 	Left: BarGenerator
 	Right: BarGenerator
@@ -30,18 +31,52 @@ class Gfrom:
 
 class BarContent:
 	"""
-	Generate the content of the bar.
+	Generate the content of the bar with the BarGenerator selected.
 	Call this object to get the content string with the properties supplied.
+
+	This object will contain the following properties, which can be used by
+	`BarGenerator` implementations:
+
+	### Properties
+
+	- `prange`: The current prange of the progress bar.
+	- `position`: The position of the content of the bar.
+		- `posX`: The X position of the content of the bar.
+		- `posY`: The Y position of the content of the bar.
+	- `size`: The size of the content of the bar.
+		- `width`: The width of the content of the bar.
+		- `height`: The height of the content of the bar.
+	- `charFull`: The character used to fill the full part of the bar.
+	- `charEmpty`: The character used to fill the empty space of the bar.
+	- `colorFull`: The parsed color used to fill the full part of the bar.
+	- `colorEmpty`: The parsed color used to fill the empty space of the bar.
+	- `segmentsFull`: The number of segments used to fill the full part of the bar.
+		- `segmentsFull[0]`: Horizontal segments.
+		- `segmentsFull[1]`: Vertical segments.
+	- `segmentsEmpty`: The number of segments used to fill the empty space of the bar.
+		- `segmentsEmpty[0]`: Horizontal segments.
+		- `segmentsEmpty[1]`: Vertical segments.
+
+	### Methods
+
+	- `iterRows()`: Iterate over the rows of the bar height.
+	Automatically positions the cursor at the beginning of each row.
 	"""
 	def __init__(self,
 			gfrom: BarGenerator,
 			invert: bool,
-			position: tuple[int, int], size: tuple[int, int],
-			charset: sets.CharSet, parsedColorset, prange: tuple[int, int]
+			position: tuple[int, int],
+			size: tuple[int, int],
+			charset: sets.CharSet,
+			parsedColorset,
+			prange: tuple[int, int]
 		) -> None:
-		"""@gfrom: Place from where the full part of the bar will grow."""
+		"""
+		@gfrom: Bar content generator.
+		@invert: Invert the chars and colors of the bar.
+		"""
 		self.gfrom = gfrom
-		setEntry = ("empty", "full") if invert else ("full", "empty")
+		self.prange = prange
 
 		self.position = position
 		self.posX, self.posY = position
@@ -49,9 +84,10 @@ class BarContent:
 		self.size = size
 		self.width, self.height = size
 
+		setEntry = ("empty", "full") if invert else ("full", "empty")
 		self.charFull, self.charEmpty = charset[setEntry[0]], charset[setEntry[1]]
 		self.colorFull, self.colorEmpty = parsedColorset[setEntry[0]], parsedColorset[setEntry[1]]
-		self.prange = prange
+
 
 		self.segmentsFull = (
 			int((prange[0] / prange[1])*self.width),
@@ -65,11 +101,14 @@ class BarContent:
 
 	def __call__(self) -> str:
 		"""Generate the content of the bar."""
-		return self.gfrom.generate(self)
+		return Term.pos(self.position) + self.gfrom.generate(self)
 
 
 	def iterRows(self, string: str):
-		"""Iterate over the rows of the bar height."""
+		"""
+		Iterate over the rows of the bar height.
+		Automatically positions the cursor at the beginning of each row.
+		"""
 		return "".join((
 			Term.pos(self.position, (0, row))
 			+ string
@@ -123,8 +162,7 @@ class Top(BarGenerator):
 	"""Generate the content of a bar from the top."""
 	def generate(bar: BarContent) -> str:
 		return (
-			Term.pos(bar.position)
-			+ bar.colorFull + (
+			bar.colorFull + (
 					bar.charFull*bar.width + Term.posRel((-bar.width, 1))
 				)*bar.segmentsFull[1]
 			+ bar.colorEmpty + (
@@ -137,8 +175,7 @@ class Bottom(BarGenerator):
 	"""Generate the content of a bar from the bottom."""
 	def generate(bar: BarContent) -> str:
 		return (
-			Term.pos(bar.position)
-			+ bar.colorEmpty + (
+			bar.colorEmpty + (
 					bar.charEmpty*bar.width + Term.posRel((-bar.width, 1))
 				)*bar.segmentsEmpty[1]
 			+ bar.colorFull + (
@@ -151,8 +188,7 @@ class CenterY(BarGenerator):
 	"""Generate the content of a bar from the center."""
 	def generate(bar: BarContent) -> str:
 		return (
-			Term.pos(bar.position)
-			+ bar.colorEmpty + (
+			bar.colorEmpty + (
 					bar.charEmpty*bar.width + Term.posRel((-bar.width, 1))
 				)*bar.height
 			+ Term.moveVert(-bar.height/2 - bar.segmentsFull[1]/2)

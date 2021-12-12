@@ -53,7 +53,7 @@ def fullyRandom():
 		choice(getConstAttrs(pbar.ColorSet))[1],
 		choice(getConstAttrs(pbar.CharSet))[1],
 		choice(getConstAttrs(pbar.FormatSet))[1],
-		gfrom=choice([pbar.Gfrom.LEFT, pbar.Gfrom.RIGHT, pbar.Gfrom.CENTER_X, pbar.Gfrom.CENTER_Y, pbar.Gfrom.TOP, pbar.Gfrom.BOTTOM]),
+		gfrom=choice([pbar.Gfrom.Left, pbar.Gfrom.Right, pbar.Gfrom.CenterX, pbar.Gfrom.CenterY, pbar.Gfrom.Top, pbar.Gfrom.Bottom]),
 		inverted=choice([True, False]),
 	)
 
