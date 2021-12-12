@@ -31,7 +31,7 @@ class PBar:
 			charset: sets.CharSetEntry = None,
 			formatset: sets.FormatSetEntry = None,
 			conditions: Conditions = None,
-			gfrom: gen.BarGenerator = gen.Gfrom.Auto,
+			contentg: gen.BContentGen = gen.ContentGens.Auto,
 			inverted: bool = False
 		) -> None:
 		"""
@@ -89,7 +89,7 @@ class PBar:
 
 		---
 
-		@gfrom: Place from where the full part of the bar will grow.
+		@contentg: Content generator for the progress indicator of the bar.
 
 		---
 
@@ -107,7 +107,7 @@ class PBar:
 		self._charset = sets.CharSet(charset)
 		self._formatset = sets.FormatSet(formatset)
 		self._conditions = PBar._getConds(conditions)
-		self.gfrom = gfrom
+		self.contentg = contentg
 		self.inverted = inverted
 
 		self._oldValues = (*self.computedValues, self._formatset.parsedValues(self))	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
@@ -306,8 +306,8 @@ class PBar:
 			self._charset, parsedColorSet
 		)
 
-		barContent = gen.BarContent(
-			self.gfrom, self.inverted,
+		barContent = gen.BContentGenMgr(
+			self.contentg, self.inverted,
 			(position[0] + 2, position[1] + 1),
 			(size[0] - 2, size[1]),
 			self._charset, parsedColorSet, self._range

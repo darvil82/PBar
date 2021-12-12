@@ -9,13 +9,13 @@
 - [Website](https://darvil82.github.io/PBar)
 """
 
-__version__ = "1.15.0.post4"
+__version__ = "1.16.0"
 
 from . bar import PBar, animate, barHelper
 from . task_wrapper import taskWrapper
 from . sets import CharSet, FormatSet, ColorSet
 from . cond import Cond
-from . gen import BarGenerator, Gfrom
+from . gen import BContentGen, BContentGenMgr, ContentGens
 from . utils import Term
 
 
