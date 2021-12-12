@@ -1,20 +1,31 @@
-from typing import Callable, Optional
-from enum import Enum, auto
+from abc import ABC
+from typing import Optional
 
 from . import sets, utils, bar
 from . utils import Term, capValue
 
 
 
-class Gfrom(Enum):
-	"""Enum for the different ways to generate a bar."""
-	AUTO = auto()
-	LEFT = auto()
-	RIGHT = auto()
-	TOP = auto()
-	BOTTOM = auto()
-	CENTER_X = auto()
-	CENTER_Y = auto()
+
+class BarGenerator(ABC):
+	def generate(self, bar: "BarContent") -> str:
+		pass
+
+
+class Gfrom:
+	"""Generators manager."""
+	Auto: BarGenerator
+	Left: BarGenerator
+	Right: BarGenerator
+	CenterX: BarGenerator
+	Bottom: BarGenerator
+	Top: BarGenerator
+	CenterY: BarGenerator
+
+	def register(generator: BarGenerator) -> BarGenerator:
+		"""Register a new content generator."""
+		setattr(Gfrom, generator.__name__, generator)
+		return generator
 
 
 class BarContent:
@@ -22,124 +33,135 @@ class BarContent:
 	Generate the content of the bar.
 	Call this object to get the content string with the properties supplied.
 	"""
-	def __init__(self, gfrom: Gfrom = Gfrom.AUTO, invert: bool = False) -> None:
-		"""@gfrom: Place from where the full part of the bar will grow."""
-		self.gfrom = gfrom
-		self.invert = invert
-
-
-	def __call__(self,
+	def __init__(self,
+			gfrom: BarGenerator,
+			invert: bool,
 			position: tuple[int, int], size: tuple[int, int],
 			charset: sets.CharSet, parsedColorset, prange: tuple[int, int]
-		) -> str:
-		"""Generate the content of the bar."""
-		if self.gfrom == Gfrom.AUTO:
-			self.gfrom = Gfrom.LEFT if size[0]/2 > size[1] else Gfrom.BOTTOM
+		) -> None:
+		"""@gfrom: Place from where the full part of the bar will grow."""
+		self.gfrom = gfrom
+		setEntry = ("empty", "full") if invert else ("full", "empty")
 
-		if self.gfrom in {Gfrom.LEFT, Gfrom.RIGHT, Gfrom.CENTER_X}:
-			genFunc: Callable = self._genHoriz
-		elif self.gfrom in {Gfrom.TOP, Gfrom.BOTTOM, Gfrom.CENTER_Y}:
-			genFunc: Callable = self._genVert
-		else:
-			raise RuntimeError(f"unknown gfrom {self.gfrom!r}")
+		self.position = position
+		self.posX, self.posY = position
 
-		setEntry = ("empty", "full") if self.invert else ("full", "empty")
+		self.size = size
+		self.width, self.height = size
 
-		return genFunc(
-			position, size,
-			(charset[setEntry[0]], charset[setEntry[1]]),
-			(parsedColorset[setEntry[0]], parsedColorset[setEntry[1]]),
-			prange
+		self.charFull, self.charEmpty = charset[setEntry[0]], charset[setEntry[1]]
+		self.colorFull, self.colorEmpty = parsedColorset[setEntry[0]], parsedColorset[setEntry[1]]
+		self.prange = prange
+
+		self.segmentsFull = (
+			int((prange[0] / prange[1])*self.width),
+			int(capValue((prange[0] / prange[1])*self.height, max=self.height))
+		)
+		self.segmentsEmpty = (
+			self.width - self.segmentsFull[0],
+			capValue(self.height - self.segmentsFull[1], min=0)
 		)
 
 
-	def _genHoriz(self, pos, size, chars, colors, prange) -> str:
-		width, height = size
-		charFull, charEmpty = chars
-		colorFull, colorEmpty = colors
-		SEGMENTS_FULL = int((prange[0] / prange[1])*width)
-		SEGMENTS_EMPTY = width - SEGMENTS_FULL
-
-		"""
-		When drawing horizontally:
-			1. Print the full character the number of SEGMENTS_FULL.
-			2. Print the empty character the number of SEGMENTS_EMPTY.
-			3. Duplicate for each row of the bar.
-		"""
-
-		def iterRows(string: str):
-			return "".join((
-				Term.pos(pos, (0, row))
-				+ string
-			) for row in range(height))
-
-		if self.gfrom == Gfrom.LEFT:
-			return iterRows(
-				colorFull + charFull*SEGMENTS_FULL
-				+ colorEmpty + charEmpty*SEGMENTS_EMPTY
-			)
-		elif self.gfrom == Gfrom.RIGHT:
-			return iterRows(
-				colorEmpty + charEmpty*SEGMENTS_EMPTY
-				+ colorFull + charFull*SEGMENTS_FULL
-			)
-		elif self.gfrom == Gfrom.CENTER_X:
-			"""
-			For the center:
-				1. Print the entire empty bar.
-				2. Move the cursor left to the center + half SEGMENTS_FULL.
-				3. Print the completed bar chars.
-			"""
-			return iterRows(
-				colorEmpty + charEmpty*width
-				+ Term.moveHoriz(-width/2 - SEGMENTS_FULL/2)
-				+ colorFull + charFull*SEGMENTS_FULL
-			)
-		else:
-			return ""
+	def __call__(self) -> str:
+		"""Generate the content of the bar."""
+		return self.gfrom.generate(self)
 
 
-	def _genVert(self, pos, size, chars, colors, prange) -> str:
-		width, height = size
-		charFull, charEmpty = chars
-		colorFull, colorEmpty = colors
-		SEGMENTS_FULL = int(capValue((prange[0] / prange[1])*height, max=height))
-		SEGMENTS_EMPTY = capValue(height - SEGMENTS_FULL, min=0)
+	def iterRows(self, string: str):
+		"""Iterate over the rows of the bar height."""
+		return "".join((
+			Term.pos(self.position, (0, row))
+			+ string
+		) for row in range(self.height))
 
-		"""
-		When drawing vertically, we esentially:
-			1. Print one full row with the width of the bar.
-			2. Move the cursor one character down, and the width of the bar to the left.
-			3. Repeat
-		"""
 
-		if self.gfrom == Gfrom.TOP:
-			return (
-				Term.pos(pos)
-				+ colorFull + (charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
-				+ colorEmpty + (charEmpty*width + Term.posRel((-width, 1)))*SEGMENTS_EMPTY
-			)
-		elif self.gfrom == Gfrom.BOTTOM:
-			return (
-				Term.pos(pos)
-				+ colorEmpty + (charEmpty*width + Term.posRel((-width, 1)))*SEGMENTS_EMPTY
-				+ colorFull + (charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
-			)
-		elif self.gfrom == Gfrom.CENTER_Y:
-			"""
-			For the center:
-				1. Print the entire empty bar.
-				2. Move the cursor up to the center + half SEGMENTS_FULL.
-				3. Print the completed bar rows.
-			"""
-			return (
-				Term.pos(pos)
-				+ colorEmpty + (charEmpty*width + Term.posRel((-width, 1)))*height
-				+ Term.moveVert(-height/2 - SEGMENTS_FULL/2)
-				+ colorFull + (charFull*width + Term.posRel((-width, 1)))*SEGMENTS_FULL
-			)
-		else:
-			return ""
+
+
+# -------------- Default content generators --------------
+
+@Gfrom.register
+class Auto(BarGenerator):
+	"""Select between Left or Bottom depending on the size of the bar"""
+	def generate(bar: BarContent) -> str:
+		return (
+			Bottom.generate(bar)
+			if bar.height > bar.width else
+			Left.generate(bar)
+		)
+
+@Gfrom.register
+class Left(BarGenerator):
+	"""Generate the content of a bar from the left."""
+	def generate(bar: BarContent) -> str:
+		return bar.iterRows(
+			bar.colorFull + bar.charFull*bar.segmentsFull[0]
+			+ bar.colorEmpty + bar.charEmpty*bar.segmentsEmpty[0]
+		)
+
+@Gfrom.register
+class Right(BarGenerator):
+	"""Generate the content of a bar from the right."""
+	def generate(bar: BarContent) -> str:
+		return bar.iterRows(
+			bar.colorEmpty + bar.charEmpty*bar.segmentsEmpty[0]
+			+ bar.colorFull + bar.charFull*bar.segmentsFull[0]
+		)
+
+@Gfrom.register
+class CenterX(BarGenerator):
+	"""Generate the content of a bar from the center."""
+	def generate(bar: BarContent) -> str:
+		return bar.iterRows(
+			bar.colorEmpty + bar.charEmpty*bar.width
+			+ Term.moveHoriz(-bar.width/2 - bar.segmentsFull[0]/2)
+			+ bar.colorFull + bar.charFull*bar.segmentsFull[0]
+		)
+
+@Gfrom.register
+class Top(BarGenerator):
+	"""Generate the content of a bar from the top."""
+	def generate(bar: BarContent) -> str:
+		return (
+			Term.pos(bar.position)
+			+ bar.colorFull + (
+					bar.charFull*bar.width + Term.posRel((-bar.width, 1))
+				)*bar.segmentsFull[1]
+			+ bar.colorEmpty + (
+					bar.charEmpty*bar.width + Term.posRel((-bar.width, 1))
+				)*bar.segmentsEmpty[1]
+		)
+
+@Gfrom.register
+class Bottom(BarGenerator):
+	"""Generate the content of a bar from the bottom."""
+	def generate(bar: BarContent) -> str:
+		return (
+			Term.pos(bar.position)
+			+ bar.colorEmpty + (
+					bar.charEmpty*bar.width + Term.posRel((-bar.width, 1))
+				)*bar.segmentsEmpty[1]
+			+ bar.colorFull + (
+					bar.charFull*bar.width + Term.posRel((-bar.width, 1))
+				)*bar.segmentsFull[1]
+		)
+
+@Gfrom.register
+class CenterY(BarGenerator):
+	"""Generate the content of a bar from the center."""
+	def generate(bar: BarContent) -> str:
+		return (
+			Term.pos(bar.position)
+			+ bar.colorEmpty + (
+					bar.charEmpty*bar.width + Term.posRel((-bar.width, 1))
+				)*bar.height
+			+ Term.moveVert(-bar.height/2 - bar.segmentsFull[1]/2)
+			+ bar.colorFull + (
+					bar.charFull*bar.width + Term.posRel((-bar.width, 1))
+				)*bar.segmentsFull[1]
+		)
+
+# -------------- ////////////////////////////// --------------
 
 
 

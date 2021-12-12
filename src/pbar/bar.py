@@ -31,7 +31,7 @@ class PBar:
 			charset: sets.CharSetEntry = None,
 			formatset: sets.FormatSetEntry = None,
 			conditions: Conditions = None,
-			gfrom: gen.Gfrom = gen.Gfrom.AUTO,
+			gfrom = None,
 			inverted: bool = False
 		) -> None:
 		"""
@@ -306,11 +306,12 @@ class PBar:
 			self._charset, parsedColorSet
 		)
 
-		barContent = gen.BarContent(self.gfrom, self.inverted)(
+		barContent = gen.BarContent(
+			self.gfrom, self.inverted,
 			(position[0] + 2, position[1] + 1),
 			(size[0] - 2, size[1]),
 			self._charset, parsedColorSet, self._range
-		)
+		)()
 
 		barText = gen.bText(
 			(position[0] + 2, position[1]),
