@@ -125,8 +125,8 @@ def rect(
 
 def getComputedPosition(position: "bar.Position", cSize: tuple[int, int]) -> tuple[int, int]:
 	"""
-	Return a computed position based on the given position,
-	the size supplied by the user, and the size of the terminal
+	Return a computed position based on the given position and size,
+	and the size of the terminal.
 	"""
 	termSize = Term.size()
 	newpos = list(position)
@@ -159,11 +159,11 @@ def getComputedSize(
 		size: tuple[int, int],
 		minSize: tuple[int, int] = (1, 1)
 	) -> tuple[int, int]:
-	"""Return a computed size based on the given size, and the size of the terminal"""
+	"""Return a computed size based on the given size, and the size of the terminal."""
 	termSize = Term.size()
 	newsize = list(size)
 
-	for index in range(2):
+	for index in range(2):	# yields 0 and 1
 		newsize[index] = (
 			termSize[index] + size[index]
 			if size[index] < 0
