@@ -7,203 +7,6 @@ from . utils import Term, capValue
 
 
 
-class BContentGen(ABC):
-	@abstractmethod
-	def generate(self, bar: "BContentGenMgr") -> str:
-		pass
-
-
-class ContentGens:
-	"""Generators container."""
-	Auto: BContentGen
-	Left: BContentGen
-	Right: BContentGen
-	CenterX: BContentGen
-	Bottom: BContentGen
-	Top: BContentGen
-	CenterY: BContentGen
-
-	def register(generator: BContentGen) -> BContentGen:
-		"""Register a new content generator."""
-		setattr(ContentGens, generator.__name__, generator)
-		return generator
-
-
-class BContentGenMgr:
-	"""
-	Generate the content of the bar with the BarGenerator selected.
-	Call this object to get the content string with the properties supplied.
-
-	This object will contain the following properties, which can be used by
-	`BarGenerator` implementations:
-
-	### Properties
-
-	- `prange`: The current prange of the progress bar.
-	- `position`: The position of the content of the bar.
-		- `posX`: The X position of the content of the bar.
-		- `posY`: The Y position of the content of the bar.
-	- `size`: The size of the content of the bar.
-		- `width`: The width of the content of the bar.
-		- `height`: The height of the content of the bar.
-	- `charFull`: The character used to fill the full part of the bar.
-	- `charEmpty`: The character used to fill the empty space of the bar.
-	- `colorFull`: The parsed color used to fill the full part of the bar.
-	- `colorEmpty`: The parsed color used to fill the empty space of the bar.
-	- `segmentsFull`: The number of segments used to fill the full part of the bar.
-		- `segmentsFull[0]`: Horizontal segments.
-		- `segmentsFull[1]`: Vertical segments.
-	- `segmentsEmpty`: The number of segments used to fill the empty space of the bar.
-		- `segmentsEmpty[0]`: Horizontal segments.
-		- `segmentsEmpty[1]`: Vertical segments.
-
-	### Methods
-
-	- `iterRows()`: Iterate over the rows of the bar height.
-	Automatically positions the cursor at the beginning of each row.
-	"""
-	def __init__(self,
-			contentg: BContentGen,
-			invert: bool,
-			position: tuple[int, int],
-			size: tuple[int, int],
-			charset: sets.CharSet,
-			parsedColorset,
-			prange: tuple[int, int]
-		) -> None:
-		"""
-		@contentg: Bar content generator.
-		@invert: Invert the chars and colors of the bar.
-		"""
-		self.contentg = contentg
-		self.prange = prange
-
-		self.position = position
-		self.posX, self.posY = position
-
-		self.size = size
-		self.width, self.height = size
-
-		setEntry = ("empty", "full") if invert else ("full", "empty")
-		self.charFull, self.charEmpty = (
-			charset[setEntry[0]], charset[setEntry[1]])
-		self.colorFull, self.colorEmpty = (
-			parsedColorset[setEntry[0]], parsedColorset[setEntry[1]])
-
-
-		self.segmentsFull = (
-			int((prange[0] / prange[1])*self.width),
-			int(capValue((prange[0] / prange[1])*self.height, max=self.height))
-		)
-		self.segmentsEmpty = (
-			self.width - self.segmentsFull[0],
-			capValue(self.height - self.segmentsFull[1], min=0)
-		)
-
-
-	def __call__(self) -> str:
-		"""Generate the content of the bar."""
-		return Term.pos(self.position) + self.contentg.generate(self)
-
-
-	def iterRows(self, string: str):
-		"""
-		Iterate over the rows of the bar height.
-		Automatically positions the cursor at the beginning of each row.
-		"""
-		return "".join((
-			Term.pos(self.position, (0, row))
-			+ string
-		) for row in range(self.height))
-
-
-
-
-# -------------- Default content generators --------------
-
-@ContentGens.register
-class Auto(BContentGen):
-	"""Select between Left or Bottom depending on the size of the bar"""
-	def generate(bar: BContentGenMgr) -> str:
-		return (
-			Bottom.generate(bar)
-			if bar.height > bar.width else
-			Left.generate(bar)
-		)
-
-@ContentGens.register
-class Left(BContentGen):
-	"""Generate the content of a bar from the left."""
-	def generate(bar: BContentGenMgr) -> str:
-		return bar.iterRows(
-			bar.colorFull + bar.charFull*bar.segmentsFull[0]
-			+ bar.colorEmpty + bar.charEmpty*bar.segmentsEmpty[0]
-		)
-
-@ContentGens.register
-class Right(BContentGen):
-	"""Generate the content of a bar from the right."""
-	def generate(bar: BContentGenMgr) -> str:
-		return bar.iterRows(
-			bar.colorEmpty + bar.charEmpty*bar.segmentsEmpty[0]
-			+ bar.colorFull + bar.charFull*bar.segmentsFull[0]
-		)
-
-@ContentGens.register
-class CenterX(BContentGen):
-	"""Generate the content of a bar from the center."""
-	def generate(bar: BContentGenMgr) -> str:
-		return bar.iterRows(
-			bar.colorEmpty + bar.charEmpty*bar.width
-			+ Term.moveHoriz(-bar.width/2 - bar.segmentsFull[0]/2)
-			+ bar.colorFull + bar.charFull*bar.segmentsFull[0]
-		)
-
-@ContentGens.register
-class Top(BContentGen):
-	"""Generate the content of a bar from the top."""
-	def generate(bar: BContentGenMgr) -> str:
-		return (
-			bar.colorFull + (
-					bar.charFull*bar.width + Term.posRel((-bar.width, 1))
-				)*bar.segmentsFull[1]
-			+ bar.colorEmpty + (
-					bar.charEmpty*bar.width + Term.posRel((-bar.width, 1))
-				)*bar.segmentsEmpty[1]
-		)
-
-@ContentGens.register
-class Bottom(BContentGen):
-	"""Generate the content of a bar from the bottom."""
-	def generate(bar: BContentGenMgr) -> str:
-		return (
-			bar.colorEmpty + (
-					bar.charEmpty*bar.width + Term.posRel((-bar.width, 1))
-				)*bar.segmentsEmpty[1]
-			+ bar.colorFull + (
-					bar.charFull*bar.width + Term.posRel((-bar.width, 1))
-				)*bar.segmentsFull[1]
-		)
-
-@ContentGens.register
-class CenterY(BContentGen):
-	"""Generate the content of a bar from the center."""
-	def generate(bar: BContentGenMgr) -> str:
-		return (
-			bar.colorEmpty + (
-					bar.charEmpty*bar.width + Term.posRel((-bar.width, 1))
-				)*bar.height
-			+ Term.moveVert(-bar.height/2 - bar.segmentsFull[1]/2)
-			+ bar.colorFull + (
-					bar.charFull*bar.width + Term.posRel((-bar.width, 1))
-				)*bar.segmentsFull[1]
-		)
-
-# -------------- ////////////////////////////// --------------
-
-
-
-
 def shape(
 		position: tuple[int, int], size: tuple[int, int], charset,
 		parsedColorset: dict, filled: Optional[str] = " "
@@ -301,16 +104,21 @@ def bText(
 
 def rect(
 		pos: "bar.Position", size: tuple[int, int],
-		char: str="█", color: utils.Color="white"
+		char: str="█", color: utils.Color="white", centered: bool=False
 	) -> str:
 	"""Generate a rectangle."""
 	size = getComputedSize(size)
-	pos = getComputedPosition(pos, size)
+	pos = getComputedPosition(pos, (size if centered else None))
+
+	if "\x1b" in color:
+		colorset = sets.ColorSet({"corner": color, "horiz": color, "vert": color})
+	else:
+		sets.ColorSet({"corner": color, "horiz": color, "vert": color}).parsedValues()
 
 	return shape(
 		pos, size,
 		sets.CharSet({"corner": char, "horiz": char, "vert": char}),
-		sets.ColorSet({"corner": color, "horiz": color, "vert": color}).parsedValues(),
+		colorset,
 		char
 	) + Term.RESET
 
@@ -336,11 +144,14 @@ def getComputedPosition(position: "bar.Position", cSize: tuple[int, int]) -> tup
 		# set maximun and minimun positions
 		value = utils.capValue(
 			value,
-			termSize[index] - cSize[index]/2 - 1,
-			cSize[index]/2 + 1
+			termSize[index] - cSize[index]/2,
+			cSize[index]/2
+		) if cSize else utils.capValue(
+			value,
+			termSize[index]
 		)
 
-		newpos[index] = int(value) - cSize[index]//2
+		newpos[index] = int(value) - (cSize[index]//2 if cSize else 0)
 	return tuple(newpos)
 
 
@@ -362,3 +173,292 @@ def getComputedSize(size: tuple[int, int]) -> tuple[int, int]:
 		utils.capValue(int(width), termSize[0] - 2, 1),
 		utils.capValue(int(height), termSize[1] - 2, 1)
 	)
+
+
+
+
+class BContentGenMgr:
+	"""
+	Generate the content of the bar with the BarGenerator selected.
+	Call this object to get the content string with the properties supplied.
+
+	This object will contain the following properties, which can be used by
+	`BarGenerator` implementations:
+
+	### Properties
+
+	- `prange`: The current prange of the progress bar.
+	- `position`: The position of the content of the bar.
+		- `posX`: The X position of the content of the bar.
+		- `posY`: The Y position of the content of the bar.
+	- `size`: The size of the content of the bar.
+		- `width`: The width of the content of the bar.
+		- `height`: The height of the content of the bar.
+	- `charFull`: The character used to fill the full part of the bar.
+	- `charEmpty`: The character used to fill the empty space of the bar.
+	- `colorFull`: The parsed color used to fill the full part of the bar.
+	- `colorEmpty`: The parsed color used to fill the empty space of the bar.
+	- `segmentsFull`: The number of segments used to fill the full part of the bar.
+		- `segmentsFull[0]`: Horizontal segments.
+		- `segmentsFull[1]`: Vertical segments.
+	- `segmentsEmpty`: The number of segments used to fill the empty space of the bar.
+		- `segmentsEmpty[0]`: Horizontal segments.
+		- `segmentsEmpty[1]`: Vertical segments.
+
+	### Methods
+
+	- `iterRows()`: Iterate over the rows of the bar height.
+	Automatically positions the cursor at the beginning of each row.
+	"""
+	def __init__(self,
+			contentg: "BContentGen",
+			invert: bool,
+			position: tuple[int, int],
+			size: tuple[int, int],
+			charset: sets.CharSet,
+			parsedColorset,
+			prange: tuple[int, int]
+		) -> None:
+		"""
+		@contentg: Bar content generator.
+		@invert: Invert the chars and colors of the bar.
+		"""
+		self.contentg = contentg
+		self.prange = prange
+
+		self.position = position
+		self.posX, self.posY = position
+
+		self.size = size
+		self.width, self.height = size
+
+		setEntry = ("empty", "full") if invert else ("full", "empty")
+		self.charFull, self.charEmpty = (
+			charset[setEntry[0]], charset[setEntry[1]])
+		self.colorFull, self.colorEmpty = (
+			parsedColorset[setEntry[0]], parsedColorset[setEntry[1]])
+
+		self.segmentsFull = (
+			int((prange[0] / prange[1])*self.width),
+			int(capValue((prange[0] / prange[1])*self.height, max=self.height))
+		)
+		self.segmentsEmpty = (
+			self.width - self.segmentsFull[0],
+			capValue(self.height - self.segmentsFull[1], min=0)
+		)
+
+	def __call__(self) -> str:
+		"""Generate the content of the bar."""
+		return Term.pos(self.position) + self.contentg.generate(self)
+
+	def iterRows(self, string: str):
+		"""
+		Iterate over the rows of the bar height.
+		Automatically positions the cursor at the beginning of each row.
+		"""
+		return "".join((
+			Term.pos(self.position, (0, row))
+			+ string
+		) for row in range(self.height))
+
+	def fill(self, string: str):
+		"""Fill the bar with the given string multiplied by the width of the bar."""
+		return self.iterRows(string*self.width)
+
+
+
+
+
+
+class BContentGen(ABC):
+	@abstractmethod
+	def generate(bar: BContentGenMgr) -> str:
+		pass
+
+
+class ContentGens:
+	"""Generators container."""
+	Auto: BContentGen
+	Left: BContentGen
+	Right: BContentGen
+	CenterX: BContentGen
+	Bottom: BContentGen
+	Top: BContentGen
+	CenterY: BContentGen
+	TopLeft: BContentGen
+	TopRight: BContentGen
+	BottomLeft: BContentGen
+	BottomRight: BContentGen
+	Center: BContentGen
+
+
+	def register(generator: BContentGen) -> BContentGen:
+		"""Register a new content generator."""
+		setattr(ContentGens, generator.__name__, generator)
+		return generator
+
+
+
+
+# -------------- Default content generators --------------
+
+@ContentGens.register
+class Auto(BContentGen):
+	"""Select between Left or Bottom depending on the size of the bar"""
+	def generate(bar: BContentGenMgr) -> str:
+		return (
+			Bottom.generate(bar)
+			if bar.height > bar.width else
+			Left.generate(bar)
+		)
+
+@ContentGens.register
+class Left(BContentGen):
+	"""Generate the content of a bar from the left."""
+	def generate(bar: BContentGenMgr) -> str:
+		return bar.iterRows(
+			bar.colorFull + bar.charFull*bar.segmentsFull[0]
+			+ bar.colorEmpty + bar.charEmpty*bar.segmentsEmpty[0]
+		)
+
+@ContentGens.register
+class Right(BContentGen):
+	"""Generate the content of a bar from the right."""
+	def generate(bar: BContentGenMgr) -> str:
+		return bar.iterRows(
+			bar.colorEmpty + bar.charEmpty*bar.segmentsEmpty[0]
+			+ bar.colorFull + bar.charFull*bar.segmentsFull[0]
+		)
+
+@ContentGens.register
+class CenterX(BContentGen):
+	"""Generate the content of a bar from the center."""
+	def generate(bar: BContentGenMgr) -> str:
+		return (
+			bar.fill(bar.colorEmpty + bar.charEmpty)
+			+ rect(
+				(bar.posX + bar.width//2, bar.posY),
+				(bar.width, bar.height),
+				bar.charFull,
+				bar.colorFull,
+				True
+			)
+		)
+
+@ContentGens.register
+class Top(BContentGen):
+	"""Generate the content of a bar from the top."""
+	def generate(bar: BContentGenMgr) -> str:
+		return (
+			bar.colorFull + (
+					bar.charFull*bar.width + Term.posRel((-bar.width, 1))
+				)*bar.segmentsFull[1]
+			+ bar.colorEmpty + (
+					bar.charEmpty*bar.width + Term.posRel((-bar.width, 1))
+				)*bar.segmentsEmpty[1]
+		)
+
+@ContentGens.register
+class Bottom(BContentGen):
+	"""Generate the content of a bar from the bottom."""
+	def generate(bar: BContentGenMgr) -> str:
+		return (
+			bar.colorEmpty + (
+					bar.charEmpty*bar.width + Term.posRel((-bar.width, 1))
+				)*bar.segmentsEmpty[1]
+			+ bar.colorFull + (
+					bar.charFull*bar.width + Term.posRel((-bar.width, 1))
+				)*bar.segmentsFull[1]
+		)
+
+@ContentGens.register
+class CenterY(BContentGen):
+	"""Generate the content of a bar from the center."""
+	def generate(bar: BContentGenMgr) -> str:
+		return (
+			bar.colorEmpty + (
+					bar.charEmpty*bar.width + Term.posRel((-bar.width, 1))
+				)*bar.height
+			+ Term.moveVert(-bar.height/2 - bar.segmentsFull[1]/2)
+			+ bar.colorFull + (
+					bar.charFull*bar.width + Term.posRel((-bar.width, 1))
+				)*bar.segmentsFull[1]
+		)
+
+@ContentGens.register
+class TopLeft(BContentGen):
+	def generate(bar: BContentGenMgr) -> str:
+		return (
+			bar.fill(bar.colorEmpty + bar.charEmpty)	# the background
+			+ rect(	# the full part
+				bar.position,
+				bar.segmentsFull,
+				bar.charFull,
+				bar.colorFull
+			)
+		)
+
+@ContentGens.register
+class TopRight(BContentGen):
+	def generate(bar: BContentGenMgr) -> str:
+		return (
+			bar.fill(bar.colorEmpty + bar.charEmpty)	# the background
+			+ (rect(	# the full part
+				(
+					bar.posX + bar.segmentsEmpty[0],
+					bar.posY
+				),
+				bar.segmentsFull,
+				bar.charFull,
+				bar.colorFull
+			) if bar.segmentsFull[0] > 1 else "")
+		)
+
+@ContentGens.register
+class BottomLeft(BContentGen):
+	def generate(bar: BContentGenMgr) -> str:
+		return (
+			bar.fill(bar.colorEmpty + bar.charEmpty)	# the background
+			+ (rect(	# the full part
+				(
+					bar.posX,
+					bar.posY + bar.segmentsEmpty[1]
+				),
+				bar.segmentsFull,
+				bar.charFull,
+				bar.colorFull
+			) if bar.segmentsFull[0] > 10 else "")
+		)
+
+@ContentGens.register
+class BottomRight(BContentGen):
+	def generate(bar: BContentGenMgr) -> str:
+		return (
+			bar.fill(bar.colorEmpty + bar.charEmpty)	# the background
+			+ (rect(	# the full part
+				(
+					bar.posX + bar.segmentsEmpty[0],
+					bar.posY + bar.segmentsEmpty[1]
+				),
+				bar.segmentsFull,
+				bar.charFull,
+				bar.colorFull
+			) if bar.segmentsFull[0] > 1 else "")
+		)
+
+@ContentGens.register
+class Center(BContentGen):
+	def generate(bar: BContentGenMgr) -> str:
+		return (
+			bar.fill(bar.colorEmpty + bar.charEmpty)	# the background
+			+ (rect(	# the full part
+				(
+					bar.posX + bar.width/2,
+					bar.posY + bar.height/2
+				),
+				bar.segmentsFull,
+				bar.charFull,
+				bar.colorFull,
+				True
+			) if bar.segmentsFull[0] > 1 else "")
+		)

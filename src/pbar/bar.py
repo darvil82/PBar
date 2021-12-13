@@ -213,7 +213,7 @@ class PBar:
 	def computedValues(self) -> tuple[tuple[int, int], tuple[int, int]]:
 		"""Computed position and size of the progress bar."""
 		size = gen.getComputedSize(self.size)
-		pos = gen.getComputedPosition(self.position, size)
+		pos = gen.getComputedPosition(self.position, (size[0], size[1] + 1))
 
 		return pos, size
 
