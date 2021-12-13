@@ -107,20 +107,20 @@ def rect(
 		char: str="█", color: utils.Color="white", centered: bool=False
 	) -> str:
 	"""Generate a rectangle."""
-	size = getComputedSize(size)
+	size = getComputedSize(size, (0, 0))
 	pos = getComputedPosition(pos, (size if centered else None))
 
-	if "\x1b" in color:
-		colorset = sets.ColorSet({"corner": color, "horiz": color, "vert": color})
-	else:
-		sets.ColorSet({"corner": color, "horiz": color, "vert": color}).parsedValues()
+	colorset = sets.ColorSet({"corner": color, "horiz": color, "vert": color})
+
+	if "\x1b" not in color:
+		colorset = colorset.parsedValues()
 
 	return shape(
 		pos, size,
 		sets.CharSet({"corner": char, "horiz": char, "vert": char}),
 		colorset,
 		char
-	) + Term.RESET
+	)
 
 
 def getComputedPosition(position: "bar.Position", cSize: tuple[int, int]) -> tuple[int, int]:
@@ -155,7 +155,10 @@ def getComputedPosition(position: "bar.Position", cSize: tuple[int, int]) -> tup
 	return tuple(newpos)
 
 
-def getComputedSize(size: tuple[int, int]) -> tuple[int, int]:
+def getComputedSize(
+		size: tuple[int, int],
+		minSize: tuple[int, int] = (1, 1)
+	) -> tuple[int, int]:
 	"""Return a computed size based on the given size, and the size of the terminal"""
 	termSize = Term.size()
 	newsize = list(size)
@@ -170,8 +173,8 @@ def getComputedSize(size: tuple[int, int]) -> tuple[int, int]:
 	width, height = map(int, newsize)
 
 	return (
-		utils.capValue(int(width), termSize[0] - 2, 1),
-		utils.capValue(int(height), termSize[1] - 2, 1)
+		utils.capValue(int(width), termSize[0] - 2, minSize[0]),
+		utils.capValue(int(height), termSize[1] - 2, minSize[1])
 	)
 
 
@@ -307,9 +310,9 @@ class Auto(BContentGen):
 	"""Select between Left or Bottom depending on the size of the bar"""
 	def generate(bar: BContentGenMgr) -> str:
 		return (
-			Bottom.generate(bar)
-			if bar.height > bar.width else
 			Left.generate(bar)
+			if bar.width//2 > bar.height else
+			Bottom.generate(bar)
 		)
 
 @ContentGens.register
@@ -334,15 +337,10 @@ class Right(BContentGen):
 class CenterX(BContentGen):
 	"""Generate the content of a bar from the center."""
 	def generate(bar: BContentGenMgr) -> str:
-		return (
-			bar.fill(bar.colorEmpty + bar.charEmpty)
-			+ rect(
-				(bar.posX + bar.width//2, bar.posY),
-				(bar.width, bar.height),
-				bar.charFull,
-				bar.colorFull,
-				True
-			)
+		return bar.iterRows(
+			bar.colorEmpty + bar.charEmpty*bar.width
+			+ Term.moveHoriz(-bar.width/2 - bar.segmentsFull[0]/2)
+			+ bar.colorFull + bar.charFull*bar.segmentsFull[0]
 		)
 
 @ContentGens.register
@@ -388,22 +386,22 @@ class CenterY(BContentGen):
 @ContentGens.register
 class TopLeft(BContentGen):
 	def generate(bar: BContentGenMgr) -> str:
-		return (
-			bar.fill(bar.colorEmpty + bar.charEmpty)	# the background
-			+ rect(	# the full part
+		endStr = bar.colorEmpty + bar.fill(bar.charEmpty)	# the background
+		if bar.segmentsFull[1] >= 1:
+			endStr += rect(	# the full part
 				bar.position,
 				bar.segmentsFull,
 				bar.charFull,
 				bar.colorFull
 			)
-		)
+		return endStr
 
 @ContentGens.register
 class TopRight(BContentGen):
 	def generate(bar: BContentGenMgr) -> str:
-		return (
-			bar.fill(bar.colorEmpty + bar.charEmpty)	# the background
-			+ (rect(	# the full part
+		endStr = bar.colorEmpty + bar.fill(bar.charEmpty)	# the background
+		if bar.segmentsFull[1] >= 1:
+			endStr += rect(	# the full part
 				(
 					bar.posX + bar.segmentsEmpty[0],
 					bar.posY
@@ -411,15 +409,15 @@ class TopRight(BContentGen):
 				bar.segmentsFull,
 				bar.charFull,
 				bar.colorFull
-			) if bar.segmentsFull[0] > 1 else "")
-		)
+			)
+		return endStr
 
 @ContentGens.register
 class BottomLeft(BContentGen):
 	def generate(bar: BContentGenMgr) -> str:
-		return (
-			bar.fill(bar.colorEmpty + bar.charEmpty)	# the background
-			+ (rect(	# the full part
+		endStr = bar.colorEmpty + bar.fill(bar.charEmpty)
+		if bar.segmentsFull[1] >= 1:
+			endStr += rect(	# the full part
 				(
 					bar.posX,
 					bar.posY + bar.segmentsEmpty[1]
@@ -427,15 +425,16 @@ class BottomLeft(BContentGen):
 				bar.segmentsFull,
 				bar.charFull,
 				bar.colorFull
-			) if bar.segmentsFull[0] > 10 else "")
-		)
+			)
+		return endStr
+
 
 @ContentGens.register
 class BottomRight(BContentGen):
 	def generate(bar: BContentGenMgr) -> str:
-		return (
-			bar.fill(bar.colorEmpty + bar.charEmpty)	# the background
-			+ (rect(	# the full part
+		endStr = bar.colorEmpty + bar.fill(bar.charEmpty)	# the background
+		if bar.segmentsFull[0] > 1:
+			endStr += rect(	# the full part
 				(
 					bar.posX + bar.segmentsEmpty[0],
 					bar.posY + bar.segmentsEmpty[1]
@@ -443,15 +442,15 @@ class BottomRight(BContentGen):
 				bar.segmentsFull,
 				bar.charFull,
 				bar.colorFull
-			) if bar.segmentsFull[0] > 1 else "")
-		)
+			)
+		return endStr
 
 @ContentGens.register
 class Center(BContentGen):
 	def generate(bar: BContentGenMgr) -> str:
-		return (
-			bar.fill(bar.colorEmpty + bar.charEmpty)	# the background
-			+ (rect(	# the full part
+		endStr = bar.colorEmpty + bar.fill(bar.charEmpty)	# the background
+		if bar.segmentsFull[0] > 1:
+			endStr += rect(	# the full part
 				(
 					bar.posX + bar.width/2,
 					bar.posY + bar.height/2
@@ -460,5 +459,5 @@ class Center(BContentGen):
 				bar.charFull,
 				bar.colorFull,
 				True
-			) if bar.segmentsFull[0] > 1 else "")
-		)
+			)
+		return endStr

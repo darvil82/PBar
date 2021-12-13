@@ -2,7 +2,6 @@ from os import system as runsys, get_terminal_size, isatty
 from time import sleep
 from typing import (
 	Callable,
-	Literal,
 	SupportsFloat,
 	TypeVar,
 	Optional,
