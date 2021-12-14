@@ -89,7 +89,7 @@ class PBar:
 
 		---
 
-		@contentg: Content generator for the progress indicator of the bar.
+		@contentg: Content generator for the progress indicator of the bar. Available generators in `pbar.ContentGens`.
 
 		---
 
@@ -212,7 +212,7 @@ class PBar:
 	@property
 	def computedValues(self) -> tuple[tuple[int, int], tuple[int, int]]:
 		"""Computed position and size of the progress bar."""
-		size = gen.getComputedSize(self.size, (4, 2))
+		size = gen.getComputedSize(self.size, (4, 2), (1, 1))
 		pos = gen.getComputedPosition(self.position, size, (3, 0))
 
 		return pos, size
