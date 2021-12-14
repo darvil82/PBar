@@ -212,8 +212,8 @@ class PBar:
 	@property
 	def computedValues(self) -> tuple[tuple[int, int], tuple[int, int]]:
 		"""Computed position and size of the progress bar."""
-		size = gen.getComputedSize(self.size, minSize=(4, 1))
-		pos = gen.getComputedPosition(self.position, (size[0], size[1] + 1))
+		size = gen.getComputedSize(self.size, (4, 2))
+		pos = gen.getComputedPosition(self.position, size, (3, 0))
 
 		return pos, size
 
@@ -278,7 +278,7 @@ class PBar:
 
 		barShape = gen.shape(
 			position,
-			(size[0] + 2, size[1] + 2),
+			(size[0] + 4, size[1] + 2),
 			sets.CharSet.EMPTY,
 			parsedColorSet
 		)
@@ -302,20 +302,20 @@ class PBar:
 		# Build all the parts of the progress bar
 		barShape = gen.shape(
 			position,
-			(size[0] + 2, size[1] + 2),
+			(size[0] + 4, size[1] + 2),
 			self._charset, parsedColorSet
 		)
 
 		barContent = gen.BContentGenMgr(
 			self.contentg, self.inverted,
 			(position[0] + 2, position[1] + 1),
-			(size[0] - 2, size[1]),
+			size,
 			self._charset, parsedColorSet, self._range
 		)()
 
 		barText = gen.bText(
 			(position[0] + 2, position[1]),
-			(size[0] - 2, size[1] + 2),
+			(size[0], size[1] + 2),
 			parsedColorSet, self._formatset.parsedValues(self)
 		)
 
