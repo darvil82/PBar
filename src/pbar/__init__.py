@@ -15,7 +15,7 @@ from . bar import PBar, animate, barHelper
 from . task_wrapper import taskWrapper
 from . sets import CharSet, FormatSet, ColorSet
 from . cond import Cond
-from . gen import BContentGen, BContentGenMgr, ContentGens
+from . gen import ContentGens
 from . utils import Term
 
 

@@ -276,7 +276,7 @@ class PBar:
 		if not self._isOnScreen:	return ""
 		parsedColorSet = sets.ColorSet(sets.ColorSet.EMPTY).parsedValues()
 
-		barShape = gen.shape(
+		barShape = gen.bShape(
 			position,
 			(size[0] + 4, size[1] + 2),
 			sets.CharSet.EMPTY,
@@ -300,7 +300,7 @@ class PBar:
 		parsedColorSet = self._colorset.parsedValues()
 
 		# Build all the parts of the progress bar
-		barShape = gen.shape(
+		barShape = gen.bShape(
 			position,
 			(size[0] + 4, size[1] + 2),
 			self._charset, parsedColorSet
