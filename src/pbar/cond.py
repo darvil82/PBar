@@ -1,7 +1,7 @@
 from shlex import split as strSplit
 from typing import Callable
 
-from . import bar, sets, utils
+from . import bar, sets, utils, gen
 
 
 _OPs = {
@@ -21,6 +21,7 @@ class Cond:
 			condition: str, colorset: sets.ColorSetEntry = None,
 			charset: sets.CharSetEntry = None,
 			formatset: sets.FormatSetEntry = None,
+			contentg: gen.BContentGen = None,
 			callback: Callable[["bar.PBar"], None] = None
 		) -> None:
 		"""
@@ -54,6 +55,7 @@ class Cond:
 		self._attribute, self.operator = vs[:2]
 		self._value = float(vs[2]) if utils.isNum(vs[2]) else vs[2].lower()	# convert to float if its a num
 		self.newSets = (colorset, charset, formatset)
+		self.conteng = contentg
 		self.callback = callback
 
 
@@ -72,7 +74,9 @@ class Cond:
 
 	def __repr__(self) -> str:
 		"""Returns `Cond('attrib operator value', *newSets)`"""
-		return (f"{self.__class__.__name__}('{self._attribute} {self.operator} {self._value}', {self.newSets}, {self.callback})")
+		return (
+			f"{self.__class__.__name__}('{self._attribute} {self.operator} {self._value}', {self.newSets}, {self.callback}, {self.conteng})"
+		)
 
 
 	def test(self, barObj: "bar.PBar") -> bool:
@@ -103,5 +107,7 @@ class Cond:
 		if self.newSets[0]:	barObj.colorset = self.newSets[0]
 		if self.newSets[1]:	barObj.charset = self.newSets[1]
 		if self.newSets[2]:	barObj.formatset = self.newSets[2]
+
+		if self.conteng:	barObj.contentg = self.conteng
 
 		if self.callback:	self.callback(barObj)

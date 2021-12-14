@@ -159,7 +159,7 @@ def getComputedPosition(
 		value = utils.capValue(
 			value,
 			termSize[index] - cSize[index]/2 - sizeOffset[index],
-			cSize[index]/2
+			cSize[index]/2 + 1
 		) if cSize else utils.capValue(
 			value,
 			termSize[index]
@@ -308,12 +308,18 @@ class ContentGens:
 
 		@generator: The generator to register.
 		@name: The name of the of the generator in the `ContentGens` class.
-		By default, the name is the `__name__` of the generator.
+		By default, the name is the `__name__` of the generator. (the first letter
+		will always be uppercase)
 		"""
 		def inner(generator: BContentGen) -> BContentGen:
 			nonlocal name
 			gName = generator.__name__ if name is None else name
-			setattr(	# add the generator to the class
+
+			# add a attribute so we can tell later it is a generator
+			setattr(generator, "isBContentGen", True)
+
+			# add the generator to the class
+			setattr(
 				ContentGens,
 				gName[0].upper() + gName[1:],	# capitalize only the first letter
 				generator
@@ -325,6 +331,13 @@ class ContentGens:
 
 		return inner(generator)
 
+	@staticmethod
+	def getGens() -> tuple[BContentGen]:
+		"""Get the registered generators."""
+		return tuple(
+			value for attr in dir(ContentGens)
+			if hasattr(value := getattr(ContentGens, attr), "isBContentGen")
+		)
 
 
 # ------------------------- Default content generators -------------------------

@@ -26,8 +26,8 @@ def getConstAttrs(obj) -> list[tuple[str, Any]]:
 	return [(x, getattr(obj, x)) for x in dir(obj) if x == x.upper()]
 
 def animate(bar):
-	pbar.animate(bar, delay=0.01)
-	sleep(1)
+	pbar.animate(bar, delay=0.005)
+	# sleep(0.1)
 	bar.clear()
 
 
@@ -43,17 +43,17 @@ def default():
 	animate(b)
 
 
-@repeatFunc(10)
+@repeatFunc(30)
 def fullyRandom():
 	b = pbar.PBar(
 		(randint(0, 200), randint(0, 200)),
 		randomString(),
-		(randint(0, termSize[0]//2), randint(0, termSize[1]//2)),
+		(randint(0, termSize[0]), randint(0, termSize[1])),
 		(randint(0, termSize[0]), randint(0, termSize[1])),
 		choice(getConstAttrs(pbar.ColorSet))[1],
 		choice(getConstAttrs(pbar.CharSet))[1],
 		choice(getConstAttrs(pbar.FormatSet))[1],
-		contentg=choice([pbar.BContentGenMgr.Left, pbar.BContentGenMgr.Right, pbar.BContentGenMgr.CenterX, pbar.BContentGenMgr.CenterY, pbar.BContentGenMgr.Top, pbar.BContentGenMgr.Bottom]),
+		contentg=choice(pbar.ContentGens.getGens()),
 		inverted=choice([True, False]),
 	)
 
@@ -70,7 +70,7 @@ def modifySizeAndPos():
 		b.size = (w, h)
 		b.position = (p*2, p)
 		b.step()
-		sleep(.1)
+		sleep(.05)
 
 	b.percentage = 0
 	for p, w in enumerate(range(100, 1, -1)):
@@ -78,7 +78,7 @@ def modifySizeAndPos():
 		b.size = (w, h)
 		b.position = (p*2, p)
 		b.step()
-		sleep(.1)
+		sleep(.05)
 
 	animate(b)
 
@@ -107,7 +107,7 @@ def condtionals():
 	conds = (	# lol!
 		pbar.Cond(f"percentage == {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1]),
 		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1]),
-		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1]),
+		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1], choice(pbar.ContentGens.getGens())),
 		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1]),
 		pbar.Cond(f"text == '{randomString()}'"),
 	)
