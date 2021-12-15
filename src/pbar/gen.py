@@ -225,7 +225,7 @@ class BContentGenMgr:
 
 	### Methods
 
-	- `iterRows()`: Iterate over the rows of the bar height.
+	- `iterRows()`: Iterate throught the rows of the bar height.
 	Automatically positions the cursor at the beginning of each row.
 	- `fill()`: Fill the bar with the given string.
 	"""
@@ -272,7 +272,8 @@ class BContentGenMgr:
 
 	def iterRows(self, string: str):
 		"""
-		Iterate over the rows of the bar height.
+		Iterate throught the rows of the bar height while adding the supplied
+		string on each.
 		Automatically positions the cursor at the beginning of each row.
 		"""
 		return iterRows(string, self.position, self.height)
