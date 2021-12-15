@@ -17,7 +17,7 @@ __all__ = (
 )
 
 
-Color = Optional[Union[tuple[int, int, int], str, None]]
+Color = Union[tuple[int, int, int], str]
 
 
 _HTML_COLOR_NAMES: dict = {  # thanks to https://stackoverflow.com/a/1573141/14546524
@@ -203,7 +203,9 @@ def convertColor(clr: Color, conversion: str) -> Union[str, tuple]:
 	@clr:			Color value to convert.
 	@conversion:	Type of conversion to do ('RGB' or 'HEX')
 	"""
-	if isinstance(clr, str):
+	if not clr:
+		raise ValueError("Color value cannot be None")
+	elif isinstance(clr, str):
 		color = clr.lower()
 		if color in _HTML_COLOR_NAMES:	color = _HTML_COLOR_NAMES[color]	# check if its a html color name
 	else:
@@ -353,9 +355,6 @@ class Term:
 		@color:	Tuple with RGB values, a HTML color name, or a hex string.
 		@bg:	This color will be displayed on the background
 		"""
-		if not color:
-			return ""
-
 		crgb = convertColor(color, "RGB")
 		type = 48 if bg else 38
 

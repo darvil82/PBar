@@ -111,7 +111,7 @@ def condtionals():
 		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1]),
 		pbar.Cond(f"text == '{randomString()}'"),
 	)
-	b = pbar.PBar(prange=(0, 100), conditions=conds)
+	b = pbar.PBar(size=(20, 10), conditions=conds)
 	animate(b)
 
 

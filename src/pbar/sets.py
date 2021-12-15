@@ -34,7 +34,10 @@ class _BaseSet(dict):
 
 
 	def _populate(self, currentSet: dict) -> dict:		# ?: Needs a proper rewrite if we end up needing more subdicts
-		"""Return a new set with all the necessary keys for drawing the bar, making sure that no keys are missing."""
+		"""
+		Return a new set with all the necessary keys for drawing the bar,
+		making sure that no keys are missing.
+		"""
 		newSet = {}
 		for key, currentValue in currentSet.items():
 			if key not in self.EMPTY:
@@ -63,118 +66,109 @@ class ColorSet(_BaseSet):
 	"""Container for the color sets."""
 
 	EMPTY: ColorSetEntry = {
-		"empty":	None,
-		"full":		None,
+		"empty": "white",
+		"full": "white",
 		"vert":	{
-			"left":		None,
-			"right":	None
+			"left": "white",
+			"right": "white"
 		},
 		"horiz": {
-			"top":		None,
-			"bottom":	None
+			"top": "white",
+			"bottom": "white"
 		},
 		"corner": {
-			"tleft":	None,
-			"tright":	None,
-			"bleft":	None,
-			"bright":	None,
+			"tleft": "white",
+			"tright": "white",
+			"bleft": "white",
+			"bright": "white",
 		},
 		"text":	{
-			"inside":	None,
-			"right":	None,
-			"left":		None,
-			"title":	None,
-			"subtitle":	None
+			"inside": "white",
+			"right": "white",
+			"left": "white",
+			"title": "white",
+			"subtitle": "white"
 		}
 	}
 
 	DEFAULT: ColorSetEntry = {
-		"full":		"#15F28D",
-		"empty":	"#FF4D4D",
-		"horiz":	"white",
-		"vert":		"white",
-		"corner":	"white",
-		"text":		"white"
+		"full": "#15F28D",
+		"empty": "#FF4D4D",
 	}
 
 	DARVIL: ColorSetEntry = {
-		"empty":	"#0067c2",
-		"full":		"springGreen",
-		"vert":		"#f76f98",
-		"horiz":	"#f76f98",
-		"corner":	"#f76f98",
+		"empty": "#0067c2",
+		"full": "springGreen",
+		"vert": "#f76f98",
+		"horiz": "#f76f98",
+		"corner": "#f76f98",
 		"text": {
-			"right":	"springGreen",
-			"title":	"#f76f98",
-			"subtitle":	"#f76f98",
-			"left":		"springGreen",
-			"inside":	"springGreen"
+			"right": "springGreen",
+			"title": "#f76f98",
+			"subtitle": "#f76f98",
+			"left": "springGreen",
+			"inside": "springGreen"
 		}
 	}
 
 	RED: ColorSetEntry = {
-		"empty":	"darkRed",
-		"full":		"red",
-		"vert":		"#ff6464",
-		"horiz":	"#ff6464",
-		"corner":	"#ff6464",
-		"text":		"#ff6464"
+		"empty": "darkRed",
+		"full": "red",
+		"vert": "#ff6464",
+		"horiz": "#ff6464",
+		"corner": "#ff6464",
+		"text": "#ff6464",
 	}
 
 	GREEN: ColorSetEntry = {
-		"full":		"lime",
-		"empty":	"green",
-		"horiz":	"paleGreen",
-		"corner":	"paleGreen",
-		"vert":		"paleGreen",
-		"text":		"lime"
+		"full": "lime",
+		"empty": "green",
+		"horiz": "paleGreen",
+		"corner": "paleGreen",
+		"vert": "paleGreen",
+		"text": "lime",
 	}
 
 	YELLOW: ColorSetEntry = {
-		"full":		"yellow",
-		"empty":	"#a77227",
-		"horiz":	"#dab77b",
-		"vert":		"#dab77b",
-		"corner":	"#dab77b",
-		"text":		"#dab77b"
+		"full": "yellow",
+		"empty": "#a77227",
+		"horiz": "#dab77b",
+		"vert": "#dab77b",
+		"corner": "#dab77b",
+		"text": "#dab77b",
 	}
 
 	FLAG_ES: ColorSetEntry = {
-		"corner":	"red",
-		"horiz":	"red",
-		"vert":		"yellow",
-		"full":		"yellow",
-		"empty":	"#9a7600",
-		"text":	{
-			"inside":	"yellow",
-			"right":	"yellow",
-			"left":		"yellow",
-			"title":	"red",
-			"subtitle":	"red"
-		}
+		"corner": "red",
+		"horiz": "red",
+		"vert": "yellow",
+		"full": "yellow",
+		"empty": "#9a7600",
+		"text": {
+			"inside": "yellow",
+			"right": "yellow",
+			"left": "yellow",
+			"title": "red",
+			"subtitle": "red",
+		},
 	}
 
-	FLAG_LESBIAN: ColorSetEntry = {		# Author: ShygalCoco
-		"empty":        "#777",
-		"full":         "#fff",
-		"vert":			"#fff",
+	FLAG_LESBIAN: ColorSetEntry = {  # Author: ShygalCoco
+		"empty": "#777",
 		"horiz": {
-			"top":      "#ff9879",
-			"bottom":   "#e57bb9"
+			"top": "#ff9879",
+			"bottom": "#e57bb9"
 		},
 		"corner": {
-			"tleft":    "#ff9879",
-			"tright":   "#ff9879",
-			"bleft":    "#e57bb9",
-			"bright":   "#e57bb9"
+			"tleft": "#ff9879",
+			"tright": "#ff9879",
+			"bleft": "#e57bb9",
+			"bright": "#e57bb9",
 		},
 		"text": {
-			"inside":   "#fff",
-			"right":    "#fff",
-			"left":     "#fff",
-			"title":    "#ff9879",
+			"title": "#ff9879",
 			"subtitle": "#e57bb9"
-		}
+		},
 	}
 
 
@@ -193,119 +187,119 @@ class CharSet(_BaseSet):
 	"""Container for the character sets."""
 
 	EMPTY: CharSetEntry = {
-		"empty":	" ",
-		"full":		" ",
+		"empty": " ",
+		"full": " ",
 		"vert": {
-			"right":	" ",
-			"left":		" "
+			"right": " ",
+			"left": " "
 		},
 		"horiz": {
-			"top":		" ",
-			"bottom":	" "
+			"top": " ",
+			"bottom": " "
 		},
 		"corner": {
-			"tleft":	" ",
-			"tright":	" ",
-			"bleft":	" ",
-			"bright":	" "
-		}
+			"tleft": " ",
+			"tright": " ",
+			"bleft": " ",
+			"bright": " "
+		},
 	}
 
 	DEFAULT: CharSetEntry = {
-		"empty":	"░",
-		"full":		"█",
-		"vert":		"│",
-		"horiz":	"─",
+		"empty": "░",
+		"full": "█",
+		"vert": "│",
+		"horiz": "─",
 		"corner": {
-			"tleft":	"┌",
-			"tright":	"┐",
-			"bleft":	"└",
-			"bright":	"┘"
-		}
+			"tleft": "┌",
+			"tright": "┐",
+			"bleft": "└",
+			"bright": "┘"
+		},
 	}
 
 	BASIC: CharSetEntry = {
-		"empty":	".",
-		"full":		"#",
-		"vert":	{
-			"left":		"[",
-			"right":	"]"
-		}
+		"empty": ".",
+		"full": "#",
+		"vert": {
+			"left": "[",
+			"right": "]"
+		},
 	}
 
 	SLIM: CharSetEntry = {
-		"empty":	"░",
-		"full":		"█"
+		"empty": "░",
+		"full": "█"
 	}
 
 	CIRCLES: CharSetEntry = {
-		"empty":	"○",
-		"full":		"●"
+		"empty": "○",
+		"full": "●"
 	}
 
 	BASIC2: CharSetEntry = {
-		"empty":	".",
-		"full":		"#",
-		"vert":		"|",
-		"horiz":	"-",
-		"corner":	"+"
+		"empty": ".",
+		"full": "#",
+		"vert": "|",
+		"horiz": "-",
+		"corner": "+",
 	}
 
 	FULL: CharSetEntry = {
-		"empty":	"█",
-		"full":		"█"
+		"empty": "█",
+		"full": "█"
 	}
 
 	DIFF: CharSetEntry = {
-		"full":		"+",
-		"empty":	"-"
+		"full": "+",
+		"empty": "-"
 	}
 
 	DOTS: CharSetEntry = {
-		"full":		"⣿",
-		"empty":	"⢸"
+		"full": "⣿",
+		"empty": "⢸"
 	}
 
 	TRIANGLES: CharSetEntry = {
-		"full":		"▶",
-		"empty":	"◁"
+		"full": "▶",
+		"empty": "◁"
 	}
 
 	BRICKS: CharSetEntry = {
-		"full":		"█",
-		"empty":	"▞",
-		"vert":		"┋"
+		"full": "█",
+		"empty": "▞",
+		"vert": "┋"
 	}
 
 	ROUNDED: CharSetEntry = {
-		"full":		"█",
-		"empty":	"▁",
-		"horiz":	"─",
-		"vert":		"│",
+		"full": "█",
+		"empty": "▁",
+		"horiz": "─",
+		"vert": "│",
 		"corner": {
-			"tright":	"╮",
-			"tleft":	"╭",
-			"bleft":	"╰",
-			"bright":	"╯"
+			"tright": "╮",
+			"tleft": "╭",
+			"bleft": "╰",
+			"bright": "╯"
 		},
 	}
 
 	TILTED: CharSetEntry = {
-		"full":		"🙽",
-		"empty":	"🙽"
+		"full": "🙽",
+		"empty": "🙽"
 	}
 
 	DOUBLE: CharSetEntry = {
-		"empty":	"░",
-		"full":		"█",
-		"vert":		"║",
-		"horiz":	"═",
+		"empty": "░",
+		"full": "█",
+		"vert": "║",
+		"horiz": "═",
 		"corner": {
-			"tleft":	"╔",
-			"tright":	"╗",
-			"bleft":	"╚",
-			"bright":	"╝"
-		}
+			"tleft": "╔",
+			"tright": "╗",
+			"bleft": "╚",
+			"bright": "╝"
+		},
 	}
 
 
@@ -339,59 +333,59 @@ class FormatSet(_BaseSet):
 	"""Container for the formatting sets."""
 
 	EMPTY: FormatSetEntry = {
-		"inside":	"",
-		"right":	"",
-		"left":		"",
-		"title":	"",
-		"subtitle":	""
+		"inside": "",
+		"right": "",
+		"left": "",
+		"title": "",
+		"subtitle": "",
 	}
 
 	DEFAULT: FormatSetEntry = {
-		"title":	"<text>",
-		"inside":	"<percentage>%"
+		"title": "<text>",
+		"inside": "<percentage>%"
 	}
 
 	DESCRIPTIVE: FormatSetEntry = {
-		"right":	"E. Time: <etime>s.",
-		"title":	"<text>",
-		"subtitle":	"<prange1> of <prange2>",
-		"inside":	"<percentage>%"
+		"right": "E. Time: <etime>s.",
+		"title": "<text>",
+		"subtitle": "<prange1> of <prange2>",
+		"inside": "<percentage>%",
 	}
 
 	LEFT_RIGHT: FormatSetEntry = {
-		"left":		"<prange1>/<prange2>",
-		"right":	"<text>: <percentage>%"
+		"left": "<prange1>/<prange2>",
+		"right": "<text>: <percentage>%",
 	}
 
 	ONLY_PERCENTAGE: FormatSetEntry = {
-		"inside":	"<percentage>%",
+		"inside": "<percentage>%",
 	}
 
 	SIMPLE: FormatSetEntry = {
-		"title":	"<text>",
-		"subtitle":	"<prange1>/<prange2>"
+		"title": "<text>",
+		"subtitle": "<prange1>/<prange2>"
 	}
 
 	E_TIME: FormatSetEntry = {
-		"title":	"<text>",
-		"subtitle":	"Elapsed <etime> seconds"
+		"title": "<text>",
+		"subtitle": "Elapsed <etime> seconds"
 	}
 
 	TITLE_SUBTITLE: FormatSetEntry = {
-		"title":	"<text> (<prange1>/<prange2>)",
-		"subtitle":	"<percentage>%, (<etime>s)"
+		"title": "<text> (<prange1>/<prange2>)",
+		"subtitle": "<percentage>%, (<etime>s)",
 	}
 
 	CLASSIC: FormatSetEntry = {
-		"right":	"<text>: <percentage>% (<prange1>/<prange2>) [<etime>s]"
+		"right": "<text>: <percentage>% (<prange1>/<prange2>) [<etime>s]"
 	}
 
 	PLACEHOLDER: FormatSetEntry = {
-		"inside":	"inside",
-		"right":	"right",
-		"left":		"left",
-		"title":	"title",
-		"subtitle":	"subtitle"
+		"inside": "inside",
+		"right": "right",
+		"left": "left",
+		"title": "title",
+		"subtitle": "subtitle",
 	}
 
 
