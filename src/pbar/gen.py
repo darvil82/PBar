@@ -373,8 +373,8 @@ def right(bar: BContentGenMgr) -> str:
 def centerX(bar: BContentGenMgr) -> str:
 	"""Generate the content of a bar from the center on the X axis."""
 	return (
-		bar.colorEmpty + bar.fill(bar.charEmpty)
-		+ rect(
+		bar.colorEmpty + bar.fill(bar.charEmpty)	# empty
+		+ rect(	# full
 			(bar.posX + bar.width/2, bar.posY + bar.height/2),
 			(bar.segmentsFull[0], bar.height),
 			bar.charFull,
@@ -387,8 +387,8 @@ def centerX(bar: BContentGenMgr) -> str:
 def top(bar: BContentGenMgr) -> str:
 	"""Generate the content of a bar from the top."""
 	return (
-		bar.colorEmpty + bar.fill(bar.charEmpty)
-		+ rect(
+		bar.colorEmpty + bar.fill(bar.charEmpty)	# empty
+		+ rect(	# full
 			(bar.posX, bar.posY + bar.segmentsFull[1]),
 			(bar.width, bar.segmentsEmpty[1]),
 			bar.charFull,
