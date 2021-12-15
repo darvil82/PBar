@@ -197,7 +197,7 @@ def getComputedSize(
 
 class BContentGenMgr:
 	"""
-	Generate the content of the bar with the BarGenerator selected.
+	Generate the content of the bar with the bar content generator selected.
 	Call this object to get the content string with the properties supplied.
 
 	This object will contain the following properties, which can be used by

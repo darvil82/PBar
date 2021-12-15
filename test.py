@@ -102,7 +102,7 @@ def tryAllSets():
 
 
 
-@repeatFunc(10)
+@repeatFunc(30)
 def condtionals():
 	conds = (	# lol!
 		pbar.Cond(f"percentage == {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1]),
@@ -119,17 +119,18 @@ def condtionals():
 @pbar.taskWrapper
 def taskWr(bar, something, another_thing):
 	print(pbar.Term.clear())
-	sleep(.5)
-	sleep(.5)
-	sleep(.5)
-	sleep(.5)
+	sleep(.25)
+	sleep(.25)
+	sleep(.25)
+	sleep(.25)
 	print(something)
-	sleep(.5)
-	sleep(.5)
-	sleep(.5)
+	sleep(.25)
+	sleep(.25)
+	sleep(.25)
 	print(another_thing)
-	sleep(.5)
-	sleep(.5)
+	sleep(.25)
+	sleep(.25)
+	sleep(.25)
 
 
 
