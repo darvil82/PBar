@@ -18,7 +18,7 @@ The highlight of this version is the new flexibility to implement new custom gen
 9. The content generator can now be changed with a `Cond` object.
 10. Color values can no longer be `None`.
 
-Please make sure to look at the documentation for the content generators if you wish to create your own.
+Please make sure to look at the documentation on the wiki for the content generators if you wish to create your own.
 
 ---
 
