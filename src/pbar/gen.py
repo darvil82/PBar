@@ -8,9 +8,9 @@ BContentGen = Callable[["BContentGenMgr"], str]
 
 
 def bShape(
-		position: tuple[int, int], size: tuple[int, int], charset,
-		parsedColorset: dict, filled: Optional[str] = " "
-	) -> str:
+	position: tuple[int, int], size: tuple[int, int], charset,
+	parsedColorset: dict, filled: Optional[str] = " "
+) -> str:
 	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
 	width, height = size[0] - 2, size[1] - 1
 
@@ -55,10 +55,10 @@ def bShape(
 
 
 def bText(
-		position: tuple[int, int], size: tuple[int, int],
-		parsedColorset: dict,
-		parsedFormatset: dict
-	) -> str:
+	position: tuple[int, int], size: tuple[int, int],
+	parsedColorset: dict,
+	parsedFormatset: dict
+) -> str:
 	"""Generates all text for the bar"""
 	width, height = size
 
@@ -116,9 +116,9 @@ def iterRows(string: str, pos: tuple[int, int], height: tuple[int, int]) -> str:
 
 
 def rect(
-		pos: "bar.Position", size: tuple[int, int],
-		char: str="█", color: utils.Color="white", centered: bool=False
-	) -> str:
+	pos: "bar.Position", size: tuple[int, int],
+	char: str="█", color: utils.Color="white", centered: bool=False
+) -> str:
 	"""Generate a rectangle."""
 	size = getComputedSize(size, (0, 0))
 	pos = getComputedPosition(pos, (size if centered else None))
@@ -134,10 +134,10 @@ def rect(
 
 
 def getComputedPosition(
-		position: "bar.Position",
-		cSize: tuple[int, int],
-		sizeOffset: tuple[int, int] = (0, 0)
-	) -> tuple[int, int]:
+	position: "bar.Position",
+	cSize: tuple[int, int],
+	sizeOffset: tuple[int, int] = (0, 0)
+) -> tuple[int, int]:
 	"""
 	Return a computed position based on the given position and size,
 	and the size of the terminal.
@@ -170,10 +170,10 @@ def getComputedPosition(
 
 
 def getComputedSize(
-		size: tuple[int, int],
-		sizeOffset: tuple[int, int] = (2, 2),
-		minSize: tuple[int, int] = (0, 0)
-	) -> tuple[int, int]:
+	size: tuple[int, int],
+	sizeOffset: tuple[int, int] = (2, 2),
+	minSize: tuple[int, int] = (0, 0)
+) -> tuple[int, int]:
 	"""Return a computed size based on the given size, and the size of the terminal."""
 	termSize = Term.size()
 	newsize = list(size)
@@ -230,14 +230,14 @@ class BContentGenMgr:
 	- `fill()`: Fill the bar with the given string.
 	"""
 	def __init__(self,
-			contentg: BContentGen,
-			invert: bool,
-			position: tuple[int, int],
-			size: tuple[int, int],
-			charset: sets.CharSet,
-			parsedColorset,
-			prange: tuple[int, int]
-		) -> None:
+		contentg: BContentGen,
+		invert: bool,
+		position: tuple[int, int],
+		size: tuple[int, int],
+		charset: sets.CharSet,
+		parsedColorset,
+		prange: tuple[int, int]
+	) -> None:
 		"""
 		@contentg: Bar content generator.
 		@invert: Invert the chars and colors of the bar.

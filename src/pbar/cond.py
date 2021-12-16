@@ -18,12 +18,12 @@ _OPs = {
 class Cond:
 	"""Condition manager used by a PBar object."""
 	def __init__(self,
-			condition: str, colorset: sets.ColorSetEntry = None,
-			charset: sets.CharSetEntry = None,
-			formatset: sets.FormatSetEntry = None,
-			contentg: gen.BContentGen = None,
-			callback: Callable[["bar.PBar"], None] = None
-		) -> None:
+		condition: str, colorset: sets.ColorSetEntry = None,
+		charset: sets.CharSetEntry = None,
+		formatset: sets.FormatSetEntry = None,
+		contentg: gen.BContentGen = None,
+		callback: Callable[["bar.PBar"], None] = None
+	) -> None:
 		"""
 		Apply different customization sets to a bar, or call a callback
 		if the condition supplied succeeds.

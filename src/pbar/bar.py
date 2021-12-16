@@ -23,17 +23,17 @@ Conditions = Union[list[cond.Cond], cond.Cond]
 class PBar:
 	"""Object for managing a progress bar."""
 	def __init__(self,
-			prange: tuple[int, int] = (0, 1),
-			text: str = None,
-			size: tuple[int, int] = (20, 1),
-			position: Position = ("center", "center"),
-			colorset: sets.ColorSetEntry = None,
-			charset: sets.CharSetEntry = None,
-			formatset: sets.FormatSetEntry = None,
-			conditions: Conditions = None,
-			contentg: gen.BContentGen = gen.ContentGens.Auto,
-			inverted: bool = False
-		) -> None:
+		prange: tuple[int, int] = (0, 1),
+		text: str = None,
+		size: tuple[int, int] = (20, 1),
+		position: Position = ("center", "center"),
+		colorset: sets.ColorSetEntry = None,
+		charset: sets.CharSetEntry = None,
+		formatset: sets.FormatSetEntry = None,
+		conditions: Conditions = None,
+		contentg: gen.BContentGen = gen.ContentGens.Auto,
+		inverted: bool = False
+	) -> None:
 		"""
 		### Detailed descriptions:
 		@prange: This tuple will specify the range of two values to display in the progress bar.
@@ -268,10 +268,10 @@ class PBar:
 		return self.computedValues
 
 
-	def _genClearedBar(
-			self, position: tuple[int, int],
-			size: tuple[int, int], formatset: sets.FormatSet
-		) -> str:
+	def _genClearedBar(self,
+		position: tuple[int, int],
+		size: tuple[int, int], formatset: sets.FormatSet
+	) -> str:
 		"""Generate a cleared progress bar. The position and size values should be already computed."""
 		if not self._isOnScreen:	return ""
 		parsedColorSet = sets.ColorSet(sets.ColorSet.EMPTY).parsedValues()
@@ -351,9 +351,9 @@ def animate(barObj: PBar, rng: range = range(100), delay: float = 0.05) -> None:
 
 
 def barHelper(
-		position: Position = ("center", "center"),
-		size: tuple[int, int] = (20, 1)
-	) -> tuple[tuple[int, int], tuple[int, int]]:
+	position: Position = ("center", "center"),
+	size: tuple[int, int] = (20, 1)
+) -> tuple[tuple[int, int], tuple[int, int]]:
 	"""
 	Draw a bar helper on screen indefinitely until the user exits.
 	Returns the position of the bar helper.

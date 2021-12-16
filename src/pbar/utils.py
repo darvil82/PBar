@@ -322,9 +322,9 @@ class Term:
 
 	@staticmethod
 	def pos(
-			pos: tuple[SupportsInt, SupportsInt],
-			offset: tuple[SupportsInt, SupportsInt] = (0, 0)
-		) -> str:
+		pos: tuple[SupportsInt, SupportsInt],
+		offset: tuple[SupportsInt, SupportsInt] = (0, 0)
+	) -> str:
 		"""
 		Position of the cursor on the terminal.
 		@pos: Tuple containing the X and Y position values.
@@ -426,11 +426,11 @@ class Term:
 		"""
 
 		def __init__(self,
-				newBuffer: bool = True,
-				hideCursor: bool = False,
-				homeCursor: bool = True,
-				saveCursor: bool = True
-			) -> None:
+			newBuffer: bool = True,
+			hideCursor: bool = False,
+			homeCursor: bool = True,
+			saveCursor: bool = True
+		) -> None:
 			"""
 			@newBuffer: Create a new terminal buffer, then go back to the old one.
 			@hideCursor: Hide the cursor, then show it.
