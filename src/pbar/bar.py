@@ -178,7 +178,7 @@ class PBar:
 	@percentage.setter
 	def percentage(self, percentage: int):
 		crange = self._range
-		perc = crange[1]//100 * percentage
+		perc = crange[1]/100 * percentage
 		self.prange = (perc, crange[1])
 
 
