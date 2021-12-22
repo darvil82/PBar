@@ -1,4 +1,5 @@
 from os import system as runsys, get_terminal_size, isatty
+from sys import stdout
 from time import sleep
 from typing import (
 	Callable,
@@ -280,7 +281,8 @@ def isNum(obj: SupportsFloat) -> bool:
 
 def out(*obj, end: str = "", sep = ""):
 	"""Print to stdout."""
-	print(*obj, sep=sep, end=end, flush=True)
+	stdout.write(sep.join(str(x) for x in obj) + end)
+	stdout.flush()
 
 
 def mapDict(dictionary: dict, func: Callable) -> dict:
