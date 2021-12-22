@@ -393,7 +393,8 @@ def barHelper(
 			"horiz": "#090",
 			"corner": "#090",
 			"text":	"#ff6400",
-			"empty": "#090"
+			"empty": "#090",
+			"full": "#090"
 		},
 		prange=(34, 100)
 	)
