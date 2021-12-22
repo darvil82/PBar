@@ -1,6 +1,9 @@
 from io import TextIOWrapper
 from time import time as epochTime, sleep
-from typing import Literal, Optional, SupportsInt, Union, IO
+from typing import (
+	Generator, Iterable, Literal,
+	Optional, SupportsInt, Union, IO
+)
 
 from . import utils, gen, sets, cond
 from . utils import Term
@@ -348,6 +351,28 @@ def animate(barObj: PBar, rng: range = range(100), delay: float = 0.05) -> None:
 	for _ in rng:
 		barObj.step(steps)
 		sleep(delay)
+
+
+def iter(
+	iterable: Iterable,
+	barObj: Optional[PBar] = None,
+	length: int = None
+) -> Generator:
+	"""
+	Yield all the values of the given iterable, while stepping
+	the progress bar.
+	@iterable: Iterable object to iterate.
+	@barObj: PBar object to use.
+	@length: Length of the object to iterate.
+	(Use this if you don't know the length of the iterable.)
+	"""
+	if not barObj:
+		barObj = PBar()
+
+	barObj.prange = (0, (length or len(iterable)))
+	for x in iterable:
+		yield x
+		barObj.step()
 
 
 def barHelper(
