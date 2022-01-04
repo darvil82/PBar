@@ -6,7 +6,7 @@ from typing import (
 )
 
 from . import utils, gen, sets, cond
-from . utils import Term
+from . utils import Term, T
 
 
 NEVER_DRAW = False
@@ -354,10 +354,10 @@ def animate(barObj: PBar, rng: range = range(100), delay: float = 0.05) -> None:
 
 
 def iter(
-	iterable: Iterable,
+	iterable: Iterable[T],
 	barObj: Optional[PBar] = None,
 	length: int = None
-) -> Generator:
+) -> Generator[T]:
 	"""
 	Yield all the values of the given iterable, while stepping
 	the progress bar.

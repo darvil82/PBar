@@ -17,7 +17,7 @@ __all__ = (
 	"isNum", "out", "mapDict", "Term"
 )
 
-
+T = TypeVar("T")
 Color = Union[tuple[int, int, int], str]
 
 
@@ -192,10 +192,17 @@ def getConstantAttrs(obj: Any) -> tuple:
 	return tuple(a for a in dir(obj) if a.isupper())
 
 
-def stripText(string: str, maxlen: int) -> str:
-	"""Return a string with three dots at the end if the len of it is larger than the maxlen specified."""
-	if maxlen < 3:	return ""
-	return string[:maxlen-3] + "..." if len(string) > maxlen else string
+def stripText(string: str, maxlen: int, endStr: str = "…") -> str:
+	"""
+	Return a cutted string at the end if the len of it is larger than
+	the maxlen specified.
+	@string: the string to cut
+	@maxlen: the maximum length of the string
+	@endStr: the string to add at the end of the cutted string
+	"""
+	if maxlen < (endLen := len(endStr)):
+		return ""
+	return string[:maxlen-endLen] + endStr if len(string) > maxlen else string
 
 
 def convertColor(clr: Color, conversion: str) -> Union[str, tuple]:
