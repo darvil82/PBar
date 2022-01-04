@@ -466,7 +466,7 @@ class Term:
 
 
 	@staticmethod
-	def formatStr(string: str, reset: bool = True, ignoreBackslashes = False) -> str:  # sourcery no-metrics
+	def formatStr(string: str, reset: bool = True, ignoreBackslashes: bool = False) -> str:  # sourcery no-metrics
 		"""
 		Add format to the string supplied by wrapping text with special characters and sequences:
 
