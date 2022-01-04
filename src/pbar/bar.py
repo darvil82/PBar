@@ -357,7 +357,7 @@ def iter(
 	iterable: Iterable[T],
 	barObj: Optional[PBar] = None,
 	length: int = None
-) -> Generator[T]:
+) -> Generator[T, None, None]:
 	"""
 	Yield all the values of the given iterable, while stepping
 	the progress bar.
