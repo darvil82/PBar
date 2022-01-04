@@ -356,7 +356,8 @@ def animate(barObj: PBar, rng: range = range(100), delay: float = 0.05) -> None:
 def iter(
 	iterable: Iterable[T],
 	barObj: Optional[PBar] = None,
-	length: int = None
+	length: int = None,
+	clear: bool = True
 ) -> Generator[T, None, None]:
 	"""
 	Yield all the values of the given iterable, while stepping
@@ -365,14 +366,19 @@ def iter(
 	@barObj: PBar object to use.
 	@length: Length of the object to iterate.
 	(Use this if you don't know the length of the iterable.)
+	@clear: Clear the progress bar after finishing the iteration.
 	"""
 	if not barObj:
 		barObj = PBar()
 
 	barObj.prange = (0, (length or len(iterable)))
+	barObj.draw()
 	for x in iterable:
 		yield x
 		barObj.step()
+
+	if clear:
+		barObj.clear()
 
 
 def barHelper(
