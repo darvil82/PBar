@@ -556,17 +556,17 @@ class Term:
 
 		def __enter__(self) -> None:
 			out(
-				(Term.BUFFER_NEW if self.nbuff else "")
-				+ (Term.CURSOR_HIDE if self.hcur else "")
-				+ (Term.CURSOR_SAVE if self.scur else "")
-				+ (Term.CURSOR_HOME if self.hocur else "")
+				(Term.BUFFER_NEW * self.nbuff)
+				+ (Term.CURSOR_HIDE * self.hcur)
+				+ (Term.CURSOR_SAVE * self.scur)
+				+ (Term.CURSOR_HOME * self.hocur)
 			)
 
 		def __exit__(self, *args) -> None:
 			out(
-				(Term.BUFFER_OLD if self.nbuff else "")
-				+ (Term.CURSOR_SHOW if self.hcur else "")
-				+ (Term.CURSOR_LOAD if self.scur else "")
+				(Term.BUFFER_OLD * self.nbuff)
+				+ (Term.CURSOR_SHOW * self.hcur)
+				+ (Term.CURSOR_LOAD * self.scur)
 			)
 
 

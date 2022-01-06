@@ -60,7 +60,6 @@ def fullyRandom():
 	animate(b)
 
 
-
 def modifySizeAndPos():
 	h = 1
 	b = pbar.PBar(prange=(0, 80))
@@ -83,7 +82,6 @@ def modifySizeAndPos():
 	animate(b)
 
 
-
 def tryAllSets():
 	print(pbar.Term.margin(2) + pbar.Term.clear() + f"COLORSET\tCHARSET\t\tFORMATSET\n{'-'*50}")
 
@@ -97,9 +95,7 @@ def tryAllSets():
 				b.formatset = fvalue
 				b.draw()
 				sleep(.01)
-				b.clear()
 	animate(b)
-
 
 
 @repeatFunc(30)
@@ -113,7 +109,6 @@ def condtionals():
 	)
 	b = pbar.PBar(size=(20, 10), conditions=conds)
 	animate(b)
-
 
 
 @pbar.taskWrapper
@@ -133,11 +128,18 @@ def taskWr(bar, something, another_thing):
 	sleep(.25)
 
 
-
+def tryRelativePositioning():
+	with pbar.Term.SetScrollLimit(3):
+		for n in pbar.iter(range(2000), pbar.PBar(position=(1, "r1"), centered=False)):
+			print(choice(string.ascii_letters), end="")
+			if n % (termSize[0]//2) == 0:
+				print()
+			sleep(.005)
 
 
 def main():
-	with pbar.Term.SeqMgr():
+	with pbar.Term.SeqMgr(hideCursor=True):
+		tryRelativePositioning()
 		default()
 		modifySizeAndPos()
 		fullyRandom()

@@ -287,7 +287,8 @@ class PBar:
 	def _genClearedBar(
 		self,
 		position: tuple[int, int],
-		size: tuple[int, int], formatset: sets.FormatSet,
+		size: tuple[int, int],
+		formatset: sets.FormatSet,
 		forceShow: bool = False
 	) -> str:
 		"""Generate a cleared progress bar. The position and size values should be already computed."""
@@ -310,7 +311,7 @@ class PBar:
 			formatset.emptyValues()
 		)
 
-		self._isOnScreen = False
+		self._isOnScreen = True if forceShow else self._isOnScreen
 		return barText + barShape
 
 
@@ -443,8 +444,8 @@ def barHelper(
 	with Term.SeqMgr(hideCursor=True):	# create a new buffer, and hide the cursor
 		try:
 			while True:
-				for x in range(100):
-					b.percentage = x
+				for perc in range(100):
+					b.percentage = perc
 					b.position = position
 					rPos, rSize = b.computedValues
 					b.formatset |= {"subtitle": f"cValues: pos{rPos} size{rSize}"}
