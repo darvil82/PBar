@@ -1,6 +1,5 @@
 from io import TextIOWrapper
 from time import time as epochTime, sleep
-import sys
 from typing import (
 	Generator, Iterable, Literal,
 	Optional, SupportsInt, Union, IO
@@ -10,23 +9,15 @@ from . import utils, gen, sets, cond
 from . utils import Term, T
 
 
-
 NEVER_DRAW = False
-
 if not Term.isSupported():
-	Term.getSize = lambda: (0, 0)	# we just force it to return a size of 0,0 if it can't get the size
+	Term.size = lambda: (0, 0)	# we just force it to return a size of 0,0 if it can't get the size
 	NEVER_DRAW = True
 
-# we override stdout so we can keep track of the number of newlines
-sys.stdout = utils.Stdout(sys.stdout)
-def recover_stdout():
-	"""Recovers the stdout to the original one."""
-	sys.stdout = sys.stdout.ogstdout
 
 
 
-
-Position = tuple[Union[str, int], Union[str, int]]
+Position = tuple[Union[Literal["center"], int], Union[Literal["center"], int]]
 Conditions = Union[list[cond.Cond], cond.Cond]
 
 
@@ -38,14 +29,13 @@ class PBar:
 		prange: tuple[int, int] = (0, 1),
 		text: str = None,
 		size: tuple[int, int] = (20, 1),
-		position: Position = ("c", "c"),
+		position: Position = ("center", "center"),
 		colorset: sets.ColorSetEntry = None,
 		charset: sets.CharSetEntry = None,
 		formatset: sets.FormatSetEntry = None,
 		conditions: Conditions = None,
 		contentg: gen.BContentGen = gen.ContentGens.Auto,
-		inverted: bool = False,
-		centered: bool = True,
+		inverted: bool = False
 	) -> None:
 		"""
 		### Detailed descriptions:
@@ -122,9 +112,7 @@ class PBar:
 		self._conditions = PBar._getConds(conditions)
 		self.contentg = contentg
 		self.inverted = inverted
-		self.centered = centered
 
-		self._nlc = utils.NewLineCounter()
 		self._oldValues = (*self.computedValues, self._formatset.parsedValues(self))	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
 
@@ -228,7 +216,7 @@ class PBar:
 	def computedValues(self) -> tuple[tuple[int, int], tuple[int, int]]:
 		"""Computed position and size of the progress bar."""
 		size = gen.getComputedSize(self.size, sizeOffset=(4, 2), minSize=(1, 1))
-		pos = gen.getComputedPosition(self.position, size, (3, 1), self.centered)
+		pos = gen.getComputedPosition(self.position, size, sizeOffset=(3, 1))
 
 		return pos, size
 
@@ -278,22 +266,17 @@ class PBar:
 
 	def checkProps(self) -> tuple[tuple[int, int], tuple[int, int]]:
 		"""Check the properties of the bar and return the computed values."""
-		if self._conditions:
-			self._chkConds()
+		if self._conditions:	self._chkConds()
 
 		return self.computedValues
 
 
-	def _genClearedBar(
-		self,
+	def _genClearedBar(self,
 		position: tuple[int, int],
-		size: tuple[int, int], formatset: sets.FormatSet,
-		forceShow: bool = False
+		size: tuple[int, int], formatset: sets.FormatSet
 	) -> str:
 		"""Generate a cleared progress bar. The position and size values should be already computed."""
-		if not self._isOnScreen and not forceShow:
-			return ""
-
+		if not self._isOnScreen:	return ""
 		parsedColorSet = sets.ColorSet(sets.ColorSet.EMPTY).parsedValues()
 
 		barShape = gen.bShape(
@@ -345,22 +328,7 @@ class PBar:
 
 	def _printStr(self, barString: str):
 		"""Prints string to stream"""
-		if not self.enabled or NEVER_DRAW:
-			return
-
-		# we check if the screen was scrolled. If so, clear the bar at
-		# the old position before the scroll occurred.
-		if lines := self._nlc.lines:
-			pos, size, formatset = self._oldValues
-			self._printStr(
-				self._genClearedBar(
-					(pos[0], pos[1] - lines),
-					size,
-					formatset,
-					True
-				)
-			)
-
+		if not self.enabled or NEVER_DRAW: return
 		utils.out(
 			Term.CURSOR_SAVE + Term.CURSOR_HIDE
 			+ barString
@@ -414,7 +382,7 @@ def iter(
 
 
 def barHelper(
-	position: Position = ("c", "c"),
+	position: Position = ("center", "center"),
 	size: tuple[int, int] = (20, 1)
 ) -> tuple[tuple[int, int], tuple[int, int]]:
 	"""
@@ -434,8 +402,7 @@ def barHelper(
 			"empty": "#090",
 			"full": "#090"
 		},
-		prange=(0, 100),
-		centered=True,
+		prange=(34, 100)
 	)
 
 	b.formatset |= {"title": f"uValues: pos{position} size{size}"}
@@ -443,24 +410,21 @@ def barHelper(
 	with Term.SeqMgr(hideCursor=True):	# create a new buffer, and hide the cursor
 		try:
 			while True:
-				for x in range(100):
-					b.percentage = x
-					b.position = position
-					rPos, rSize = b.computedValues
-					b.formatset |= {"subtitle": f"cValues: pos{rPos} size{rSize}"}
+				b.position = position
+				rPos, rSize = b.computedValues
+				b.formatset |= {"subtitle": f"cValues: pos{rPos} size{rSize}"}
 
-					xLine = Term.setPos((0, rPos[1])) + "═"*rPos[0]
-					yLine = "".join(Term.setPos((rPos[0], x)) + "║" for x in range(rPos[1]))
-					center = Term.setPos(rPos) + "╝"
+				xLine = Term.pos((0, rPos[1])) + "═"*rPos[0]
+				yLine = "".join(Term.pos((rPos[0], x)) + "║" for x in range(rPos[1]))
+				center = Term.pos(rPos) + "╝"
 
-					utils.out(
-						Term.CLEAR_ALL
-						+ b._genBar()	# the bar itself
-						+ Term.color((255, 100, 0)) + xLine + yLine + center	# x and y lines
-						+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET
-					)
-					sleep(0.01)
-				b.inverted = not b.inverted
+				utils.out(
+					Term.CLEAR_ALL
+					+ b._genBar()	# the bar itself
+					+ Term.color((255, 100, 0)) + xLine + yLine + center	# x and y lines
+					+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET
+				)
+				sleep(0.01)
 		except KeyboardInterrupt:
 			pass
 

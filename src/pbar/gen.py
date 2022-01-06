@@ -8,7 +8,7 @@ BContentGen = Callable[["BContentGenMgr"], str]
 
 
 def bShape(
-	position: tuple[int, int], size: tuple[int, int], charset: sets.CharSet,
+	position: tuple[int, int], size: tuple[int, int], charset,
 	parsedColorset: dict, filled: Optional[str] = " "
 ) -> str:
 	"""Generates a basic rectangular shape that uses a charset and a parsed colorset"""
@@ -31,21 +31,21 @@ def bShape(
 
 
 	top: str = (
-		Term.setPos(position)
+		Term.pos(position)
 		+ charCorner[0]
 		+ parsedColorset["horiz"]["top"] + charHoriz[0]*width
 		+ charCorner[1]
 	)
 
 	mid: str = "".join((	# generate all the rows of the bar. If filled is None, we just make the cursor jump to the right
-		Term.setPos(position, (0, row+1))
+		Term.pos(position, (0, row+1))
 		+ charVert[0]
 		+ (Term.moveHoriz(width) if filled is None else filled[0]*width)
 		+ charVert[1]
 	) for row in range(height - 1))
 
 	bottom: str = (
-		Term.setPos(position, (0, height))
+		Term.pos(position, (0, height))
 		+ charCorner[2]
 		+ parsedColorset["horiz"]["bottom"] + charHoriz[1]*width
 		+ charCorner[3]
@@ -70,31 +70,31 @@ def bText(
 
 	# position each text on its correct position relative to the bar
 	textTitle = (
-		Term.setPos(position, (-1, 0))
+		Term.pos(position, (-1, 0))
 		+ parsedColorset["text"]["title"]
 		+ txtTitle
 	) if parsedFormatset["title"] else ""
 
 	textSubtitle = (
-		Term.setPos(position, (width - len(txtSubtitle) + 1, height - 1))
+		Term.pos(position, (width - len(txtSubtitle) + 1, height - 1))
 		+ parsedColorset["text"]["subtitle"]
 		+ txtSubtitle
 	) if parsedFormatset["subtitle"] else ""
 
 	textRight = (
-		Term.setPos(position, (width + 3, height/2))
+		Term.pos(position, (width + 3, height/2))
 		+ parsedColorset["text"]["right"]
 		+ parsedFormatset["right"]
 	) if parsedFormatset["right"] else ""
 
 	textLeft = (
-		Term.setPos(position, (-len(parsedFormatset["left"]) - 3, height/2))
+		Term.pos(position, (-len(parsedFormatset["left"]) - 3, height/2))
 		+ parsedColorset["text"]["left"]
 		+ parsedFormatset["left"]
 	) if parsedFormatset["left"] else ""
 
 	textInside = (
-		Term.setPos(position, (width/2 - len(txtInside)/2, height/2))
+		Term.pos(position, (width/2 - len(txtInside)/2, height/2))
 		+ parsedColorset["text"]["inside"]
 		+ txtInside
 	) if parsedFormatset["inside"] else ""
@@ -110,7 +110,7 @@ def iterRows(string: str, pos: tuple[int, int], height: tuple[int, int]) -> str:
 	Automatically positions the cursor at the beginning of each row.
 	"""
 	return "".join((
-		Term.setPos(pos, (0, row))
+		Term.pos(pos, (0, row))
 		+ string
 	) for row in range(height))
 
@@ -121,7 +121,7 @@ def rect(
 ) -> str:
 	"""Generate a rectangle."""
 	size = getComputedSize(size, (0, 0))
-	pos = getComputedPosition(pos, size, centered=centered)
+	pos = getComputedPosition(pos, (size if centered else None))
 
 	if "\x1b" not in color:		# if it is already a terminal sequence, dont need to parse
 		color = Term.color(color)
@@ -136,42 +136,38 @@ def rect(
 def getComputedPosition(
 	position: "bar.Position",
 	cSize: tuple[int, int],
-	sizeOffset: tuple[int, int] = (0, 0),
-	centered: bool = True
+	sizeOffset: tuple[int, int] = (0, 0)
 ) -> tuple[int, int]:
 	"""
 	Return a computed position based on the given position and size,
 	and the size of the terminal.
 	"""
-	termSize = Term.getSize()
+	termSize = Term.size()
 	newpos = list(position)
 
 	for index, value in enumerate(position):
 		if isinstance(value, str):
-			if value.startswith("c"):
-				value = termSize[index]//2 + int(value[1:]) if value[1:] else termSize[index]//2
-			elif value.startswith("r"):
-				cursorPos = Term.getPos()
-				value = cursorPos[index] + int(value[1:]) if value[1:] else cursorPos[index]
+			if value == "center":
+				value = termSize[index]//2
 			else:
-				raise ValueError("Invalid position value")
-			value = max(value, 0)
+				raise ValueError("Position value must be an integer or 'center'")
 
 		if value < 0:	# if negative value, return Term size - value
 			value = termSize[index] + value
+
 
 		value = utils.capValue(
 			value,
 			termSize[index] - cSize[index]/2 - sizeOffset[index],
 			cSize[index]/2 + 1
-		) if centered else utils.capValue(
+		) if cSize else utils.capValue(
 			value,
-			termSize[index] - cSize[index] - sizeOffset[index],
-			1
+			termSize[index]
 		)
 
-		newpos[index] = int(value) - (cSize[index]//2 if centered else 0)
-	return newpos[0], newpos[1]
+		newpos[index] = int(value) - (cSize[index]//2 if cSize else 0)
+	return tuple(newpos)
+
 
 def getComputedSize(
 	size: tuple[int, int],
@@ -179,7 +175,7 @@ def getComputedSize(
 	minSize: tuple[int, int] = (0, 0)
 ) -> tuple[int, int]:
 	"""Return a computed size based on the given size, and the size of the terminal."""
-	termSize = Term.getSize()
+	termSize = Term.size()
 	newsize = list(size)
 
 	for index in range(2):	# yields 0 and 1
@@ -272,7 +268,7 @@ class BContentGenMgr:
 
 	def __call__(self) -> str:
 		"""Generate the content of the bar."""
-		return Term.setPos(self.position) + self.contentg(self)
+		return Term.pos(self.position) + self.contentg(self)
 
 	def iterRows(self, string: str):
 		"""
@@ -391,12 +387,12 @@ def centerX(bar: BContentGenMgr) -> str:
 def top(bar: BContentGenMgr) -> str:
 	"""Generate the content of a bar from the top."""
 	return (
-		bar.colorFull + bar.fill(bar.charFull)	# empty
+		bar.colorEmpty + bar.fill(bar.charEmpty)	# empty
 		+ rect(	# full
 			(bar.posX, bar.posY + bar.segmentsFull[1]),
 			(bar.width, bar.segmentsEmpty[1]),
-			bar.charEmpty,
-			bar.colorEmpty,
+			bar.charFull,
+			bar.colorFull,
 		)
 	)
 

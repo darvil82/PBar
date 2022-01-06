@@ -1,12 +1,6 @@
-from io import TextIOWrapper
 from os import system as runsys, get_terminal_size, isatty
+from sys import stdout
 from time import sleep
-import sys, re
-if sys.platform == "win32":
-    import ctypes
-    from ctypes import wintypes
-else:
-    import termios
 from typing import (
 	Callable,
 	SupportsFloat,
@@ -294,8 +288,8 @@ def isNum(obj: SupportsFloat) -> bool:
 
 def out(*obj, end: str = "", sep = ""):
 	"""Print to stdout."""
-	sys.stdout.write(sep.join(str(x) for x in obj) + end)
-	sys.stdout.flush()
+	stdout.write(sep.join(str(x) for x in obj) + end)
+	stdout.flush()
 
 
 def mapDict(dictionary: dict, func: Callable) -> dict:
@@ -310,66 +304,6 @@ def mapDict(dictionary: dict, func: Callable) -> dict:
 		key: mapDict(value, func) if isinstance(value, dict) else func(value)
 		for key, value in dictionary.items()
 	}
-
-
-
-
-class Stdout(TextIOWrapper):
-	"""
-	A class that may override stdout.
-	Keeps track of the number of newlines sent.
-	"""
-	_cntrs: list["NewLineCounter"] = []
-	scroll_offset: int = 0
-	always_check: bool = False
-
-	def __init__(self, stdout: TextIOWrapper) -> None:
-		self.ogstdout = stdout
-
-	def write(self, s: str) -> None:
-		"""
-		Writes the given string to the terminal.
-		@s: String to write.
-		"""
-		s = str(s)
-
-		"""We check if the string contains newlines, and if it does, check if the
-		cursor is positioned at the end of the terminal. If it is, we add 1
-		for each newline char to the counters, which will store the number of newlines."""
-
-		if count := sum(s.count(c) for c in "\n\v\f") or Stdout.always_check:
-			sys.stdout = self.ogstdout	# using original stdout temporarily to prevent recursion... Hacky!
-			cPos, tSize, offset = Term.getPos()[1], Term.getSize()[1], Stdout.scroll_offset + 1
-			if cPos >= tSize - offset:
-				if offset:
-					out(
-						"\v"*offset
-						+ Term.moveVert(-offset)
-					)
-				for mgr in Stdout._cntrs:
-					# we take into account the possible exceeding of the the max size
-					mgr._lc += count + (cPos - (tSize - offset) - 1)
-			sys.stdout = self
-
-		self.ogstdout.write(s)
-
-	def flush(self):
-		"""Flushes the stdout buffer."""
-		self.ogstdout.flush()
-
-
-
-
-class NewLineCounter:
-	def __init__(self) -> None:
-		self._lc = 0
-		Stdout._cntrs.append(self)
-
-	@property
-	def lines(self):
-		l = self._lc
-		self._lc = 0
-		return l
 
 
 
@@ -390,51 +324,13 @@ class Term:
 
 
 	@staticmethod
-	def getSize() -> tuple[int, int]:
+	def size() -> tuple[int, int]:
 		"""Get size of the terminal. Columns and rows."""
 		return tuple(get_terminal_size())
 
 
-	# Thanks to https://stackoverflow.com/a/69582478/14546524
 	@staticmethod
-	def getPos() -> tuple[int, int]:
-		"""
-		Get the cursor position on the terminal.
-		Returns (-1, -1) if not supported.
-		"""
-		if sys.platform == "win32":
-			OldStdinMode = ctypes.wintypes.DWORD()
-			OldStdoutMode = ctypes.wintypes.DWORD()
-			kernel32 = ctypes.windll.kernel32
-			kernel32.GetConsoleMode(kernel32.GetStdHandle(-10), ctypes.byref(OldStdinMode))
-			kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), 0)
-			kernel32.GetConsoleMode(kernel32.GetStdHandle(-11), ctypes.byref(OldStdoutMode))
-			kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
-		else:
-			OldStdinMode = termios.tcgetattr(sys.stdin)
-			_ = termios.tcgetattr(sys.stdin)
-			_[3] = _[3] & ~(termios.ECHO | termios.ICANON)
-			termios.tcsetattr(sys.stdin, termios.TCSAFLUSH, _)
-		try:
-			_ = ""
-			sys.stdout.write("\x1b[6n")
-			sys.stdout.flush()
-			while not (_ := _ + sys.stdin.read(1)).endswith('R'):
-				pass
-			res = re.match(r".*\[(?P<y>\d*);(?P<x>\d*)R", _)
-		finally:
-			if sys.platform == "win32":
-				kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), OldStdinMode)
-				kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), OldStdoutMode)
-			else:
-				termios.tcsetattr(sys.stdin, termios.TCSAFLUSH, OldStdinMode)
-		if res:
-			return int(res.group("x")), int(res.group("y"))
-		return (-1, -1)
-
-
-	@staticmethod
-	def setPos(
+	def pos(
 		pos: tuple[SupportsInt, SupportsInt],
 		offset: tuple[SupportsInt, SupportsInt] = (0, 0)
 	) -> str:
@@ -452,7 +348,7 @@ class Term:
 
 
 	@staticmethod
-	def setPosRel(pos: tuple[SupportsInt, SupportsInt]):
+	def posRel(pos: tuple[SupportsInt, SupportsInt]):
 		"""
 		Move the cursor to a relative position.
 		(Shortcut for `Term.moveHoriz` and `Term.moveVert`)
@@ -509,7 +405,7 @@ class Term:
 		"""Sets the top and bottom margins of the terminal. Use `None` for default margins."""
 		return (
 			Term.CURSOR_SAVE	# we save and load the cursor because the margins sequence resets the position to 0, 0
-			+ f"\x1b[{(int(top) + 1) if top else ''};{(Term.getSize()[1] - int(bottom)) if bottom else ''}r"
+			+ f"\x1b[{(int(top) + 1) if top else ''};{(Term.size()[1] - int(bottom)) if bottom else ''}r"
 			+ Term.CURSOR_LOAD
 		)
 
@@ -524,10 +420,10 @@ class Term:
 	@staticmethod
 	def fill(char: str) -> str:
 		"""Fill the terminal screen with the character specified."""
-		ts = Term.getSize()
+		ts = Term.size()
 		return (
 			Term.CURSOR_HOME
-			+ "".join(Term.setPos((0, row)) + char[0]*ts[0] for row in range(ts[1] + 1))
+			+ "".join(Term.pos((0, row)) + char[0]*ts[0] for row in range(ts[1] + 1))
 		)
 
 
@@ -537,6 +433,7 @@ class Term:
 		By default, it changes to a new buffer, moves to the home position, and
 		saves the cursor position.
 		"""
+
 		def __init__(self,
 			newBuffer: bool = True,
 			hideCursor: bool = False,
@@ -553,7 +450,6 @@ class Term:
 			self.hcur = hideCursor
 			self.hocur = homeCursor
 			self.scur = saveCursor
-
 		def __enter__(self) -> None:
 			out(
 				(Term.BUFFER_NEW if self.nbuff else "")
@@ -561,29 +457,12 @@ class Term:
 				+ (Term.CURSOR_SAVE if self.scur else "")
 				+ (Term.CURSOR_HOME if self.hocur else "")
 			)
-
-		def __exit__(self, *args) -> None:
+		def __exit__(self, type, value, traceback) -> None:
 			out(
 				(Term.BUFFER_OLD if self.nbuff else "")
 				+ (Term.CURSOR_SHOW if self.hcur else "")
 				+ (Term.CURSOR_LOAD if self.scur else "")
 			)
-
-
-	class SetScrollLimit:
-		"""
-		Context manager for setting the vertical scroll limit of the terminal.
-		When the cursor reaches this limit, it will scroll the screen buffer up.
-		"""
-		def __init__(self, limit: int):
-			self.limit = limit
-
-		def __enter__(self):
-			self.oldLimit = Stdout.scroll_offset
-			Stdout.scroll_offset = self.limit
-
-		def __exit__(self, *args):
-			Stdout.scroll_offset = self.oldLimit
 
 
 	@staticmethod

@@ -9,7 +9,7 @@
 - [Website](https://darvil82.github.io/PBar)
 """
 
-__version__ = "1.17.0"
+__version__ = "1.16.1.post2"
 
 from . bar import PBar, iter, animate, barHelper
 from . task_wrapper import taskWrapper
