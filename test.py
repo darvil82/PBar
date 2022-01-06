@@ -9,7 +9,7 @@ from time import sleep
 import pbar
 
 
-termSize = pbar.Term.size()
+termSize = pbar.Term.getSize()
 
 def repeatFunc(times):
 	def wrapper(func):

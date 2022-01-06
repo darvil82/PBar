@@ -423,7 +423,8 @@ class FormatSet(_BaseSet):
 	@staticmethod
 	def parseString(barObj: "bar.PBar", string: str) -> str:
 		"""Parse a string that may contain formatting keys"""
-		if string is None: return ""
+		if string is None:
+			return ""
 
 		endStr = ""				# Final string that will be returned
 		string = FormatSet._rmPoisonChars(string)
