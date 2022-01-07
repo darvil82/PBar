@@ -17,7 +17,7 @@ NEVER_DRAW = not Term.SUPPORTED
 sys.stdout = utils.Stdout(sys.stdout)
 def recover_stdout():
 	"""Recovers the stdout to the original one."""
-	sys.stdout = sys.stdout.ogstdout
+	sys.stdout = sys.stdout.original
 
 
 
