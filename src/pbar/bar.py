@@ -2,7 +2,7 @@ from io import TextIOWrapper
 from time import time as epochTime, sleep
 import sys
 from typing import (
-	Generator, Iterable, Literal,
+	Generator, Iterable,
 	Optional, SupportsInt, Union, IO
 )
 
@@ -11,11 +11,7 @@ from . utils import Term, T
 
 
 
-NEVER_DRAW = False
-
-if not Term.isSupported():
-	Term.getSize = lambda: (0, 0)	# we just force it to return a size of 0,0 if it can't get the size
-	NEVER_DRAW = True
+NEVER_DRAW = not Term.SUPPORTED
 
 # we override stdout so we can keep track of the number of newlines
 sys.stdout = utils.Stdout(sys.stdout)

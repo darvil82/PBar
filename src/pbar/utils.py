@@ -324,7 +324,7 @@ class Stdout(TextIOWrapper):
 	always_check: bool = False
 
 	def __init__(self, stdout: TextIOWrapper) -> None:
-		self.ogstdout = stdout
+		self.original = stdout
 
 	def write(self, s: str) -> None:
 		"""
@@ -338,7 +338,7 @@ class Stdout(TextIOWrapper):
 		for each newline char to the counters, which will store the number of newlines."""
 
 		if count := sum(s.count(c) for c in "\n\v\f") or Stdout.always_check:
-			sys.stdout = self.ogstdout	# using original stdout temporarily to prevent recursion... Hacky!
+			sys.stdout = self.original	# using original stdout temporarily to prevent recursion... Hacky!
 			cPos, tSize, offset = Term.getPos()[1], Term.getSize()[1], Stdout.scroll_offset + 1
 			if cPos >= tSize - offset:
 				if offset:
@@ -351,11 +351,11 @@ class Stdout(TextIOWrapper):
 					mgr._lc += count + (cPos - (tSize - offset) - 1)
 			sys.stdout = self
 
-		self.ogstdout.write(s)
+		self.original.write(s)
 
 	def flush(self):
 		"""Flushes the stdout buffer."""
-		self.ogstdout.flush()
+		self.original.flush()
 
 
 
@@ -379,8 +379,7 @@ class Term:
 	"""Class for using terminal sequences a bit easier"""
 	runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
 
-	@staticmethod
-	def isSupported() -> bool:
+	def _isSupported() -> bool:
 		"""Return False if terminal is not supported."""
 		try:
 			get_terminal_size()
@@ -389,10 +388,14 @@ class Term:
 
 		return isatty(0)
 
+	SUPPORTED = _isSupported()
+
 
 	@staticmethod
 	def getSize() -> tuple[int, int]:
 		"""Get size of the terminal. Columns and rows."""
+		if not Term.SUPPORTED:
+			return (0, 0)
 		return tuple(get_terminal_size())
 
 
@@ -403,6 +406,8 @@ class Term:
 		Get the cursor position on the terminal.
 		Returns (-1, -1) if not supported.
 		"""
+		if not Term.SUPPORTED:
+			return (-1, -1)
 		if sys.platform == "win32":
 			OldStdinMode = ctypes.wintypes.DWORD()
 			OldStdoutMode = ctypes.wintypes.DWORD()
