@@ -361,6 +361,7 @@ class Stdout(TextIOWrapper):
 
 
 class NewLineCounter:
+	"""Keeps track of the number of newlines that scrolled the screen."""
 	def __init__(self) -> None:
 		self._lc = 0
 		Stdout._cntrs.append(self)

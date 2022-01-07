@@ -65,8 +65,13 @@ class PBar:
 
 		@position: Tuple containing the position (X and Y axles of the center) of the progress bar on the terminal.
 
-		- If an axis value is `center`, the bar will be positioned at the center of the terminal on that axis.
-		- Negative values will position the bar at the other side of the terminal.
+		- The position can be an integer (which will specify an absolute position) or a string, which may specify special positions:
+			- Usage: `type[number]`. The number will specify the relative position from the point specified by the type.
+			- Types:
+				- `c`: Center of the terminal.
+				- `r`: Position of the cursor.
+
+		- Using integer negative values will position the bar at the other side of the terminal.
 
 		---
 
@@ -107,6 +112,10 @@ class PBar:
 		---
 
 		@inverted: If `True`, the bar will be drawn from the end to the beginning.
+
+		---
+
+		@centered: If `True`, the bar will be centered around the position specified by `position`.
 		"""
 		self.enabled = True				# If disabled, the bar will never draw.
 		self._time = epochTime()		# The elapsed time since the bar created.
