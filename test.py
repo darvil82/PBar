@@ -130,7 +130,7 @@ def taskWr(bar, something, another_thing):
 
 def tryRelativePositioning():
 	with pbar.Term.SetScrollLimit(3):
-		for n in pbar.iter(range(2000), pbar.PBar(position=(1, "r1"), centered=False)):
+		for n in pbar.iter(range(2000), pbar.PBar(position=("r", "r1"), centered=False)):
 			print(choice(string.ascii_letters), end="")
 			if n % (termSize[0]//2) == 0:
 				print()
