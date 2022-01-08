@@ -130,7 +130,7 @@ class PBar:
 		self.inverted = inverted
 		self.centered = centered
 
-		utils.Stdout.add_trigger(lambda c: PBar._clear_with_offset(self, c))
+		utils.Stdout.add_trigger(lambda c: PBar._redraw_with_offset(self, c))
 		self._old_values = (*self.computed_values, self._formatset.parsed_values(self))	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
 
@@ -361,7 +361,7 @@ class PBar:
 		)
 
 
-	def _clear_with_offset(self, count: int):
+	def _redraw_with_offset(self, count: int):
 		if not self._is_on_screen and self._redraw_on_scroll:
 			return
 
