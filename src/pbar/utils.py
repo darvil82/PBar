@@ -18,9 +18,9 @@ from typing import (
 )
 
 __all__ = (
-	"capValue", "getConstantAttrs", "stripText",
-	"convertColor", "chkInstOf", "chkSeqOfLen",
-	"isNum", "out", "mapDict", "Term"
+	"cap_value", "get_constant_attrs", "strip_text",
+	"convert_color", "chk_inst_of", "chk_seq_of_len",
+	"is_num", "out", "map_dict", "Term"
 )
 
 T = TypeVar("T")
@@ -174,16 +174,16 @@ _HTML_COLOR_NAMES: dict = {  # thanks to https://stackoverflow.com/a/1573141/145
 
 class UnexpectedEndOfStringError(Exception):
 	"""Unexpected end of string when parsing a formatting key"""
-	def __init__(self, string, expectedChar=">") -> None:
+	def __init__(self, string, expected_char=">") -> None:
 		super().__init__(
 			"Unexpected end of string. ('" + string
-			+ Term.formatStr(f"<bg=150,0,0>*◄ Expected '{expectedChar}'<reset>')")
+			+ Term.formatStr(f"<bg=150,0,0>*◄ Expected '{expected_char}'<reset>')")
 		)
 
 
 Num = TypeVar("Num", int, float)
 
-def capValue(value: Num, max: Num = None, min: Num = None) -> Num:
+def cap_value(value: Num, max: Num = None, min: Num = None) -> Num:
 	"""Clamp a value to a minimum and/or maximum value."""
 	if max is not None and value > max:
 		return max
@@ -193,12 +193,12 @@ def capValue(value: Num, max: Num = None, min: Num = None) -> Num:
 		return value
 
 
-def getConstantAttrs(obj: Any) -> tuple:
+def get_constant_attrs(obj: Any) -> tuple:
 	"""Get the constant attributes of an object. (Uppercase attrs)"""
 	return tuple(a for a in dir(obj) if a.isupper())
 
 
-def stripText(string: str, maxlen: int, endStr: str = "…") -> str:
+def strip_text(string: str, maxlen: int, endStr: str = "…") -> str:
 	"""
 	Return a cutted string at the end if the len of it is larger than
 	the maxlen specified.
@@ -206,12 +206,12 @@ def stripText(string: str, maxlen: int, endStr: str = "…") -> str:
 	@maxlen: the maximum length of the string
 	@endStr: the string to add at the end of the cutted string
 	"""
-	if maxlen < (endLen := len(endStr)):
+	if maxlen < (end_len := len(endStr)):
 		return ""
-	return string[:maxlen-endLen] + endStr if len(string) > maxlen else string
+	return string[:maxlen-end_len] + endStr if len(string) > maxlen else string
 
 
-def convertColor(clr: Color, conversion: str) -> Union[str, tuple]:
+def convert_color(clr: Color, conversion: str) -> Union[str, tuple]:
 	"""
 	Convert color values to HEX and vice-versa
 	@clr:			Color value to convert.
@@ -231,7 +231,7 @@ def convertColor(clr: Color, conversion: str) -> Union[str, tuple]:
 		if not isinstance(color, (tuple, list)) or len(color) != 3:
 			raise ValueError(f"Invalid color value: {color}")
 
-		capped = tuple(capValue(value, 255, 0) for value in color)
+		capped = tuple(cap_value(value, 255, 0) for value in color)
 		return f"#{capped[0]:02x}{capped[1]:02x}{capped[2]:02x}"
 	elif conversion == "RGB":
 		if isinstance(color, (tuple, list)):
@@ -249,12 +249,12 @@ def convertColor(clr: Color, conversion: str) -> Union[str, tuple]:
 		return ""
 
 
-def chkSeqOfLen(obj: Any, length: int, name: str = None) -> bool:
+def chk_seq_of_len(obj: Any, length: int, name: str = None) -> bool:
 	"""
 	Check if an object is a Sequence and has the length specified.
 	If fails, raises exception (`Sequence obj | name must have len items`).
 	"""
-	chkInstOf(obj, tuple, list)
+	chk_inst_of(obj, tuple, list)
 	if len(obj) != length:
 		raise ValueError(
 			Term.formatStr(
@@ -266,7 +266,7 @@ def chkSeqOfLen(obj: Any, length: int, name: str = None) -> bool:
 	return True
 
 
-def chkInstOf(obj: Any, *typ: Any, name: str = None) -> bool:
+def chk_inst_of(obj: Any, *typ: Any, name: str = None) -> bool:
 	"""
 	Check if an object is an instance of any of the other objects specified.
 	If fails, raises exception (`Value | name must be *typ, not obj`).
@@ -283,7 +283,7 @@ def chkInstOf(obj: Any, *typ: Any, name: str = None) -> bool:
 	return True
 
 
-def isNum(obj: SupportsFloat) -> bool:
+def is_num(obj: SupportsFloat) -> bool:
 	"""Return True if `obj` can be casted to float."""
 	try:
 		float(obj)
@@ -298,16 +298,16 @@ def out(*obj, end: str = "", sep = ""):
 	sys.stdout.flush()
 
 
-def mapDict(dictionary: dict, func: Callable) -> dict:
+def map_dict(dictionary: dict, func: Callable) -> dict:
 	"""
 	Return dict with all values in it used as an arg for a function that will return a new value for it.
 	@func: This represents the callable that accepts an argument.
 
 	Example:
-	>>> mapDict(lambda val: myFunc("stuff", val), {1: "a", 2: "b", 3: "c"})
+	>>> map_dict(lambda val: myFunc("stuff", val), {1: "a", 2: "b", 3: "c"})
 	"""
 	return {
-		key: mapDict(value, func) if isinstance(value, dict) else func(value)
+		key: map_dict(value, func) if isinstance(value, dict) else func(value)
 		for key, value in dictionary.items()
 	}
 
@@ -339,8 +339,8 @@ class Stdout(TextIOWrapper):
 
 		if count := sum(s.count(c) for c in "\n\v\f") or Stdout.always_check:
 			sys.stdout = self.original	# using original stdout temporarily to prevent recursion... Hacky!
-			cPos, tSize, offset = Term.getPos()[1], Term.getSize()[1], Stdout.scroll_offset + 1
-			if cPos >= tSize - offset:
+			c_pos, t_size, offset = Term.get_pos()[1], Term.get_size()[1], Stdout.scroll_offset + 1
+			if c_pos >= t_size - offset:
 				if offset:
 					out(
 						"\v"*offset
@@ -348,7 +348,7 @@ class Stdout(TextIOWrapper):
 					)
 				for t in Stdout.triggers:
 					# we take into account the possible exceeding of the the max size
-					t(count + (cPos - (tSize - offset) - 1))
+					t(count + (c_pos - (t_size - offset) - 1))
 			sys.stdout = self
 
 		self.original.write(s)
@@ -358,7 +358,7 @@ class Stdout(TextIOWrapper):
 		self.original.flush()
 
 	@staticmethod
-	def addTrigger(func: Callable[[int], None]) -> int:
+	def add_trigger(func: Callable[[int], None]) -> Callable[[int], None]:
 		"""
 		Register a trigger that will be called when the terminal screen is scrolled.
 		@func: The function to be called when the buffer is scrolled.
@@ -366,10 +366,10 @@ class Stdout(TextIOWrapper):
 		Returns the index of the trigger in the Stdout triggers property.
 		"""
 		Stdout.triggers.append(func)
-		return max(len(Stdout.triggers) - 1, 0)
+		return func
 
 	@staticmethod
-	def removeTrigger(index) -> None:
+	def remove_trigger(index) -> None:
 		"""
 		Remove a trigger from the list of triggers.
 		@func: The function to be removed.
@@ -383,7 +383,7 @@ class Term:
 	"""Class for using terminal sequences a bit easier"""
 	runsys("")		# We need to do this, otherwise Windows won't display special VT100 sequences
 
-	def _isSupported() -> bool:
+	def _is_supported() -> bool:
 		"""Return False if terminal is not supported."""
 		try:
 			get_terminal_size()
@@ -392,11 +392,11 @@ class Term:
 
 		return isatty(0)
 
-	SUPPORTED = _isSupported()
+	SUPPORTED = _is_supported()
 
 
 	@staticmethod
-	def getSize() -> tuple[int, int]:
+	def get_size() -> tuple[int, int]:
 		"""Get size of the terminal. Columns and rows."""
 		if not Term.SUPPORTED:
 			return (0, 0)
@@ -405,7 +405,7 @@ class Term:
 
 	# Thanks to https://stackoverflow.com/a/69582478/14546524
 	@staticmethod
-	def getPos() -> tuple[int, int]:
+	def get_pos() -> tuple[int, int]:
 		"""
 		Get the cursor position on the terminal.
 		Returns (-1, -1) if not supported.
@@ -413,15 +413,15 @@ class Term:
 		if not Term.SUPPORTED:
 			return (-1, -1)
 		if sys.platform == "win32":
-			OldStdinMode = ctypes.wintypes.DWORD()
-			OldStdoutMode = ctypes.wintypes.DWORD()
+			old_stdin_mode = ctypes.wintypes.DWORD()
+			old_stdout_mode = ctypes.wintypes.DWORD()
 			kernel32 = ctypes.windll.kernel32
-			kernel32.GetConsoleMode(kernel32.GetStdHandle(-10), ctypes.byref(OldStdinMode))
+			kernel32.GetConsoleMode(kernel32.GetStdHandle(-10), ctypes.byref(old_stdin_mode))
 			kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), 0)
-			kernel32.GetConsoleMode(kernel32.GetStdHandle(-11), ctypes.byref(OldStdoutMode))
+			kernel32.GetConsoleMode(kernel32.GetStdHandle(-11), ctypes.byref(old_stdout_mode))
 			kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
 		else:
-			OldStdinMode = termios.tcgetattr(sys.stdin)
+			old_stdin_mode = termios.tcgetattr(sys.stdin)
 			_ = termios.tcgetattr(sys.stdin)
 			_[3] = _[3] & ~(termios.ECHO | termios.ICANON)
 			termios.tcsetattr(sys.stdin, termios.TCSAFLUSH, _)
@@ -434,17 +434,17 @@ class Term:
 			res = re.match(r".*\[(?P<y>\d*);(?P<x>\d*)R", _)
 		finally:
 			if sys.platform == "win32":
-				kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), OldStdinMode)
-				kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), OldStdoutMode)
+				kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), old_stdin_mode)
+				kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), old_stdout_mode)
 			else:
-				termios.tcsetattr(sys.stdin, termios.TCSAFLUSH, OldStdinMode)
+				termios.tcsetattr(sys.stdin, termios.TCSAFLUSH, old_stdin_mode)
 		if res:
 			return int(res.group("x")), int(res.group("y"))
 		return (-1, -1)
 
 
 	@staticmethod
-	def setPos(
+	def set_pos(
 		pos: tuple[SupportsInt, SupportsInt],
 		offset: tuple[SupportsInt, SupportsInt] = (0, 0)
 	) -> str:
@@ -453,7 +453,7 @@ class Term:
 		@pos: Tuple containing the X and Y position values.
 		@offset: Offset applied to `pos`. (Can be negative)
 		"""
-		chkSeqOfLen(pos, 2)
+		chk_seq_of_len(pos, 2)
 
 		position = (int(pos[0]) + int(offset[0]),
 					int(pos[1]) + int(offset[1]))
@@ -462,7 +462,7 @@ class Term:
 
 
 	@staticmethod
-	def setPosRel(pos: tuple[SupportsInt, SupportsInt]):
+	def set_pos_rel(pos: tuple[SupportsInt, SupportsInt]):
 		"""
 		Move the cursor to a relative position.
 		(Shortcut for `Term.moveHoriz` and `Term.moveVert`)
@@ -478,7 +478,7 @@ class Term:
 		@color:	Tuple with RGB values, a HTML color name, or a hex string.
 		@bg:	This color will be displayed on the background
 		"""
-		crgb = convertColor(color, "RGB")
+		crgb = convert_color(color, "RGB")
 		type = 48 if bg else 38
 
 		return f"\x1b[{type};2;{crgb[0]};{crgb[1]};{crgb[2]}m"
@@ -519,7 +519,7 @@ class Term:
 		"""Sets the top and bottom margins of the terminal. Use `None` for default margins."""
 		return (
 			Term.CURSOR_SAVE	# we save and load the cursor because the margins sequence resets the position to 0, 0
-			+ f"\x1b[{(int(top) + 1) if top else ''};{(Term.getSize()[1] - int(bottom)) if bottom else ''}r"
+			+ f"\x1b[{(int(top) + 1) if top else ''};{(Term.get_size()[1] - int(bottom)) if bottom else ''}r"
 			+ Term.CURSOR_LOAD
 		)
 
@@ -534,10 +534,10 @@ class Term:
 	@staticmethod
 	def fill(char: str) -> str:
 		"""Fill the terminal screen with the character specified."""
-		ts = Term.getSize()
+		ts = Term.get_size()
 		return (
 			Term.CURSOR_HOME
-			+ "".join(Term.setPos((0, row)) + char[0]*ts[0] for row in range(ts[1] + 1))
+			+ "".join(Term.set_pos((0, row)) + char[0]*ts[0] for row in range(ts[1] + 1))
 		)
 
 
@@ -549,20 +549,20 @@ class Term:
 		"""
 		def __init__(self,
 			newBuffer: bool = True,
-			hideCursor: bool = False,
+			hide_cursor: bool = False,
 			homeCursor: bool = True,
 			saveCursor: bool = True,
 			margin: tuple[Optional[int], Optional[int]] = None
 		) -> None:
 			"""
 			@newBuffer: Create a new terminal buffer, then go back to the old one.
-			@hideCursor: Hide the cursor, then show it.
+			@hide_cursor: Hide the cursor, then show it.
 			@homeCursor: Move the cursor to the top left corner.
 			@saveCursor: Save the cursor position, then load it.
 			@margin: Set the top and bottom margins.
 			"""
 			self.nbuff = newBuffer
-			self.hcur = hideCursor
+			self.hcur = hide_cursor
 			self.hocur = homeCursor
 			self.scur = saveCursor
 			self.margin = margin
@@ -600,12 +600,12 @@ class Term:
 			self.always_check = always_check
 
 		def __enter__(self):
-			self.oldValues = Stdout.scroll_offset, Stdout.always_check
+			self.old_values = Stdout.scroll_offset, Stdout.always_check
 			Stdout.scroll_offset = self.limit
 			Stdout.always_check = self.always_check
 
 		def __exit__(self, *args):
-			Stdout.scroll_offset, Stdout.always_check = self.oldValues
+			Stdout.scroll_offset, Stdout.always_check = self.old_values
 
 
 	@staticmethod
@@ -637,20 +637,20 @@ class Term:
 		@ignoreBackslashes: Ignore backslashes in the string.
 		"""
 		invert = underline = dim = sthrough = invisible = bold = italic = blink = False
-		loopSkipChars = 0
-		endStr = ""
+		loop_skip_chars = 0
+		end_str = ""
 
 		for index, char in enumerate(string):
-			if loopSkipChars:
-				loopSkipChars -= 1
+			if loop_skip_chars:
+				loop_skip_chars -= 1
 				continue
 
 			if not ignoreBackslashes and char == "\\":
 				# skip a character if backslashes are used
 				if index == len(string) - 1:
 					break
-				endStr += string[index + 1]
-				loopSkipChars = 1
+				end_str += string[index + 1]
+				loop_skip_chars = 1
 				continue
 
 
@@ -684,13 +684,13 @@ class Term:
 			elif char == "<":	# a color sequence is going to be used
 				if ">" not in string[index:]:	# if the sequence is not closed, raise error
 					raise UnexpectedEndOfStringError(string)
-				endIndex = string.index(">", index)	# we get the index of the end of the sequence
-				char = Term._parseStrFormatSeq(string[index + 1:endIndex])	# parse the sequence
-				loopSkipChars = endIndex - index	# we now tell the loop to skip the parsed text
+				end_index = string.index(">", index)	# we get the index of the end of the sequence
+				char = Term._parseStrFormatSeq(string[index + 1:end_index])	# parse the sequence
+				loop_skip_chars = end_index - index	# we now tell the loop to skip the parsed text
 
-			endStr += char
+			end_str += char
 
-		return endStr + (Term.RESET if reset else "")
+		return end_str + (Term.RESET if reset else "")
 
 
 	@staticmethod
@@ -703,15 +703,15 @@ class Term:
 			return Term.RESET
 
 		mode, color = ("fg", seq) if "=" not in seq else seq.split("=")	# if there is no equal sign, the mode is foreground
-		isBg = mode == "bg"
+		is_bg = mode == "bg"
 
 		if "," in color:	# found a comma. We are dealing with RGB values
 			return Term.color(
 				tuple(map(int, color.split(",")))[:3],
-				isBg
+				is_bg
 			)
 		elif "#" in color or color in _HTML_COLOR_NAMES:	# its a hex color or a HTML color name
-			return Term.color(color, isBg)
+			return Term.color(color, is_bg)
 		else:
 			return ""	# invalid color format
 

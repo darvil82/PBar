@@ -51,20 +51,20 @@ class Cond:
 
 		>>> Cond("etime >= 10", callback=myFunction)
 		"""
-		vs = self._chkCond(condition)
+		vs = self._chk_cond(condition)
 		self._attribute, self.operator = vs[:2]
-		self._value = float(vs[2]) if utils.isNum(vs[2]) else vs[2].lower()	# convert to float if its a num
-		self.newSets = (colorset, charset, formatset)
+		self._value = float(vs[2]) if utils.is_num(vs[2]) else vs[2].lower()	# convert to float if its a num
+		self.new_sets = (colorset, charset, formatset)
 		self.conteng = contentg
 		self.callback = callback
 
 
 	@staticmethod
-	def _chkCond(cond: str):
+	def _chk_cond(cond: str):
 		"""Check types and if the operator supplied is valid"""
-		utils.chkInstOf(cond, str, name="condition")
+		utils.chk_inst_of(cond, str, name="condition")
 		splitted = strSplit(cond)	# splits with strings in mind ('test "a b c" hey' > ["test", "a b c", "hey"])
-		utils.chkSeqOfLen(splitted, 3, "condition")
+		utils.chk_seq_of_len(splitted, 3, "condition")
 
 		if splitted[1] not in _OPs.values():
 			raise RuntimeError(f"Invalid operator {splitted[1]!r}")
@@ -75,14 +75,14 @@ class Cond:
 	def __repr__(self) -> str:
 		"""Returns `Cond('attrib operator value', *newSets)`"""
 		return (
-			f"{self.__class__.__name__}('{self._attribute} {self.operator} {self._value}', {self.newSets}, {self.callback}, {self.conteng})"
+			f"{self.__class__.__name__}('{self._attribute} {self.operator} {self._value}', {self.new_sets}, {self.callback}, {self.conteng})"
 		)
 
 
-	def test(self, barObj: "bar.PBar") -> bool:
+	def test(self, bar_obj: "bar.PBar") -> bool:
 		"""Check if the condition succeeds with the values of the PBar object"""
 		op = self.operator
-		val = sets.FormatSet.getBarAttr(barObj, self._attribute)
+		val = sets.FormatSet.get_bar_attr(bar_obj, self._attribute)
 		val = val.lower() if isinstance(val, str) else val
 
 		# we use lambdas because some values may not be compatible with some operators
@@ -99,15 +99,15 @@ class Cond:
 		return operators.get(op, lambda: False)()
 
 
-	def chkAndApply(self, barObj: "bar.PBar") -> None:
+	def chk_and_apply(self, bar_obj: "bar.PBar") -> None:
 		"""Apply the new sets and run the callback if the condition succeeds"""
-		if not self.test(barObj):
+		if not self.test(bar_obj):
 			return
 
-		if self.newSets[0]:	barObj.colorset = self.newSets[0]
-		if self.newSets[1]:	barObj.charset = self.newSets[1]
-		if self.newSets[2]:	barObj.formatset = self.newSets[2]
+		if self.new_sets[0]:	bar_obj.colorset = self.new_sets[0]
+		if self.new_sets[1]:	bar_obj.charset = self.new_sets[1]
+		if self.new_sets[2]:	bar_obj.formatset = self.new_sets[2]
 
-		if self.conteng:	barObj.contentg = self.conteng
+		if self.conteng:	bar_obj.contentg = self.conteng
 
-		if self.callback:	self.callback(barObj)
+		if self.callback:	self.callback(bar_obj)

@@ -9,9 +9,9 @@ from time import sleep
 import pbar
 
 
-termSize = pbar.Term.getSize()
+term_size = pbar.Term.get_size()
 
-def repeatFunc(times):
+def repeat_func(times):
 	def wrapper(func):
 		def inner():
 			for _ in range(times):
@@ -19,10 +19,10 @@ def repeatFunc(times):
 		return inner
 	return wrapper
 
-def randomString():
+def random_string():
 	return "".join(choices(string.ascii_letters + string.digits, k=randint(0, 250)))
 
-def getConstAttrs(obj) -> list[tuple[str, Any]]:
+def get_const_attrs(obj) -> list[tuple[str, Any]]:
 	return [(x, getattr(obj, x)) for x in dir(obj) if x == x.upper()]
 
 def animate(bar):
@@ -43,24 +43,24 @@ def default():
 	animate(b)
 
 
-@repeatFunc(30)
-def fullyRandom():
+@repeat_func(30)
+def fully_random():
 	b = pbar.PBar(
 		(randint(0, 200), randint(0, 200)),
-		randomString(),
-		(randint(0, termSize[0]), randint(0, termSize[1])),
-		(randint(0, termSize[0]), randint(0, termSize[1])),
-		choice(getConstAttrs(pbar.ColorSet))[1],
-		choice(getConstAttrs(pbar.CharSet))[1],
-		choice(getConstAttrs(pbar.FormatSet))[1],
-		contentg=choice(pbar.ContentGens.getGens()),
+		random_string(),
+		(randint(0, term_size[0]), randint(0, term_size[1])),
+		(randint(0, term_size[0]), randint(0, term_size[1])),
+		choice(get_const_attrs(pbar.ColorSet))[1],
+		choice(get_const_attrs(pbar.CharSet))[1],
+		choice(get_const_attrs(pbar.FormatSet))[1],
+		contentg=choice(pbar.ContentGens.get_gens()),
 		inverted=choice([True, False]),
 	)
 
 	animate(b)
 
 
-def modifySizeAndPos():
+def modify_size_and_pos():
 	h = 1
 	b = pbar.PBar(prange=(0, 80))
 
@@ -82,15 +82,15 @@ def modifySizeAndPos():
 	animate(b)
 
 
-def tryAllSets():
+def try_all_sets():
 	print(pbar.Term.margin(2) + pbar.Term.clear() + f"COLORSET\tCHARSET\t\tFORMATSET\n{'-'*50}")
 
 	b = pbar.PBar()
-	for cname, cvalue in getConstAttrs(pbar.ColorSet):
+	for cname, cvalue in get_const_attrs(pbar.ColorSet):
 		b.colorset = cvalue
-		for chrname, chrvalue in getConstAttrs(pbar.CharSet):
+		for chrname, chrvalue in get_const_attrs(pbar.CharSet):
 			b.charset = chrvalue
-			for fname, fvalue in getConstAttrs(pbar.FormatSet):
+			for fname, fvalue in get_const_attrs(pbar.FormatSet):
 				print(f"{cname:<15}{chrname:<15}{fname}")
 				b.formatset = fvalue
 				b.draw()
@@ -98,21 +98,21 @@ def tryAllSets():
 	animate(b)
 
 
-@repeatFunc(30)
+@repeat_func(30)
 def condtionals():
 	conds = (	# lol!
-		pbar.Cond(f"percentage == {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1]),
-		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1]),
-		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1], choice(pbar.ContentGens.getGens())),
-		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(getConstAttrs(pbar.ColorSet))[1], choice(getConstAttrs(pbar.CharSet))[1], choice(getConstAttrs(pbar.FormatSet))[1]),
-		pbar.Cond(f"text == '{randomString()}'"),
+		pbar.Cond(f"percentage == {randint(0, 100)}", choice(get_const_attrs(pbar.ColorSet))[1], choice(get_const_attrs(pbar.CharSet))[1], choice(get_const_attrs(pbar.FormatSet))[1]),
+		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(get_const_attrs(pbar.ColorSet))[1], choice(get_const_attrs(pbar.CharSet))[1], choice(get_const_attrs(pbar.FormatSet))[1]),
+		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(get_const_attrs(pbar.ColorSet))[1], choice(get_const_attrs(pbar.CharSet))[1], choice(get_const_attrs(pbar.FormatSet))[1], choice(pbar.ContentGens.get_gens())),
+		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(get_const_attrs(pbar.ColorSet))[1], choice(get_const_attrs(pbar.CharSet))[1], choice(get_const_attrs(pbar.FormatSet))[1]),
+		pbar.Cond(f"text == '{random_string()}'"),
 	)
 	b = pbar.PBar(size=(20, 10), conditions=conds)
 	animate(b)
 
 
-@pbar.taskWrapper
-def taskWr(bar, something, another_thing):
+@pbar.task_wrapper
+def task_wr(bar, something, another_thing):
 	print(pbar.Term.clear())
 	sleep(.25)
 	sleep(.25)
@@ -128,29 +128,28 @@ def taskWr(bar, something, another_thing):
 	sleep(.25)
 
 
-def tryRelativePositioning():
+def try_relative_positioning():
 	with pbar.Term.SetScrollLimit(3):
 		for n in pbar.iter(range(2000), pbar.PBar(position=("r", "r1"), centered=False)):
 			print(choice(string.ascii_letters), end="")
-			if n % (termSize[0]//2) == 0:
+			if n % (term_size[0]//2) == 0:
 				print()
 			sleep(.005)
 
 
 def main():
-	with pbar.Term.SeqMgr(hideCursor=True):
-		tryRelativePositioning()
+	with pbar.Term.SeqMgr(hide_cursor=True):
+		try_relative_positioning()
 		default()
-		modifySizeAndPos()
-		fullyRandom()
-		tryAllSets()
+		modify_size_and_pos()
+		fully_random()
+		try_all_sets()
 		condtionals()
-		taskWr(pbar.PBar(), something="Something", another_thing="Another thing")
+		task_wr(pbar.PBar(), something="Something", another_thing="Another thing")
 
 
 if __name__ == '__main__':
 	try:
 		main()
-		print(pbar.utils.Stdout.triggers)
 	except KeyboardInterrupt:
 		pass

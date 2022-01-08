@@ -10,7 +10,7 @@ def _isinstance_indexsafe(array: Sequence, index: int, T: Any) -> bool:
 	return isinstance(array[index], T)
 
 
-def taskWrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Callable:
+def task_wrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Callable:
 	"""
 	### EXPERIMENTAL*
 
@@ -23,7 +23,7 @@ def taskWrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Cal
 	```
 	import time
 
-	@taskWrapper
+	@task_wrapper
 	def myTasks(myBar: PBar):
 		myBar.text = "This is a progress bar"
 		time.sleep(1)
@@ -43,7 +43,7 @@ def taskWrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Cal
 	may cause unexpected behaviour and errors.
 	"""
 
-	def insertAfterPair(bytecode: bytes, opcode: int, new: bytes) -> Tuple[bytes, int]:
+	def insert_after_pair(bytecode: bytes, opcode: int, new: bytes) -> Tuple[bytes, int]:
 		i = 0
 		found = 0
 		while i < len(bytecode):
@@ -59,31 +59,31 @@ def taskWrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Cal
 		code = func.__code__
 		bytecode = code.co_code
 
-		barConstIndex = len(code.co_consts)
+		bar_const_index = len(code.co_consts)
 
 		names = code.co_names + ("step",)
-		barMethIndex = len(names)-1
+		bar_meth_index = len(names)-1
 
 		# Bytecode is
-		# LOAD_CONST	barConstIndex
-		# LOAD_METHOD	barMethIndex
+		# LOAD_CONST	bar_const_index
+		# LOAD_METHOD	bar_meth_index
 		# CALL_METHOD	0
 		# POP_TOP		null
 		insertion = (
-			b"\x64" + barConstIndex.to_bytes(1, 'big')
-			+ b"\xa0" + barMethIndex.to_bytes(1, 'big')
+			b"\x64" + bar_const_index.to_bytes(1, 'big')
+			+ b"\xa0" + bar_meth_index.to_bytes(1, 'big')
 			+ b"\xa1\x00"
 			+ b"\x01\x00"
 		)
 
 		# DO NOT FLIP THESE BECAUSE IT WILL MAKE THE PROGRAM FREEZE
-		maxRange = 0
+		max_range = 0
 		# Insert after all CALL_METHOD
-		bytecode, count = insertAfterPair(bytecode, 161, insertion)
-		maxRange += count
+		bytecode, count = insert_after_pair(bytecode, 161, insertion)
+		max_range += count
 		# Insert after all CALL_FUNCTION
-		bytecode, count = insertAfterPair(bytecode, 131, insertion)
-		maxRange += count
+		bytecode, count = insert_after_pair(bytecode, 131, insertion)
+		max_range += count
 
 		func.__code__ = func.__code__.replace(
 			co_code=bytecode, co_names=names
@@ -106,7 +106,7 @@ def taskWrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Cal
 			)
 
 			if overwriteRange:
-				barObj.prange = (0, maxRange)
+				barObj.prange = (0, max_range)
 
 			barObj.draw()
 			return func(*args, **kwargs)

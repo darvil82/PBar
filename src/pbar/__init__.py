@@ -11,8 +11,8 @@
 
 __version__ = "1.17.0"
 
-from . bar import PBar, iter, animate, barHelper
-from . task_wrapper import taskWrapper
+from . bar import PBar, iter, animate, bar_helper
+from . task_wrapper import task_wrapper
 from . sets import CharSet, FormatSet, ColorSet
 from . cond import Cond
 from . gen import ContentGens

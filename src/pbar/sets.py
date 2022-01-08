@@ -14,50 +14,50 @@ _IGNORE_CHARS = "\x1b\n\r\b\a\f\v"
 
 class UnknownSetKeyError(Exception):
 	"""A key supplied in a dictionary is unknown for the set class that will use it"""
-	def __init__(self, key, setObj) -> None:
-		msg = f"Unknown key {key!r} for {setObj.__class__.__name__!r}"
-		setKeys = "', '".join(setObj.EMPTY)
-		super().__init__(f"{msg}. Available valid keys: '{setKeys}'.")
+	def __init__(self, key, set_obj) -> None:
+		msg = f"Unknown key {key!r} for {set_obj.__class__.__name__!r}"
+		set_keys = "', '".join(set_obj.EMPTY)
+		super().__init__(f"{msg}. Available valid keys: '{set_keys}'.")
 
 
 class _BaseSet(dict):
 	"""Base class for all the customizable sets for the bar (colorset, charset, formatset)"""
 	EMPTY: dict = {}
 
-	def __init__(self, newSet: dict) -> None:
-		utils.chkInstOf(newSet, dict, name="newSet")
-		super().__init__(self._populate(self.EMPTY | newSet))
+	def __init__(self, new_set: dict) -> None:
+		utils.chk_inst_of(new_set, dict, name="new_set")
+		super().__init__(self._populate(self.EMPTY | new_set))
 
 
 	def __repr__(self) -> str:
 		return f"{self.__class__.__name__}({dict(self)})"
 
 
-	def _populate(self, currentSet: dict) -> dict:		# ?: Needs a proper rewrite if we end up needing more subdicts
+	def _populate(self, current_set: dict) -> dict:		# ?: Needs a proper rewrite if we end up needing more subdicts
 		"""
 		Return a new set with all the necessary keys for drawing the bar,
 		making sure that no keys are missing.
 		"""
-		newSet = {}
-		for key, currentValue in currentSet.items():
+		new_set = {}
+		for key, currentValue in current_set.items():
 			if key not in self.EMPTY:
 				raise UnknownSetKeyError(key, self)
 
-			defaultSetValue = self.EMPTY[key]
+			default_set_value = self.EMPTY[key]
 
-			if not isinstance(currentValue, dict) and isinstance(defaultSetValue, dict):
-				newSet[key] = {subkey: currentValue for subkey in defaultSetValue}
-			elif isinstance(currentValue, dict) and isinstance(defaultSetValue, dict):
-				newSet[key] = defaultSetValue | currentValue
+			if not isinstance(currentValue, dict) and isinstance(default_set_value, dict):
+				new_set[key] = {subkey: currentValue for subkey in default_set_value}
+			elif isinstance(currentValue, dict) and isinstance(default_set_value, dict):
+				new_set[key] = default_set_value | currentValue
 			else:
-				newSet[key] = currentValue
+				new_set[key] = currentValue
 
-		return newSet
+		return new_set
 
 
-	def mapValues(self, func: Callable) -> dict:
+	def map_values(self, func: Callable) -> dict:
 		"""Return a dict mapped the values of the set to a function."""
-		return utils.mapDict(self, func)
+		return utils.map_dict(self, func)
 
 
 
@@ -172,13 +172,13 @@ class ColorSet(_BaseSet):
 	}
 
 
-	def __init__(self, newSet: Optional[ColorSetEntry]) -> None:
-		super().__init__(newSet or self.DEFAULT)
+	def __init__(self, new_set: Optional[ColorSetEntry]) -> None:
+		super().__init__(new_set or self.DEFAULT)
 
 
-	def parsedValues(self, bg=False) -> dict:
+	def parsed_values(self, bg=False) -> dict:
 		"""Convert all values in the ColorSet to parsed color sequences for the terminal"""
-		return self.mapValues(lambda val: Term.color(val, bg))
+		return self.map_values(lambda val: Term.color(val, bg))
 
 
 
@@ -303,8 +303,8 @@ class CharSet(_BaseSet):
 	}
 
 
-	def __init__(self, newSet: Optional[CharSetEntry]) -> None:
-		super().__init__(newSet or self.DEFAULT)
+	def __init__(self, new_set: Optional[CharSetEntry]) -> None:
+		super().__init__(new_set or self.DEFAULT)
 		self |= self._strip()	# we update with the stripped strings
 
 
@@ -316,7 +316,7 @@ class CharSet(_BaseSet):
 				return "?"	# we just return a "?" if the char is invalid.
 			return value
 
-		return self.mapValues(lambda val: clean(val))	# map the new dict
+		return self.map_values(lambda val: clean(val))	# map the new dict
 
 
 
@@ -389,30 +389,30 @@ class FormatSet(_BaseSet):
 	}
 
 
-	def __init__(self, newSet: Optional[FormatSetEntry]) -> None:
-		super().__init__(newSet or self.DEFAULT)
+	def __init__(self, new_set: Optional[FormatSetEntry]) -> None:
+		super().__init__(new_set or self.DEFAULT)
 
 
 	@staticmethod
-	def _rmPoisonChars(text: str) -> str:
+	def _rm_poison_chars(text: str) -> str:
 		"""Remove "dangerous" characters and convert some"""
-		endStr = ""
+		end_str = ""
 		for char in str(text):
 			if char not in _IGNORE_CHARS:	# Ignore this characters entirely
 				if char == "\t":
 					char = "    "	# Convert tabs to spaces because otherwise we can't tell the length of the string properly
-				endStr += char
-		return endStr
+				end_str += char
+		return end_str
 
 
 	@staticmethod
-	def getBarAttr(barObj: "bar.PBar", string: str):
+	def get_bar_attr(bar_obj: "bar.PBar", string: str):
 		attrs = {
-			"percentage": barObj.percentage,
-			"prange1": barObj._range[0],
-			"prange2": barObj._range[1],
-			"etime": barObj.etime,
-			"text": FormatSet._rmPoisonChars(barObj.text) if barObj.text else ""
+			"percentage": bar_obj.percentage,
+			"prange1": bar_obj._range[0],
+			"prange2": bar_obj._range[1],
+			"etime": bar_obj.etime,
+			"text": FormatSet._rm_poison_chars(bar_obj.text) if bar_obj.text else ""
 		}
 
 		if string not in attrs:	raise UnknownFormattingKeyError(string)
@@ -421,46 +421,46 @@ class FormatSet(_BaseSet):
 
 
 	@staticmethod
-	def parseString(barObj: "bar.PBar", string: str) -> str:
+	def parse_string(bar_obj: "bar.PBar", string: str) -> str:
 		"""Parse a string that may contain formatting keys"""
 		if string is None:
 			return ""
 
-		endStr = ""				# Final string that will be returned
-		string = FormatSet._rmPoisonChars(string)
-		loopSkipChars = 0
+		end_str = ""				# Final string that will be returned
+		string = FormatSet._rm_poison_chars(string)
+		loop_skip_chars = 0
 
 		# Convert the keys to a final string
 		for index, char in enumerate(string):
-			if loopSkipChars:
-				loopSkipChars -= 1
+			if loop_skip_chars:
+				loop_skip_chars -= 1
 				continue
 
 			# skip a character if backslashes are used
 			if char == "\\":
 				if index == len(string) - 1:
 					break
-				endStr += string[index + 1]
-				loopSkipChars = 1
+				end_str += string[index + 1]
+				loop_skip_chars = 1
 				continue
 
 			if char == "<":
 				if ">" not in string[index:]:
 					raise utils.UnexpectedEndOfStringError(string)
-				endIndex = string.index(">", index)
-				char = str(FormatSet.getBarAttr(barObj, string[index + 1:endIndex]))
+				end_index = string.index(">", index)
+				char = str(FormatSet.get_bar_attr(bar_obj, string[index + 1:end_index]))
 
-				loopSkipChars = endIndex - index
+				loop_skip_chars = end_index - index
 
-			endStr += char
-		return endStr.strip()
+			end_str += char
+		return end_str.strip()
 
 
-	def parsedValues(self, barObj: "bar.PBar") -> "FormatSet":
+	def parsed_values(self, bar_obj: "bar.PBar") -> "FormatSet":
 		"""Returns a new FormatSet with all values parsed with the properties of the PBar object specified"""
-		return FormatSet(self.mapValues(lambda val: self.parseString(barObj, val)))
+		return FormatSet(self.map_values(lambda val: self.parse_string(bar_obj, val)))
 
 
-	def emptyValues(self) -> "FormatSet":
+	def empty_values(self) -> "FormatSet":
 		"""Convert all values in the FormatSet to strings with spaces of the same size."""
-		return FormatSet(self.mapValues(lambda val: " "*len(val)))
+		return FormatSet(self.map_values(lambda val: " "*len(val)))
