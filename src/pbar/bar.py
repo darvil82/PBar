@@ -377,7 +377,6 @@ class PBar:
 
 
 	def __del__(self):
-		self.clear()
 		Stdout.removeTrigger(self._nl_trigger_index)
 
 
@@ -426,41 +425,39 @@ def iter(
 		barObj.clear()
 
 
-def barHelper(
-	position: Position = ("c", "c"),
-	size: tuple[int, int] = (20, 1)
-) -> tuple[tuple[int, int], tuple[int, int]]:
+def barHelper(bar: PBar = None) -> tuple[tuple[int, int], tuple[int, int]]:
 	"""
 	Draw a bar helper on screen indefinitely until the user exits.
 	Returns the position of the bar helper.
-	@position: Position of the helper on the terminal.
-	@size: Size of the helper.
+	@bar: PBar object to use.
 	"""
-	b = PBar(	# we create a bar just to make stuff easier
-		size=size,
-		formatset=sets.FormatSet.EMPTY,
-		colorset={
-			"vert": "#090",
-			"horiz": "#090",
-			"corner": "#090",
-			"text":	"#ff6400",
-			"empty": "#090",
-			"full": "#090"
-		},
-		prange=(0, 100),
-		centered=True,
-	)
+	if not bar:
+		bar = PBar(	# we create a bar just to make stuff easier
+			size=(20, 1),
+			formatset=sets.FormatSet.EMPTY,
+			colorset={
+				"vert": "#090",
+				"horiz": "#090",
+				"corner": "#090",
+				"text":	"#ff6400",
+				"empty": "#090",
+				"full": "#090"
+			},
+			centered=True
+		)
 
-	b.formatset |= {"title": f"uValues: pos{position} size{size}"}
+	position, size = bar.position, bar.size
+	bar.formatset |= {"title": f"uValues: pos{position} size{size}"}
+	bar.prange = (0, 100)
 
 	with Term.SeqMgr(hideCursor=True):	# create a new buffer, and hide the cursor
 		try:
 			while True:
 				for perc in range(100):
-					b.percentage = perc
-					b.position = position
-					rPos, rSize = b.computedValues
-					b.formatset |= {"subtitle": f"cValues: pos{rPos} size{rSize}"}
+					bar.percentage = perc
+					bar.position = position
+					rPos, rSize = bar.computedValues
+					bar.formatset |= {"subtitle": f"cValues: pos{rPos} size{rSize}"}
 
 					xLine = Term.setPos((0, rPos[1])) + "═"*rPos[0]
 					yLine = "".join(Term.setPos((rPos[0], x)) + "║" for x in range(rPos[1]))
@@ -468,14 +465,14 @@ def barHelper(
 
 					utils.out(
 						Term.CLEAR_ALL
-						+ b._genBar()	# the bar itself
+						+ bar._genBar()	# the bar itself
 						+ Term.color((255, 100, 0)) + xLine + yLine + center	# x and y lines
 						+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET
 					)
 					sleep(0.01)
-				b.inverted = not b.inverted
+				bar.inverted = not bar.inverted
 		except KeyboardInterrupt:
 			pass
 
-	del b	# delete the bar we created
+	del bar	# delete the bar we created
 	return rPos, rSize	# return the latest position and size of the helper
