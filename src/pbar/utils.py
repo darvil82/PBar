@@ -365,16 +365,10 @@ class Stdout(TextIOWrapper):
 
 		Returns the index of the trigger in the Stdout triggers property.
 		"""
+		if len(triggers := Stdout.triggers) >= 1000:	# prevent memory overflow
+			del triggers[0]
 		Stdout.triggers.append(func)
 		return func
-
-	@staticmethod
-	def remove_trigger(index) -> None:
-		"""
-		Remove a trigger from the list of triggers.
-		@func: The function to be removed.
-		"""
-		del Stdout.triggers[index]
 
 
 
