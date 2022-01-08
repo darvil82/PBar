@@ -547,18 +547,21 @@ class Term:
 			newBuffer: bool = True,
 			hideCursor: bool = False,
 			homeCursor: bool = True,
-			saveCursor: bool = True
+			saveCursor: bool = True,
+			margin: tuple[Optional[int], Optional[int]] = None
 		) -> None:
 			"""
 			@newBuffer: Create a new terminal buffer, then go back to the old one.
 			@hideCursor: Hide the cursor, then show it.
 			@homeCursor: Move the cursor to the top left corner.
 			@saveCursor: Save the cursor position, then load it.
+			@margin: Set the top and bottom margins.
 			"""
 			self.nbuff = newBuffer
 			self.hcur = hideCursor
 			self.hocur = homeCursor
 			self.scur = saveCursor
+			self.margin = margin
 
 		def __enter__(self) -> None:
 			out(
@@ -566,6 +569,7 @@ class Term:
 				+ (Term.CURSOR_HIDE * self.hcur)
 				+ (Term.CURSOR_SAVE * self.scur)
 				+ (Term.CURSOR_HOME * self.hocur)
+				+ (Term.margin(self.margin[0], self.margin[1]) if self.margin else "")
 			)
 
 		def __exit__(self, *args) -> None:
@@ -573,6 +577,7 @@ class Term:
 				(Term.BUFFER_OLD * self.nbuff)
 				+ (Term.CURSOR_SHOW * self.hcur)
 				+ (Term.CURSOR_LOAD * self.scur)
+				+ (Term.margin() * bool(self.margin))
 			)
 
 
@@ -581,15 +586,22 @@ class Term:
 		Context manager for setting the vertical scroll limit of the terminal.
 		When the cursor reaches this limit, it will scroll the screen buffer up.
 		"""
-		def __init__(self, limit: int):
+		def __init__(self, limit: int, always_check: bool = False) -> None:
+			"""
+			@limit: The vertical scroll limit.
+			@always_check: If `True`, the cursor position will be checked each time
+			text is sent to stdout. Otherwise, only when a newline occurs.
+			"""
 			self.limit = limit
+			self.always_check = always_check
 
 		def __enter__(self):
-			self.oldLimit = Stdout.scroll_offset
+			self.oldValues = Stdout.scroll_offset, Stdout.always_check
 			Stdout.scroll_offset = self.limit
+			Stdout.always_check = self.always_check
 
 		def __exit__(self, *args):
-			Stdout.scroll_offset = self.oldLimit
+			Stdout.scroll_offset, Stdout.always_check = self.oldValues
 
 
 	@staticmethod

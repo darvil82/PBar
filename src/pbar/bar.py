@@ -116,6 +116,7 @@ class PBar:
 		self.enabled = True				# If disabled, the bar will never draw.
 		self._time = epochTime()		# The elapsed time since the bar created.
 		self._isOnScreen = False		# Is the bar on screen?
+		self._redraw_on_scroll = True	# If the bar is on screen, should it redraw when the terminal scrolls?
 
 		self._range = PBar._getRange(prange)
 		self.text = text if text is not None else ""
@@ -356,7 +357,7 @@ class PBar:
 
 		# we check if the screen was scrolled. If so, clear the bar at
 		# the old position before the scroll occurred.
-		if lines := self._nlc.lines:
+		if lines := self._nlc.lines and self._redraw_on_scroll:
 			pos, size, formatset = self._oldValues
 			self._printStr(
 				self._genClearedBar(
