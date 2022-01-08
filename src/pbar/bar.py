@@ -7,7 +7,7 @@ from typing import (
 )
 
 from . import utils, gen, sets, cond
-from . utils import Term, T
+from . utils import Stdout, Term, T
 
 
 
@@ -130,7 +130,7 @@ class PBar:
 		self.inverted = inverted
 		self.centered = centered
 
-		self._nlc = utils.NewLineCounter()
+		self._nl_trigger_index = utils.Stdout.addTrigger(lambda c: PBar._clearWithOffset(self, c))
 		self._oldValues = (*self.computedValues, self._formatset.parsedValues(self))	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
 
@@ -294,11 +294,10 @@ class PBar:
 		self,
 		position: tuple[int, int],
 		size: tuple[int, int],
-		formatset: sets.FormatSet,
-		forceShow: bool = False
+		formatset: sets.FormatSet
 	) -> str:
 		"""Generate a cleared progress bar. The position and size values should be already computed."""
-		if not self._isOnScreen and not forceShow:
+		if not self._isOnScreen:
 			return ""
 
 		parsedColorSet = sets.ColorSet(sets.ColorSet.EMPTY).parsedValues()
@@ -317,7 +316,7 @@ class PBar:
 			formatset.emptyValues()
 		)
 
-		self._isOnScreen = True if forceShow else self._isOnScreen
+		self._isOnScreen = False
 		return barText + barShape
 
 
@@ -355,24 +354,31 @@ class PBar:
 		if not self.enabled or NEVER_DRAW:
 			return
 
-		# we check if the screen was scrolled. If so, clear the bar at
-		# the old position before the scroll occurred.
-		if lines := self._nlc.lines and self._redraw_on_scroll:
-			pos, size, formatset = self._oldValues
-			self._printStr(
-				self._genClearedBar(
-					(pos[0], pos[1] - lines),
-					size,
-					formatset,
-					True
-				)
-			)
-
 		utils.out(
 			Term.CURSOR_SAVE + Term.CURSOR_HIDE
 			+ barString
 			+ Term.CURSOR_LOAD + Term.CURSOR_SHOW + Term.RESET
 		)
+
+
+	def _clearWithOffset(self, count: int):
+		if not self._isOnScreen and self._redraw_on_scroll:
+			return
+
+		pos, size, formatset = self._oldValues
+		self._printStr(
+			self._genClearedBar(
+				(pos[0], pos[1] - count),
+				size,
+				formatset
+			)
+		)
+		self.draw()
+
+
+	def __del__(self):
+		self.clear()
+		Stdout.removeTrigger(self._nl_trigger_index)
 
 
 

@@ -85,7 +85,7 @@ def modifySizeAndPos():
 def tryAllSets():
 	print(pbar.Term.margin(2) + pbar.Term.clear() + f"COLORSET\tCHARSET\t\tFORMATSET\n{'-'*50}")
 
-	b = pbar.PBar(prange=(1, 3))
+	b = pbar.PBar()
 	for cname, cvalue in getConstAttrs(pbar.ColorSet):
 		b.colorset = cvalue
 		for chrname, chrvalue in getConstAttrs(pbar.CharSet):
@@ -151,5 +151,6 @@ def main():
 if __name__ == '__main__':
 	try:
 		main()
+		print(pbar.utils.Stdout.triggers)
 	except KeyboardInterrupt:
 		pass

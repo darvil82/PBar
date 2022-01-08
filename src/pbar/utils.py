@@ -319,7 +319,7 @@ class Stdout(TextIOWrapper):
 	A class that may override stdout.
 	Keeps track of the number of newlines sent.
 	"""
-	_cntrs: list["NewLineCounter"] = []
+	triggers: list[Callable] = []
 	scroll_offset: int = 0
 	always_check: bool = False
 
@@ -346,9 +346,9 @@ class Stdout(TextIOWrapper):
 						"\v"*offset
 						+ Term.moveVert(-offset)
 					)
-				for mgr in Stdout._cntrs:
+				for t in Stdout.triggers:
 					# we take into account the possible exceeding of the the max size
-					mgr._lc += count + (cPos - (tSize - offset) - 1)
+					t(count + (cPos - (tSize - offset) - 1))
 			sys.stdout = self
 
 		self.original.write(s)
@@ -357,20 +357,24 @@ class Stdout(TextIOWrapper):
 		"""Flushes the stdout buffer."""
 		self.original.flush()
 
+	@staticmethod
+	def addTrigger(func: Callable[[int], None]) -> int:
+		"""
+		Register a trigger that will be called when the terminal screen is scrolled.
+		@func: The function to be called when the buffer is scrolled.
 
+		Returns the index of the trigger in the Stdout triggers property.
+		"""
+		Stdout.triggers.append(func)
+		return max(len(Stdout.triggers) - 1, 0)
 
-
-class NewLineCounter:
-	"""Keeps track of the number of newlines that scrolled the screen."""
-	def __init__(self) -> None:
-		self._lc = 0
-		Stdout._cntrs.append(self)
-
-	@property
-	def lines(self):
-		l = self._lc
-		self._lc = 0
-		return l
+	@staticmethod
+	def removeTrigger(index) -> None:
+		"""
+		Remove a trigger from the list of triggers.
+		@func: The function to be removed.
+		"""
+		del Stdout.triggers[index]
 
 
 
@@ -590,7 +594,7 @@ class Term:
 			"""
 			@limit: The vertical scroll limit.
 			@always_check: If `True`, the cursor position will be checked each time
-			text is sent to stdout. Otherwise, only when a newline occurs.
+			text is sent to stdout (slower). Otherwise, only when a newline occurs (faster).
 			"""
 			self.limit = limit
 			self.always_check = always_check
