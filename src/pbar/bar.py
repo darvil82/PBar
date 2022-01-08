@@ -171,7 +171,7 @@ class PBar:
 		self.draw()
 
 
-	def reset_e_time(self):
+	def reset_elapsed_time(self):
 		"""Reset the elapsed time counter."""
 		self._time = epochTime()	# Just set _time to the current time.
 
