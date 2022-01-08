@@ -40,7 +40,7 @@ def b_shape(
 	mid: str = "".join((	# generate all the rows of the bar. If filled is None, we just make the cursor jump to the right
 		Term.set_pos(position, (0, row+1))
 		+ char_vert[0]
-		+ (Term.moveHoriz(width) if filled is None else filled[0]*width)
+		+ (Term.move_horiz(width) if filled is None else filled[0]*width)
 		+ char_vert[1]
 	) for row in range(height - 1))
 
@@ -55,7 +55,8 @@ def b_shape(
 
 
 def b_text(
-	position: tuple[int, int], size: tuple[int, int],
+	position: tuple[int, int],
+	size: tuple[int, int],
 	parsed_colorset: dict,
 	parsed_formatset: dict
 ) -> str:
@@ -116,8 +117,11 @@ def iter_rows(string: str, pos: tuple[int, int], height: tuple[int, int]) -> str
 
 
 def rect(
-	pos: "bar.Position", size: tuple[int, int],
-	char: str="█", color: utils.Color="white", centered: bool=False
+	pos: "bar.Position",
+	size: tuple[int, int],
+	char: str = "█",
+	color: utils.Color = "white",
+	centered: bool = False
 ) -> str:
 	"""Generate a rectangle."""
 	size = get_computed_size(size, (0, 0))
@@ -136,7 +140,7 @@ def rect(
 def get_computed_position(
 	position: "bar.Position",
 	c_size: tuple[int, int],
-	sizeOffset: tuple[int, int] = (0, 0),
+	size_offset: tuple[int, int] = (0, 0),
 	centered: bool = True
 ) -> tuple[int, int]:
 	"""
@@ -162,11 +166,11 @@ def get_computed_position(
 
 		value = utils.cap_value(
 			value,
-			term_size[index] - c_size[index]/2 - sizeOffset[index],
+			term_size[index] - c_size[index]/2 - size_offset[index],
 			c_size[index]/2 + 1
 		) if centered else utils.cap_value(
 			value,
-			term_size[index] - c_size[index] - sizeOffset[index],
+			term_size[index] - c_size[index] - size_offset[index],
 			1
 		)
 

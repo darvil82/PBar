@@ -325,7 +325,7 @@ class UnknownFormattingKeyError(Exception):
 	"""Unknown formatting key used in a formatset string"""
 	def __init__(self, string) -> None:
 		super().__init__(
-			Term.formatStr(f"Unknown formatting key '<red>*{string}*<reset>'")
+			Term.style_format(f"Unknown formatting key '<red>*{string}*<reset>'")
 		)
 
 

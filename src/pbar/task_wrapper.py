@@ -10,7 +10,7 @@ def _isinstance_indexsafe(array: Sequence, index: int, T: Any) -> bool:
 	return isinstance(array[index], T)
 
 
-def task_wrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Callable:
+def task_wrapper(func: Callable = None, /, *, overwrite_range: bool = True) -> Callable:
 	"""
 	### EXPERIMENTAL*
 
@@ -34,7 +34,7 @@ def task_wrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Ca
 	```
 
 	@barObj: PBar object to use.
-	@overwriteRange: If False, the decorator will not overwrite the
+	@overwrite_range: If False, the decorator will not overwrite the
 	prange of the bar, instead, it will just step over the range.
 
 	---
@@ -105,7 +105,7 @@ def task_wrapper(func: Callable = None, /, *, overwriteRange: bool = True) -> Ca
 				)
 			)
 
-			if overwriteRange:
+			if overwrite_range:
 				barObj.prange = (0, max_range)
 
 			barObj.draw()

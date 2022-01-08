@@ -4,7 +4,7 @@ from typing import Callable
 from . import bar, sets, utils, gen
 
 
-_OPs = {
+_OPERATORS = {
 	"EQ": "==",
 	"NE": "!=",
 	"GT": ">",
@@ -18,7 +18,8 @@ _OPs = {
 class Cond:
 	"""Condition manager used by a PBar object."""
 	def __init__(self,
-		condition: str, colorset: sets.ColorSetEntry = None,
+		condition: str,
+		colorset: sets.ColorSetEntry = None,
 		charset: sets.CharSetEntry = None,
 		formatset: sets.FormatSetEntry = None,
 		contentg: gen.BContentGen = None,
@@ -66,7 +67,7 @@ class Cond:
 		splitted = strSplit(cond)	# splits with strings in mind ('test "a b c" hey' > ["test", "a b c", "hey"])
 		utils.chk_seq_of_len(splitted, 3, "condition")
 
-		if splitted[1] not in _OPs.values():
+		if splitted[1] not in _OPERATORS.values():
 			raise RuntimeError(f"Invalid operator {splitted[1]!r}")
 
 		return splitted
@@ -87,13 +88,13 @@ class Cond:
 
 		# we use lambdas because some values may not be compatible with some operators
 		operators: dict[str, Callable] = {
-			_OPs["EQ"]: lambda: val == self._value,
-			_OPs["NE"]: lambda: val != self._value,
-			_OPs["GT"]: lambda: val > self._value,
-			_OPs["GE"]: lambda: val >= self._value,
-			_OPs["LT"]: lambda: val < self._value,
-			_OPs["LE"]: lambda: val <= self._value,
-			_OPs["IN"]: lambda: self._value in val,
+			_OPERATORS["EQ"]: lambda: val == self._value,
+			_OPERATORS["NE"]: lambda: val != self._value,
+			_OPERATORS["GT"]: lambda: val > self._value,
+			_OPERATORS["GE"]: lambda: val >= self._value,
+			_OPERATORS["LT"]: lambda: val < self._value,
+			_OPERATORS["LE"]: lambda: val <= self._value,
+			_OPERATORS["IN"]: lambda: self._value in val,
 		}
 
 		return operators.get(op, lambda: False)()

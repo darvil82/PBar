@@ -177,7 +177,7 @@ class UnexpectedEndOfStringError(Exception):
 	def __init__(self, string, expected_char=">") -> None:
 		super().__init__(
 			"Unexpected end of string. ('" + string
-			+ Term.formatStr(f"<bg=150,0,0>*◄ Expected '{expected_char}'<reset>')")
+			+ Term.style_format(f"<bg=150,0,0>*◄ Expected '{expected_char}'<reset>')")
 		)
 
 
@@ -198,7 +198,7 @@ def get_constant_attrs(obj: Any) -> tuple:
 	return tuple(a for a in dir(obj) if a.isupper())
 
 
-def strip_text(string: str, maxlen: int, endStr: str = "…") -> str:
+def strip_text(string: str, max_len: int, end_str: str = "…") -> str:
 	"""
 	Return a cutted string at the end if the len of it is larger than
 	the maxlen specified.
@@ -206,9 +206,9 @@ def strip_text(string: str, maxlen: int, endStr: str = "…") -> str:
 	@maxlen: the maximum length of the string
 	@endStr: the string to add at the end of the cutted string
 	"""
-	if maxlen < (end_len := len(endStr)):
+	if max_len < (end_len := len(end_str)):
 		return ""
-	return string[:maxlen-end_len] + endStr if len(string) > maxlen else string
+	return string[:max_len-end_len] + end_str if len(string) > max_len else string
 
 
 def convert_color(clr: Color, conversion: str) -> Union[str, tuple]:
@@ -257,7 +257,7 @@ def chk_seq_of_len(obj: Any, length: int, name: str = None) -> bool:
 	chk_inst_of(obj, tuple, list)
 	if len(obj) != length:
 		raise ValueError(
-			Term.formatStr(
+			Term.style_format(
 				(name or f"Sequence <orange>{obj!r}<reset>")
 				+ f" must have <lime>{length}<reset> items, "
 				+ f"not <red>{len(obj)}<reset>"
@@ -275,9 +275,9 @@ def chk_inst_of(obj: Any, *typ: Any, name: str = None) -> bool:
 		raise ValueError("No type/s were supplied to check against")
 
 	if not isinstance(obj, typ):
-		raise TypeError(Term.formatStr(
+		raise TypeError(Term.style_format(
 			(name or f"Value <orange>{obj!r}<reset>")
-			+ f" must be {' or '.join(Term.formatStr(f'<lime>{x.__name__}<reset>') for x in typ)}"
+			+ f" must be {' or '.join(Term.style_format(f'<lime>{x.__name__}<reset>') for x in typ)}"
 			+ f", not <red>{obj.__class__.__name__}<reset>"
 		))
 	return True
@@ -344,7 +344,7 @@ class Stdout(TextIOWrapper):
 				if offset:
 					out(
 						"\v"*offset
-						+ Term.moveVert(-offset)
+						+ Term.move_vert(-offset)
 					)
 				for t in Stdout.triggers:
 					# we take into account the possible exceeding of the the max size
@@ -468,7 +468,7 @@ class Term:
 		(Shortcut for `Term.moveHoriz` and `Term.moveVert`)
 		Negative values are supported.
 		"""
-		return Term.moveHoriz(int(pos[0]))+ Term.moveVert(int(pos[1]))
+		return Term.move_horiz(int(pos[0]))+ Term.move_vert(int(pos[1]))
 
 
 	@staticmethod
@@ -485,14 +485,14 @@ class Term:
 
 
 	@staticmethod
-	def moveHoriz(dist: SupportsInt) -> str:
+	def move_horiz(dist: SupportsInt) -> str:
 		"""Move the cursor horizontally `dist` characters (supports negative numbers)."""
 		dist = int(dist)
 		return f"\x1b[{abs(dist)}{'D' if dist < 0 else 'C'}"
 
 
 	@staticmethod
-	def moveVert(dist: SupportsInt, cr: bool = False) -> str:
+	def move_vert(dist: SupportsInt, cr: bool = False) -> str:
 		"""
 		Move the cursor vertically `dist` lines (supports negative numbers).
 		@cr: Do a carriage return too.
@@ -548,23 +548,23 @@ class Term:
 		saves the cursor position.
 		"""
 		def __init__(self,
-			newBuffer: bool = True,
+			new_buffer: bool = True,
 			hide_cursor: bool = False,
-			homeCursor: bool = True,
-			saveCursor: bool = True,
+			home_cursor: bool = True,
+			save_cursor: bool = True,
 			margin: tuple[Optional[int], Optional[int]] = None
 		) -> None:
 			"""
-			@newBuffer: Create a new terminal buffer, then go back to the old one.
+			@new_buffer: Create a new terminal buffer, then go back to the old one.
 			@hide_cursor: Hide the cursor, then show it.
-			@homeCursor: Move the cursor to the top left corner.
-			@saveCursor: Save the cursor position, then load it.
+			@home_cursor: Move the cursor to the top left corner.
+			@save_cursor: Save the cursor position, then load it.
 			@margin: Set the top and bottom margins.
 			"""
-			self.nbuff = newBuffer
+			self.nbuff = new_buffer
 			self.hcur = hide_cursor
-			self.hocur = homeCursor
-			self.scur = saveCursor
+			self.hocur = home_cursor
+			self.scur = save_cursor
 			self.margin = margin
 
 		def __enter__(self) -> None:
@@ -609,7 +609,7 @@ class Term:
 
 
 	@staticmethod
-	def formatStr(string: str, reset: bool = True, ignoreBackslashes: bool = False) -> str:  # sourcery no-metrics
+	def style_format(string: str, reset: bool = True, ignore_backslashes: bool = False) -> str:  # sourcery no-metrics
 		"""
 		Add format to the string supplied by wrapping text with special characters and sequences:
 
@@ -633,8 +633,9 @@ class Term:
 
 		Note: When disabling `Dim`, bold will also be disabled.
 
+		@string: The string to format.
 		@reset: Will formatting be resetted at the end?
-		@ignoreBackslashes: Ignore backslashes in the string.
+		@ignore_backslashes: Ignore backslashes in the string.
 		"""
 		invert = underline = dim = sthrough = invisible = bold = italic = blink = False
 		loop_skip_chars = 0
@@ -645,7 +646,7 @@ class Term:
 				loop_skip_chars -= 1
 				continue
 
-			if not ignoreBackslashes and char == "\\":
+			if not ignore_backslashes and char == "\\":
 				# skip a character if backslashes are used
 				if index == len(string) - 1:
 					break
@@ -685,7 +686,7 @@ class Term:
 				if ">" not in string[index:]:	# if the sequence is not closed, raise error
 					raise UnexpectedEndOfStringError(string)
 				end_index = string.index(">", index)	# we get the index of the end of the sequence
-				char = Term._parseStrFormatSeq(string[index + 1:end_index])	# parse the sequence
+				char = Term._parse_str_formatting(string[index + 1:end_index])	# parse the sequence
 				loop_skip_chars = end_index - index	# we now tell the loop to skip the parsed text
 
 			end_str += char
@@ -694,7 +695,7 @@ class Term:
 
 
 	@staticmethod
-	def _parseStrFormatSeq(seq: str) -> str:
+	def _parse_str_formatting(seq: str) -> str:
 		"""Convert a string color format (`([bg=]color)|reset`) to a terminal sequence."""
 
 		seq = seq.replace("<", "").replace(">", "")	# remove any possible <> characters
