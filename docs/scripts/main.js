@@ -9,11 +9,12 @@ const PBAR_INFO = {	// Define the wiki pages, and their corresponding tooltip
 
 	Cond: ["Cond", "Applies different customization sets to a bar if the condition supplied succeeds."],
 	animate: ["animate-function", "Animates the given PBar object by filling it by the range given, with a delay."],
-	taskWrapper: ["taskWrapper-function-decorator", "Automatically changes the prange of the progress bar depending on the number of function calls inside the decorated function.<br>This will also call the <span class='pre'>PBar.step()</span> method after each function call processed."],
+	task_wrapper: ["taskWrapper-function-decorator", "Automatically changes the prange of the progress bar depending on the number of function calls inside the decorated function.<br>This will also call the <span class='pre'>PBar.step()</span> method after each function call processed."],
 	ColorSet: ["PBar#colorset", "Set of colors to use when drawing the progress bar."],
 	CharSet: ["PBar#charset", "Set of characters to use when drawing the progress bar."],
 	FormatSet: ["PBar#formatset", "Formatting used when displaying the strings in different places around the bar."],
-	barHelper: ["barHelper", "Draw a bar helper on screen indefinitely until the user exits. Returns the position of the bar helper."]
+	bar_helper: ["bar_helper", "Draw a bar helper on screen indefinitely until the user exits. Returns the position of the bar helper."],
+	iter: ["iter-function", "Yield all the values of the given iterable, while stepping the progress bar."]
 }
 
 const LANGUAGES = {

@@ -1,23 +1,28 @@
 from io import TextIOWrapper
 from time import time as epochTime, sleep
+import sys
 from typing import (
-	Generator, Iterable, Literal,
+	Generator, Iterable,
 	Optional, SupportsInt, Union, IO
 )
 
 from . import utils, gen, sets, cond
-from . utils import Term, T
-
-
-NEVER_DRAW = False
-if not Term.isSupported():
-	Term.size = lambda: (0, 0)	# we just force it to return a size of 0,0 if it can't get the size
-	NEVER_DRAW = True
+from . utils import Stdout, Term, T
 
 
 
+NEVER_DRAW = not Term.SUPPORTED
 
-Position = tuple[Union[Literal["center"], int], Union[Literal["center"], int]]
+# we override stdout so we can keep track of the number of newlines
+sys.stdout = utils.Stdout(sys.stdout)
+def recover_stdout():
+	"""Recovers the stdout to the original one."""
+	sys.stdout = sys.stdout.original
+
+
+
+
+Position = tuple[Union[str, int], Union[str, int]]
 Conditions = Union[list[cond.Cond], cond.Cond]
 
 
@@ -29,13 +34,14 @@ class PBar:
 		prange: tuple[int, int] = (0, 1),
 		text: str = None,
 		size: tuple[int, int] = (20, 1),
-		position: Position = ("center", "center"),
+		position: Position = ("c", "c"),
 		colorset: sets.ColorSetEntry = None,
 		charset: sets.CharSetEntry = None,
 		formatset: sets.FormatSetEntry = None,
 		conditions: Conditions = None,
-		contentg: gen.BContentGen = gen.ContentGens.Auto,
-		inverted: bool = False
+		contentg: gen.BContentGen = gen.ContentGens.auto,
+		inverted: bool = False,
+		centered: bool = True,
 	) -> None:
 		"""
 		### Detailed descriptions:
@@ -55,8 +61,13 @@ class PBar:
 
 		@position: Tuple containing the position (X and Y axles of the center) of the progress bar on the terminal.
 
-		- If an axis value is `center`, the bar will be positioned at the center of the terminal on that axis.
-		- Negative values will position the bar at the other side of the terminal.
+		- The position can be an integer (which will specify an absolute position) or a string, which may specify special positions:
+			- Usage: `type[number]`. The number will specify the relative position from the point specified by the type.
+			- Types:
+				- `c`: Center of the terminal.
+				- `r`: Position of the cursor.
+
+		- Using integer negative values will position the bar at the other side of the terminal.
 
 		---
 
@@ -97,23 +108,30 @@ class PBar:
 		---
 
 		@inverted: If `True`, the bar will be drawn from the end to the beginning.
+
+		---
+
+		@centered: If `True`, the bar will be centered around the position specified by `position`.
 		"""
 		self.enabled = True				# If disabled, the bar will never draw.
 		self._time = epochTime()		# The elapsed time since the bar created.
-		self._isOnScreen = False		# Is the bar on screen?
+		self._is_on_screen = False		# Is the bar on screen?
+		self._redraw_on_scroll = True	# If the bar is on screen, should it redraw when the terminal scrolls?
 
-		self._range = PBar._getRange(prange)
+		self._range = PBar._get_range(prange)
 		self.text = text if text is not None else ""
 		self.size = size
 		self.position = position
 		self._colorset = sets.ColorSet(colorset)
 		self._charset = sets.CharSet(charset)
 		self._formatset = sets.FormatSet(formatset)
-		self._conditions = PBar._getConds(conditions)
+		self._conditions = PBar._get_conds(conditions)
 		self.contentg = contentg
 		self.inverted = inverted
+		self.centered = centered
 
-		self._oldValues = (*self.computedValues, self._formatset.parsedValues(self))	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
+		utils.Stdout.add_trigger(lambda c: PBar._redraw_with_offset(self, c))
+		self._old_values = (*self.computed_values, self._formatset.parsed_values(self))	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
 
 	# -------------------- Properties / Methods the user should use. --------------------
@@ -122,12 +140,12 @@ class PBar:
 	def draw(self):
 		"""Print the progress bar on screen."""
 
-		self._printStr(
-			self._genClearedBar(*self._oldValues)	# Clear the bar at the old position and size
-			+ self._genBar()	# draw at the new position and size
+		self._print_str(
+			self._gen_cleared_bar(*self._old_values)	# Clear the bar at the old position and size
+			+ self._gen_bar()	# draw at the new position and size
 		)
 
-		self._oldValues = (*self.computedValues, self._formatset.parsedValues(self))	# Reset the old values
+		self._old_values = (*self.computed_values, self._formatset.parsed_values(self))	# Reset the old values
 
 
 	def step(self, steps: int = 1, text: str = None):
@@ -143,7 +161,7 @@ class PBar:
 
 	def clear(self):
 		"""Clear the progress bar."""
-		self._printStr(self._genClearedBar(*self._oldValues))
+		self._print_str(self._gen_cleared_bar(*self._old_values))
 
 
 	def done(self, text: str = None):
@@ -153,14 +171,14 @@ class PBar:
 		self.draw()
 
 
-	def resetETime(self):
+	def reset_etime(self):
 		"""Reset the elapsed time counter."""
 		self._time = epochTime()	# Just set _time to the current time.
 
 
-	def prangeFromFile(self, fp: IO[str]):
+	def prange_from_file(self, fp: IO[str]):
 		"""Modify `prange` with the number of lines of a file."""
-		utils.chkInstOf(fp, TextIOWrapper, name="fp")
+		utils.chk_inst_of(fp, TextIOWrapper, name="fp")
 		self.prange = (0, len(fp.readlines()))
 		fp.seek(0)
 
@@ -171,7 +189,7 @@ class PBar:
 		return (self._range[0], self._range[1])
 	@prange.setter
 	def prange(self, range: tuple[int, int]):
-		self._range = PBar._getRange(range)
+		self._range = PBar._get_range(range)
 
 
 	@property
@@ -213,10 +231,10 @@ class PBar:
 
 
 	@property
-	def computedValues(self) -> tuple[tuple[int, int], tuple[int, int]]:
+	def computed_values(self) -> tuple[tuple[int, int], tuple[int, int]]:
 		"""Computed position and size of the progress bar."""
-		size = gen.getComputedSize(self.size, sizeOffset=(4, 2), minSize=(1, 1))
-		pos = gen.getComputedPosition(self.position, size, sizeOffset=(3, 1))
+		size = gen.get_computed_size(self.size, size_offset=(4, 2), min_size=(1, 1))
+		pos = gen.get_computed_position(self.position, size, (3, 1), self.centered)
 
 		return pos, size
 
@@ -233,25 +251,25 @@ class PBar:
 		return self._conditions
 	@conditions.setter
 	def conditions(self, conditions: Optional[Conditions]):
-		self._conditions = PBar._getConds(conditions)
+		self._conditions = PBar._get_conds(conditions)
 
 
 	# -------------------- ///////////////////////////////////////// --------------------
 
 
 	@staticmethod
-	def _getRange(range: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
+	def _get_range(range: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
 		"""Return a capped range"""
-		utils.chkSeqOfLen(range, 2)
+		utils.chk_seq_of_len(range, 2)
 		start, stop = map(int, range)
-		return (utils.capValue(start, stop, 0),
-				utils.capValue(stop, min=1))
+		return (utils.cap_value(start, stop, 0),
+				utils.cap_value(stop, min=1))
 
 
 	@staticmethod
-	def _getConds(conditions: Optional[Conditions]) -> list[cond.Cond]:
+	def _get_conds(conditions: Optional[Conditions]) -> list[cond.Cond]:
 		if isinstance(conditions, (tuple, list)):
-			for item in conditions:	utils.chkInstOf(item, cond.Cond)
+			for item in conditions:	utils.chk_inst_of(item, cond.Cond)
 			return conditions
 		elif isinstance(conditions, cond.Cond):
 			return [conditions, ]
@@ -259,174 +277,203 @@ class PBar:
 			return []
 
 
-	def _chkConds(self) -> None:
+	def _chk_conds(self) -> None:
 		for cond in self._conditions:
-			cond.chkAndApply(self)
+			cond.chk_and_apply(self)
 
 
-	def checkProps(self) -> tuple[tuple[int, int], tuple[int, int]]:
+	def check_props(self) -> tuple[tuple[int, int], tuple[int, int]]:
 		"""Check the properties of the bar and return the computed values."""
-		if self._conditions:	self._chkConds()
+		if self._conditions:
+			self._chk_conds()
 
-		return self.computedValues
+		return self.computed_values
 
 
-	def _genClearedBar(self,
+	def _gen_cleared_bar(
+		self,
 		position: tuple[int, int],
-		size: tuple[int, int], formatset: sets.FormatSet
+		size: tuple[int, int],
+		formatset: sets.FormatSet
 	) -> str:
 		"""Generate a cleared progress bar. The position and size values should be already computed."""
-		if not self._isOnScreen:	return ""
-		parsedColorSet = sets.ColorSet(sets.ColorSet.EMPTY).parsedValues()
+		if not self._is_on_screen:
+			return ""
 
-		barShape = gen.bShape(
+		parsed_colorset = sets.ColorSet(sets.ColorSet.EMPTY).parsed_values()
+
+		bar_shape = gen.b_shape(
 			position,
 			(size[0] + 4, size[1] + 2),
 			sets.CharSet.EMPTY,
-			parsedColorSet
+			parsed_colorset
 		)
 
-		barText = gen.bText(
+		bar_text = gen.b_text(
 			(position[0] + 2, position[1]),
 			(size[0], size[1] + 2),
-			parsedColorSet,
-			formatset.emptyValues()
+			parsed_colorset,
+			formatset.empty_values()
 		)
 
-		self._isOnScreen = False
-		return barText + barShape
+		self._is_on_screen = False
+		return bar_text + bar_shape
 
 
-	def _genBar(self) -> str:
+	def _gen_bar(self) -> str:
 		"""Generate the progress bar"""
-		position, size = self.checkProps()
-		parsedColorSet = self._colorset.parsedValues()
+		position, size = self.check_props()
+		parsed_colorset = self._colorset.parsed_values()
 
 		# Build all the parts of the progress bar
-		barShape = gen.bShape(
+		bar_shape = gen.b_shape(
 			position,
 			(size[0] + 4, size[1] + 2),
-			self._charset, parsedColorSet
+			self._charset, parsed_colorset
 		)
 
-		barContent = gen.BContentGenMgr(
+		bar_content = gen.BContentGenMgr(
 			self.contentg, self.inverted,
 			(position[0] + 2, position[1] + 1),
 			size,
-			self._charset, parsedColorSet, self._range
+			self._charset, parsed_colorset, self._range
 		)()
 
-		barText = gen.bText(
+		bar_text = gen.b_text(
 			(position[0] + 2, position[1]),
 			(size[0], size[1] + 2),
-			parsedColorSet, self._formatset.parsedValues(self)
+			parsed_colorset, self._formatset.parsed_values(self)
 		)
 
-		self._isOnScreen = True
-		return barShape + barContent + barText
+		self._is_on_screen = True
+		return bar_shape + bar_content + bar_text
 
 
-	def _printStr(self, barString: str):
+	def _print_str(self, bar_string: str):
 		"""Prints string to stream"""
-		if not self.enabled or NEVER_DRAW: return
+		if not self.enabled or NEVER_DRAW:
+			return
+
 		utils.out(
 			Term.CURSOR_SAVE + Term.CURSOR_HIDE
-			+ barString
+			+ bar_string
 			+ Term.CURSOR_LOAD + Term.CURSOR_SHOW + Term.RESET
 		)
 
 
+	def _redraw_with_offset(self, count: int):
+		if not self._is_on_screen and self._redraw_on_scroll:
+			return
+
+		pos, size, formatset = self._old_values
+		self._print_str(
+			self._gen_cleared_bar(
+				(pos[0], pos[1] - count),
+				size,
+				formatset
+			)
+		)
+		self.draw()
 
 
-def animate(barObj: PBar, rng: range = range(100), delay: float = 0.05) -> None:
+
+
+def animate(bar: PBar, rng: range = range(100), delay: float = 0.05) -> None:
 	"""
 	Animates the given PBar object by filling it by the range given, with a delay.
-	@barObj: PBar object to use.
+	@bar: PBar object to use.
 	@rng: range object to set for the bar.
 	@delay: Time in seconds between each time the bar draws.
 	"""
-	utils.chkInstOf(rng, range, name="rng")
+	utils.chk_inst_of(rng, range, name="rng")
 	steps = rng.step
-	barObj.prange = rng.start, rng.stop
+	bar.prange = rng.start, rng.stop
 	for _ in rng:
-		barObj.step(steps)
+		bar.step(steps)
 		sleep(delay)
 
 
 def iter(
 	iterable: Iterable[T],
-	barObj: Optional[PBar] = None,
+	bar: Optional[PBar] = None,
 	length: int = None,
-	clear: bool = True
+	clear: bool = True,
+	set_title: bool = False
 ) -> Generator[T, None, None]:
 	"""
 	Yield all the values of the given iterable, while stepping
 	the progress bar.
 	@iterable: Iterable object to iterate.
-	@barObj: PBar object to use.
+	@bar: PBar object to use.
 	@length: Length of the object to iterate.
 	(Use this if you don't know the length of the iterable.)
 	@clear: Clear the progress bar after finishing the iteration.
+	@set_title: Set the title of the progress bar to the string representation
+	of each yielded value.
 	"""
-	if not barObj:
-		barObj = PBar()
+	if not bar:
+		bar = PBar()
 
-	barObj.prange = (0, (length or len(iterable)))
-	barObj.draw()
+	bar.prange = (0, (length or len(iterable)))
+	bar.draw()
 	for x in iterable:
 		yield x
-		barObj.step()
+		if set_title:
+			bar.text = str(x)
+		bar.step()
 
 	if clear:
-		barObj.clear()
+		bar.clear()
 
 
-def barHelper(
-	position: Position = ("center", "center"),
-	size: tuple[int, int] = (20, 1)
-) -> tuple[tuple[int, int], tuple[int, int]]:
+def bar_helper(bar: PBar = None) -> tuple[tuple[int, int], tuple[int, int]]:
 	"""
 	Draw a bar helper on screen indefinitely until the user exits.
 	Returns the position of the bar helper.
-	@position: Position of the helper on the terminal.
-	@size: Size of the helper.
+	@bar: PBar object to use.
 	"""
-	b = PBar(	# we create a bar just to make stuff easier
-		size=size,
-		formatset=sets.FormatSet.EMPTY,
-		colorset={
-			"vert": "#090",
-			"horiz": "#090",
-			"corner": "#090",
-			"text":	"#ff6400",
-			"empty": "#090",
-			"full": "#090"
-		},
-		prange=(34, 100)
-	)
+	if not bar:
+		bar = PBar(	# we create a bar just to make stuff easier
+			size=(20, 1),
+			formatset=sets.FormatSet.EMPTY,
+			colorset={
+				"vert": "#090",
+				"horiz": "#090",
+				"corner": "#090",
+				"text":	"#ff6400",
+				"empty": "#090",
+				"full": "#090"
+			},
+			centered=True
+		)
 
-	b.formatset |= {"title": f"uValues: pos{position} size{size}"}
+	position, size = bar.position, bar.size
+	bar.formatset |= {"title": f"uValues: pos{position} size{size}"}
+	bar.prange = (0, 100)
 
-	with Term.SeqMgr(hideCursor=True):	# create a new buffer, and hide the cursor
+	with Term.SeqMgr(hide_cursor=True, new_buffer=True):	# create a new buffer, and hide the cursor
 		try:
 			while True:
-				b.position = position
-				rPos, rSize = b.computedValues
-				b.formatset |= {"subtitle": f"cValues: pos{rPos} size{rSize}"}
+				for perc in range(100):
+					bar.percentage = perc
+					bar.position = position
+					r_pos, r_size = bar.computed_values
+					bar.formatset |= {"subtitle": f"cValues: pos{r_pos} size{r_size}"}
 
-				xLine = Term.pos((0, rPos[1])) + "═"*rPos[0]
-				yLine = "".join(Term.pos((rPos[0], x)) + "║" for x in range(rPos[1]))
-				center = Term.pos(rPos) + "╝"
+					x_line = Term.set_pos((0, r_pos[1])) + "═"*r_pos[0]
+					y_line = "".join(Term.set_pos((r_pos[0], x)) + "║" for x in range(r_pos[1]))
+					center = Term.set_pos(r_pos) + "╝"
 
-				utils.out(
-					Term.CLEAR_ALL
-					+ b._genBar()	# the bar itself
-					+ Term.color((255, 100, 0)) + xLine + yLine + center	# x and y lines
-					+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET
-				)
-				sleep(0.01)
+					utils.out(
+						Term.CLEAR_ALL
+						+ bar._gen_bar()	# the bar itself
+						+ Term.color((255, 100, 0)) + x_line + y_line + center	# x and y lines
+						+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET
+					)
+					sleep(0.01)
+				bar.inverted = not bar.inverted
 		except KeyboardInterrupt:
 			pass
 
-	del b	# delete the bar we created
-	return rPos, rSize	# return the latest position and size of the helper
+	del bar	# delete the bar we created
+	return r_pos, r_size	# return the latest position and size of the helper

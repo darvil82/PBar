@@ -1,8 +1,8 @@
 import setuptools
 try:
-	from src.pbar import __version__ as prjVersion	# get project version
+	from src.pbar import __version__ as prj_version	# get project version
 except RuntimeError:
-	prjVersion = "dev"
+	prj_version = "dev"
 
 
 with open("README.md", "r", encoding="utf-8") as fh:
@@ -10,7 +10,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
 	name="PBar2",
-	version=prjVersion,
+	version=prj_version,
 	author="David Losantos (DarviL82)",
 	author_email="davidlosantos89@gmail.com",
 	description="Display customizable progress bars on the terminal easily.",

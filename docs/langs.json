@@ -20,10 +20,10 @@
 		"showcase1_text": "Here is the code that generates a progress bar with the default values. It also shows it on the terminal. So yeah... Should be easy enough!",
 
 		"showcase2_title": "Okay okay, but I want it to be something useful.",
-		"showcase2_text": "That makes sense, everyone likes useful things (at least that's what I think). Therefore, you can show the progress of a set of tasks in a super easy way.",
+		"showcase2_text": "That makes sense, everyone likes useful things (at least that's what I think). Therefore, you can show the progress of a set of tasks in a super easy way. <p><span class='whisper'>Note that his decorator is an experimental feature.</span></p>",
 
 		"showcase3_title": "I am afraid of <span class='func'>@decorators</span>, is there any other option?",
-		"showcase3_text": "<p> Of course! Who is not afraid of a decorator? They are truly terrifying, so that's why you can still progress in the 'classic' way.</p> <p>Hey, I'm afraid you'll have to admit that it's much uglier.</p>",
+		"showcase3_text": "Of course! Who is not afraid of a decorator? They are truly terrifying (but amazing), so that's why you can still progress in more different ways, like using this neat function shown at the left.",
 
 		"showcase4_title": "What if I want to change the color when it completes?",
 		"showcase4_text": "It is your lucky day, because you can set conditions for quite a few properties of the bar, and that when they are met, different colors, characters, or text are applied!",
@@ -31,6 +31,7 @@
 		"showcase5_title": "And... That's it?",
 		"showcase5_text1": "No! That's not all of it! I knew this wouldn't be enough for you, so I can tell you there's much more to see! There are a lot of different options to tweak. Here, take this quick demo that shows <i>some</i> of it's options:",
 		"showcase5_text2": "If you want to see all the features of PBar, check out the wiki pages on GitHub! You can also click on the words that are slightly highlighted inside the code blocks above. They will show you the wiki page of that object!",
+		"showcase5_text3": "This other example shows how the bar can be positioned anywhere, even at the current cursor position! Notice how it draws correctly even when the terminal screen scrolls down!",
 		"showcase5_button": "Visit the Wiki page",
 
 		"links_title": "Links and Download",
@@ -38,6 +39,8 @@
 		"link2_text": "I could not miss a version control that helps in my mediocre organization (and the loss of files). <i>Seriously, thanks git.</i> Ah yes, you can also find all the source code of the project. <span class='whisper'>pstt, it's a botch.</span>",
 		"link3_text": "It is also available on the Arch packages repository, thanks to <span style='color: green'> MithicSpirit</span>. <span class='whisper'>I don't use Arch btw.</span>"
 	},
+
+
 	"es": {
 		"langName": "Español",
 
@@ -59,10 +62,10 @@
 		"showcase1_text": "Aquí tienes el código que genera una barra de carga con los valores por defecto. También muestra la muestra en la terminal. Así que bueno... ¡Debería ser sencillo!",
 
 		"showcase2_title": "Vale vale, pero me interesa que sea algo útil.",
-		"showcase2_text": "Eso tiene sentido, a todo el mundo le gustan las cosas útiles, (al menos eso creo). Por eso, puedes mostrar el progreso de un conjunto de tareas de forma súper sencilla.",
+		"showcase2_text": "Eso tiene sentido, a todo el mundo le gustan las cosas útiles, (al menos eso creo). Por eso, puedes mostrar el progreso de un conjunto de tareas de forma súper sencilla. <p><span class='whisper'>Tenga en cuenta que este decorador es una característica experimental.</span></p>",
 
 		"showcase3_title": "Me dan miedo los <span class='func'>@decoradores</span>, ¿Alguna otra opción?",
-		"showcase3_text": "<p>¡Pues claro! ¿A quién no le da miedo un decorador? Son verdaderamente terroríficos, y por eso, puedes seguir progresando tu barra de la forma 'clásica'.</p> <p>Eso sí, me temo que tendrás que admitir que es mucho más feo.</p>",
+		"showcase3_text": "¡Pues claro! ¿A quién no le da miedo un decorador? Son verdaderamente terroríficos (pero increíbles), y por eso, puedes seguir progresando tu barra de más formas, como usando ésta simple función.",
 
 		"showcase4_title": "¿Y si quiero cambiar el color cuando se complete?",
 		"showcase4_text": "Es tu día de suerte, por que puedes establecer condiciones para bastantes propiedades de la barra, y que cuando se cumplan, ¡se apliquen diferentes colores, caracteres, o texto!",
@@ -70,6 +73,7 @@
 		"showcase5_title": "Y... Eso es todo?",
 		"showcase5_text1": "¡No! Eso no es todo! Sabía que esto no sería suficiente para ti, ¡así que puedo decirte que hay mucho más por ver! Hay muchas opciones distintas para modificar. Aquí tienes una pequeña demostración de algunas de esas opciones:",
 		"showcase5_text2": "Si quieres ver todas las características de PBar, consulte las páginas de la Wiki en GitHub. También puedes hacer click en las palabras que están ligeramente resaltadas en los bloques de código de arriba. ¡Te mostrarán la página de la Wiki de ese objeto!",
+		"showcase5_text3": "Esta otra demostración muestra cómo la barra puede estar en cualquier lugar, incluso en la posición actual del cursor. ¡Observa cómo se dibuja correctamente incluso cuando la pantalla del terminal desplaza hacia abajo!",
 		"showcase5_button": "Visitar la Wiki",
 
 		"links_title": "Enlaces y Descarga",
@@ -77,6 +81,8 @@
 		"link2_text": "No podía faltar un control de versiones que ayude en mi mediocre organización (y la perdida de archivos). <i>En serio, gracias git.</i> Ah sí, también puedes encontrar todo el código fuente del proyecto. <span class='whisper'>pstt, es una chapuza.</span>",
 		"link3_text": "También está disponible en el repositorio de paquetes de Arch, gracias a <span style='color: green'>MithicSpirit</span>. <span class='whisper'>I don't use Arch btw.</span>"
 	},
+
+
 	"pl": {
 		"langName": "Polski",
 
@@ -98,17 +104,18 @@
 		"showcase1_text": "Oto kod, który generuje pasek postępu z domyślnymi wartościami. Pokazuje to również w terminalu. Więc no... powinno być wystarczająco łatwo!",
 
 		"showcase2_title": "Okej okej, ale chcę, żeby to było coś pożytecznego.",
-		"showcase2_text": "To ma sens, każdy lubi użyteczne rzeczy (a przynajmniej tak mi się wydaje). Dlatego też, możesz pokazać postępy w realizacji zestawu zadań w super prosty sposób.",
+		"showcase2_text": "To ma sens, każdy lubi użyteczne rzeczy, (a przynajmniej ja tak myślę). Możesz więc w bardzo prosty sposób pokazać postępy w realizacji zestawu zadań. <p><span class='whisper'>Miej na uwadze, że ten dekorator jest eksperymentalny.</span></p>",
 
 		"showcase3_title": "Boje się <span class='func'>@dekoratorów</span>, czy jest jakaś inna opcja?",
-		"showcase3_text": "<p> Oczywiście! Któż z nas nie boi się dekoratorów? Są naprawdę przerażające, dlatego też możesz nadal używać PBar w bardziej klasyczny sposób. </p> <p> Ale hej, obawiam się, że będziesz musiał przyznać, że to jest znacznie brzydsze. </p>",
+		"showcase3_text": "Oczywiście! Kto z nas nie boi się dekoratorów? Są naprawdę przerażające (ale też niesamowite), dlatego też możesz wciąż liczyć postęp w wiele innych sposobów, na przykład poprzez używanie tej schludnej funkcji po lewej.",
 
 		"showcase4_title": "Co jeśli chcę zmienić kolor, kiedy skończy?",
 		"showcase4_text": "To twój szczęśliwy dzień, bo możesz ustawić warunki dla całkiej sporej ilości właściwości paska - kiedy są one spełnione, różne kolory, znaki lub tekst są wyświetlane.",
-		
+
 		"showcase5_title": "I... to wszystko?",
 		"showcase5_text1": "Nie, to jeszcze nie wszystko! Wiedziałem, że to Ci nie wystarczy, więc mogę powiedzieć, że jest o wiele więcej do zobaczenia! Istnieje wiele różnych opcji do podrasowania. Sprawdź to szybkie demo, które pokazuje <i>niektóre</i> z jego opcji:",
 		"showcase5_text2": "Jeśli chcesz zobaczyć wszystkie funkcje PBara, sprawdź strony wiki na GitHubie! Mozesz również kliknąć na słowa, które są lekko podświetlone wewnątrz bloków kodu powyżej. Pokaże Ci się strona wiki tego obiektu!",
+		"showcase5_text3": "To inne demo pokazuje jak pasek może znajdować się gdziekolwiek, nawet w bieżącej pozycji kursora - zobacz jak jest rysowany poprawnie nawet gdy ekran terminala przewija się w dół!",
 		"showcase5_button": "Odwiedź stronę Wiki",
 
 		"links_title": "Linki i pobieranie",

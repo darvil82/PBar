@@ -14,6 +14,11 @@ https://user-images.githubusercontent.com/48654552/140072905-f83a1ff4-fba7-481d-
 <details>
 	<summary><b> More examples </b></summary>
 
+https://user-images.githubusercontent.com/48654552/148692560-87e005f7-076a-48cc-9ae9-4c168ee040bc.mp4
+
+Source available [here.](https://github.com/DarviL82/PBar/blob/main/resources/examples/relative_pos.py)
+
+
 https://user-images.githubusercontent.com/48654552/134776865-c7516cf1-0c66-44da-ae2c-f2cbedd2527c.mp4
 
 Source available [here.](https://github.com/DarviL82/PBar/blob/main/resources/examples/anim.py)
