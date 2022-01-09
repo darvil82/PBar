@@ -325,6 +325,7 @@ class Stdout(TextIOWrapper):
 	always_check: bool = False
 
 	def __init__(self, stdout: TextIOWrapper) -> None:
+		super().__init__(stdout, encoding=stdout.encoding)
 		self.original = stdout
 
 	def write(self, s: str) -> None:
