@@ -37,7 +37,9 @@ Please visit the different wiki pages available **[here](https://github.com/Darv
 
 
 ## Requirements
-Python 3.9+
+- Python 3.9+
+- A terminal that can display VT100 sequences and escape codes such as `\v`.
+Windows CMD and PowerShell do not support some of these entirely, though Windows Terminal does.
 
 
 ## Installation
