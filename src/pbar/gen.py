@@ -296,18 +296,18 @@ class BContentGenMgr:
 class ContentGens:
 	"""Generators container."""
 	# add all the default generators names
-	Auto: BContentGen
-	Left: BContentGen
-	Right: BContentGen
-	CenterX: BContentGen
-	Bottom: BContentGen
-	Top: BContentGen
-	CenterY: BContentGen
-	TopLeft: BContentGen
-	TopRight: BContentGen
-	BottomLeft: BContentGen
-	BottomRight: BContentGen
-	Center: BContentGen
+	auto: BContentGen
+	left: BContentGen
+	right: BContentGen
+	center_x: BContentGen
+	bottom: BContentGen
+	top: BContentGen
+	center_y: BContentGen
+	top_left: BContentGen
+	top_right: BContentGen
+	bottom_left: BContentGen
+	bottom_right: BContentGen
+	center: BContentGen
 
 	@staticmethod
 	def register(generator: BContentGen = None, name: str = None) -> BContentGen:
@@ -317,8 +317,7 @@ class ContentGens:
 
 		@generator: The generator to register.
 		@name: The name of the of the generator in the `ContentGens` class.
-		By default, the name is the `__name__` of the generator. (the first letter
-		will always be uppercase)
+		By default, the name is the `__name__` of the generator.
 		"""
 		def inner(generator: BContentGen) -> BContentGen:
 			nonlocal name
@@ -330,7 +329,7 @@ class ContentGens:
 			# add the generator to the class
 			setattr(
 				ContentGens,
-				g_name[0].upper() + g_name[1:],	# capitalize only the first letter
+				g_name,
 				generator
 			)
 			return generator

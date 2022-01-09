@@ -138,7 +138,7 @@ def try_relative_positioning():
 
 
 def main():
-	with pbar.Term.SeqMgr(hide_cursor=True):
+	with pbar.Term.SeqMgr(hide_cursor=True, new_buffer=True, home_cursor=True):
 		try_relative_positioning()
 		default()
 		modify_size_and_pos()

@@ -338,9 +338,13 @@ class Stdout(TextIOWrapper):
 		cursor is positioned at the end of the terminal. If it is, we add 1
 		for each newline char to the counters, which will store the number of newlines."""
 
-		if count := sum(s.count(c) for c in "\n\v\f") or Stdout.always_check:
+		if (count := sum(s.count(c) for c in "\n\v\f") or Stdout.always_check) and Term.SUPPORTED:
 			sys.stdout = self.original	# using original stdout temporarily to prevent recursion... Hacky!
-			c_pos, t_size, offset = Term.get_pos()[1], Term.get_size()[1], max(Stdout.scroll_offset, 0) + 1
+			c_pos, t_size, offset = (
+				Term.get_pos()[1],
+				Term.get_size()[1],
+				max(Stdout.scroll_offset, 0) + (1 if not Stdout.always_check else 0)
+			)
 			if c_pos >= t_size - offset:
 				if offset:
 					out(
@@ -369,6 +373,8 @@ class Stdout(TextIOWrapper):
 		if len(triggers := Stdout.triggers) >= 1000:	# prevent memory overflow
 			del triggers[0]
 		Stdout.triggers.append(func)
+		if Term.SUPPORTED:
+			out("\v"+Term.move_vert(-1))	# HACK: doing this to trigger the Stdout detector
 		return func
 
 
@@ -568,8 +574,8 @@ class Term:
 				+ (Term.margin(self.margin[0], self.margin[1]) if self.margin else "")
 			)
 			if self.scroll_limit:
-				Term.set_scroll_limit(self.scroll_limit)
 				self.old_limit = Stdout.scroll_offset
+				Term.set_scroll_limit(self.scroll_limit)
 
 		def __exit__(self, *args) -> None:
 			out(

@@ -39,7 +39,7 @@ class PBar:
 		charset: sets.CharSetEntry = None,
 		formatset: sets.FormatSetEntry = None,
 		conditions: Conditions = None,
-		contentg: gen.BContentGen = gen.ContentGens.Auto,
+		contentg: gen.BContentGen = gen.ContentGens.auto,
 		inverted: bool = False,
 		centered: bool = True,
 	) -> None:
@@ -397,7 +397,8 @@ def iter(
 	iterable: Iterable[T],
 	bar: Optional[PBar] = None,
 	length: int = None,
-	clear: bool = True
+	clear: bool = True,
+	set_title: bool = False
 ) -> Generator[T, None, None]:
 	"""
 	Yield all the values of the given iterable, while stepping
@@ -407,6 +408,8 @@ def iter(
 	@length: Length of the object to iterate.
 	(Use this if you don't know the length of the iterable.)
 	@clear: Clear the progress bar after finishing the iteration.
+	@set_title: Set the title of the progress bar to the string representation
+	of each yielded value.
 	"""
 	if not bar:
 		bar = PBar()
@@ -415,6 +418,8 @@ def iter(
 	bar.draw()
 	for x in iterable:
 		yield x
+		if set_title:
+			bar.text = str(x)
 		bar.step()
 
 	if clear:
