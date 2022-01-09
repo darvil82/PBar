@@ -26,7 +26,7 @@ class Cond:
 		callback: Callable[["bar.PBar"], None] = None
 	) -> None:
 		"""
-		Apply different customization sets to a bar, or call a callback
+		Apply different customization options to a bar, or call a callback
 		if the condition supplied succeeds.
 		Text comparisons are case insensitive.
 

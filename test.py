@@ -129,7 +129,7 @@ def task_wr(bar, something, another_thing):
 
 
 def try_relative_positioning():
-	with pbar.Term.SetScrollLimit(3):
+	with pbar.Term.SeqMgr(scroll_limit=3):
 		for n in pbar.iter(range(2000), pbar.PBar(position=("r", "r1"), centered=False)):
 			print(choice(string.ascii_letters), end="")
 			if n % (term_size[0]//2) == 0:

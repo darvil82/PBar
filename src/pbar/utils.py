@@ -1,6 +1,7 @@
 from io import TextIOWrapper
 from os import system as runsys, get_terminal_size, isatty
 from time import sleep
+from dataclasses import dataclass
 import sys, re
 if sys.platform == "win32":
     import ctypes
@@ -339,7 +340,7 @@ class Stdout(TextIOWrapper):
 
 		if count := sum(s.count(c) for c in "\n\v\f") or Stdout.always_check:
 			sys.stdout = self.original	# using original stdout temporarily to prevent recursion... Hacky!
-			c_pos, t_size, offset = Term.get_pos()[1], Term.get_size()[1], Stdout.scroll_offset + 1
+			c_pos, t_size, offset = Term.get_pos()[1], Term.get_size()[1], max(Stdout.scroll_offset, 0) + 1
 			if c_pos >= t_size - offset:
 				if offset:
 					out(
@@ -535,71 +536,50 @@ class Term:
 		)
 
 
+	@staticmethod
+	def set_scroll_limit(limit: int, always_check: bool = False):
+		"""
+		Set the vertical scroll limit of the terminal.
+		When the cursor reaches this limit, it will scroll the screen buffer up.
+		@limit: The vertical scroll limit.
+		@always_check: If `True`, the cursor position will be checked each time
+		text is sent to stdout (slower). Otherwise, only when a newline occurs (faster).
+		"""
+		Stdout.scroll_offset = limit
+		Stdout.always_check = always_check
+
+
+	@dataclass
 	class SeqMgr:
-		"""
-		Context manager for alternating different terminal sequences.
-		By default, it changes to a new buffer, moves to the home position, and
-		saves the cursor position.
-		"""
-		def __init__(self,
-			new_buffer: bool = True,
-			hide_cursor: bool = False,
-			home_cursor: bool = True,
-			save_cursor: bool = True,
-			margin: tuple[Optional[int], Optional[int]] = None
-		) -> None:
-			"""
-			@new_buffer: Create a new terminal buffer, then go back to the old one.
-			@hide_cursor: Hide the cursor, then show it.
-			@home_cursor: Move the cursor to the top left corner.
-			@save_cursor: Save the cursor position, then load it.
-			@margin: Set the top and bottom margins.
-			"""
-			self.nbuff = new_buffer
-			self.hcur = hide_cursor
-			self.hocur = home_cursor
-			self.scur = save_cursor
-			self.margin = margin
+		"""Context manager for alternating different terminal sequences."""
+		new_buffer: bool = False
+		hide_cursor: bool = False
+		home_cursor: bool = False
+		save_cursor: bool = False
+		margin: tuple[Optional[int], Optional[int]] = None
+		scroll_limit: Optional[int] = None
 
 		def __enter__(self) -> None:
 			out(
-				(Term.BUFFER_NEW * self.nbuff)
-				+ (Term.CURSOR_HIDE * self.hcur)
-				+ (Term.CURSOR_SAVE * self.scur)
-				+ (Term.CURSOR_HOME * self.hocur)
+				(Term.BUFFER_NEW * self.new_buffer)
+				+ (Term.CURSOR_HIDE * self.hide_cursor)
+				+ (Term.CURSOR_SAVE * self.save_cursor)
+				+ (Term.CURSOR_HOME * self.home_cursor)
 				+ (Term.margin(self.margin[0], self.margin[1]) if self.margin else "")
 			)
+			if self.scroll_limit:
+				Term.set_scroll_limit(self.scroll_limit)
+				self.old_limit = Stdout.scroll_offset
 
 		def __exit__(self, *args) -> None:
 			out(
-				(Term.BUFFER_OLD * self.nbuff)
-				+ (Term.CURSOR_SHOW * self.hcur)
-				+ (Term.CURSOR_LOAD * self.scur)
+				(Term.BUFFER_OLD * self.new_buffer)
+				+ (Term.CURSOR_SHOW * self.hide_cursor)
+				+ (Term.CURSOR_LOAD * self.save_cursor)
 				+ (Term.margin() * bool(self.margin))
 			)
-
-
-	class SetScrollLimit:
-		"""
-		Context manager for setting the vertical scroll limit of the terminal.
-		When the cursor reaches this limit, it will scroll the screen buffer up.
-		"""
-		def __init__(self, limit: int, always_check: bool = False) -> None:
-			"""
-			@limit: The vertical scroll limit.
-			@always_check: If `True`, the cursor position will be checked each time
-			text is sent to stdout (slower). Otherwise, only when a newline occurs (faster).
-			"""
-			self.limit = limit
-			self.always_check = always_check
-
-		def __enter__(self):
-			self.old_values = Stdout.scroll_offset, Stdout.always_check
-			Stdout.scroll_offset = self.limit
-			Stdout.always_check = self.always_check
-
-		def __exit__(self, *args):
-			Stdout.scroll_offset, Stdout.always_check = self.old_values
+			if self.scroll_limit:
+				Term.set_scroll_limit(self.old_limit)
 
 
 	@staticmethod

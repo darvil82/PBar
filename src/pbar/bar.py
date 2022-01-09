@@ -171,7 +171,7 @@ class PBar:
 		self.draw()
 
 
-	def reset_elapsed_time(self):
+	def reset_etime(self):
 		"""Reset the elapsed time counter."""
 		self._time = epochTime()	# Just set _time to the current time.
 
@@ -378,24 +378,24 @@ class PBar:
 
 
 
-def animate(bar_obj: PBar, rng: range = range(100), delay: float = 0.05) -> None:
+def animate(bar: PBar, rng: range = range(100), delay: float = 0.05) -> None:
 	"""
 	Animates the given PBar object by filling it by the range given, with a delay.
-	@bar_obj: PBar object to use.
+	@bar: PBar object to use.
 	@rng: range object to set for the bar.
 	@delay: Time in seconds between each time the bar draws.
 	"""
 	utils.chk_inst_of(rng, range, name="rng")
 	steps = rng.step
-	bar_obj.prange = rng.start, rng.stop
+	bar.prange = rng.start, rng.stop
 	for _ in rng:
-		bar_obj.step(steps)
+		bar.step(steps)
 		sleep(delay)
 
 
 def iter(
 	iterable: Iterable[T],
-	bar_obj: Optional[PBar] = None,
+	bar: Optional[PBar] = None,
 	length: int = None,
 	clear: bool = True
 ) -> Generator[T, None, None]:
@@ -403,22 +403,22 @@ def iter(
 	Yield all the values of the given iterable, while stepping
 	the progress bar.
 	@iterable: Iterable object to iterate.
-	@bar_obj: PBar object to use.
+	@bar: PBar object to use.
 	@length: Length of the object to iterate.
 	(Use this if you don't know the length of the iterable.)
 	@clear: Clear the progress bar after finishing the iteration.
 	"""
-	if not bar_obj:
-		bar_obj = PBar()
+	if not bar:
+		bar = PBar()
 
-	bar_obj.prange = (0, (length or len(iterable)))
-	bar_obj.draw()
+	bar.prange = (0, (length or len(iterable)))
+	bar.draw()
 	for x in iterable:
 		yield x
-		bar_obj.step()
+		bar.step()
 
 	if clear:
-		bar_obj.clear()
+		bar.clear()
 
 
 def bar_helper(bar: PBar = None) -> tuple[tuple[int, int], tuple[int, int]]:
