@@ -13,7 +13,8 @@ const PBAR_INFO = {	// Define the wiki pages, and their corresponding tooltip
 	ColorSet: ["PBar#colorset", "Set of colors to use when drawing the progress bar."],
 	CharSet: ["PBar#charset", "Set of characters to use when drawing the progress bar."],
 	FormatSet: ["PBar#formatset", "Formatting used when displaying the strings in different places around the bar."],
-	bar_helper: ["bar_helper", "Draw a bar helper on screen indefinitely until the user exits. Returns the position of the bar helper."]
+	bar_helper: ["bar_helper", "Draw a bar helper on screen indefinitely until the user exits. Returns the position of the bar helper."],
+	iter: ["iter-function", "Yield all the values of the given iterable, while stepping the progress bar."]
 }
 
 const LANGUAGES = {

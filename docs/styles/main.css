@@ -418,6 +418,10 @@ code > .special:hover {
   color: #ff7b00;
 }
 
+.com {
+  color: gray;
+}
+
 .pre {
   /* small code */
   display: inline-block;
