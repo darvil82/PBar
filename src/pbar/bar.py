@@ -446,13 +446,13 @@ def bar_helper(bar: PBar = None) -> tuple[tuple[int, int], tuple[int, int]]:
 	bar.formatset |= {"title": f"uValues: pos{position} size{size}"}
 	bar.prange = (0, 100)
 
-	with Term.SeqMgr(hide_cursor=True):	# create a new buffer, and hide the cursor
+	with Term.SeqMgr(hide_cursor=True, new_buffer=True):	# create a new buffer, and hide the cursor
 		try:
 			while True:
 				for perc in range(100):
 					bar.percentage = perc
 					bar.position = position
-					r_pos, r_size = bar.computedValues
+					r_pos, r_size = bar.computed_values
 					bar.formatset |= {"subtitle": f"cValues: pos{r_pos} size{r_size}"}
 
 					x_line = Term.set_pos((0, r_pos[1])) + "═"*r_pos[0]
@@ -461,7 +461,7 @@ def bar_helper(bar: PBar = None) -> tuple[tuple[int, int], tuple[int, int]]:
 
 					utils.out(
 						Term.CLEAR_ALL
-						+ bar._genBar()	# the bar itself
+						+ bar._gen_bar()	# the bar itself
 						+ Term.color((255, 100, 0)) + x_line + y_line + center	# x and y lines
 						+ Term.CURSOR_HOME + Term.INVERT + "Press Ctrl-C to exit." + Term.RESET
 					)
