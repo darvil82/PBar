@@ -353,10 +353,11 @@ class Stdout(TextIOWrapper):
 				max(Stdout.scroll_offset, 0) + (1 if not self.always_check else 0)
 			)
 			if c_pos >= t_size - offset:
-				out(
-					"\v"*offset
-					+ Term.move_vert(-offset)
-				)
+				if offset:
+					out(
+						"\v"*offset
+						+ Term.move_vert(-offset)
+					)
 				for t in Stdout.triggers:
 					# we take into account the possible exceeding of the the max size
 					t(count + (c_pos - (t_size - offset)))
