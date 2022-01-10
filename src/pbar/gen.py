@@ -120,17 +120,17 @@ def rect(
 	pos: "bar.Position",
 	size: tuple[int, int],
 	char: str = "█",
-	color: utils.Color = "white",
+	color: Optional[utils.Color] = "white",
 	centered: bool = False
 ) -> str:
 	"""Generate a rectangle."""
 	size = get_computed_size(size, (0, 0))
-	pos = get_computed_position(pos, size, centered=centered)
+	pos = get_computed_position(pos, size, (-1, -1), centered)
 
-	if "\x1b" not in color:		# if it is already a terminal sequence, dont need to parse
+	if color and "\x1b" not in color:		# if it is already a terminal sequence, dont need to parse
 		color = Term.color(color)
 
-	return color + iter_rows(
+	return (color or "") + iter_rows(
 		char*size[0],
 		pos,
 		size[1]

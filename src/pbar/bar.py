@@ -7,11 +7,12 @@ from typing import (
 )
 
 from . import utils, gen, sets, cond
-from . utils import Stdout, Term, T
+from . utils import Term, T
 
 
 
 NEVER_DRAW = not Term.SUPPORTED
+DEBUG = False
 
 # we override stdout so we can keep track of the number of newlines
 sys.stdout = utils.Stdout(sys.stdout)
@@ -302,11 +303,11 @@ class PBar:
 
 		parsed_colorset = sets.ColorSet(sets.ColorSet.EMPTY).parsed_values()
 
-		bar_shape = gen.b_shape(
+		bar_shape = gen.rect(
 			position,
 			(size[0] + 4, size[1] + 2),
-			sets.CharSet.EMPTY,
-			parsed_colorset
+			" ",
+			None
 		)
 
 		bar_text = gen.b_text(
@@ -354,11 +355,22 @@ class PBar:
 		if not self.enabled or NEVER_DRAW:
 			return
 
-		utils.out(
+		content = (
 			Term.CURSOR_SAVE + Term.CURSOR_HIDE
 			+ bar_string
 			+ Term.CURSOR_LOAD + Term.CURSOR_SHOW + Term.RESET
 		)
+
+		if DEBUG:
+			content = (
+				Term.style_format("<lime>|START BAR =>")
+				+ content.replace("\x1b", Term.style_format("<orange>ESC"))
+				+ Term.style_format("<lime>|\<= END BAR")
+				+ "\n"*4
+			)
+
+		utils.out(content)
+
 
 
 	def _redraw_with_offset(self, count: int):
