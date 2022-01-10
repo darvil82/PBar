@@ -335,11 +335,17 @@ class Stdout(TextIOWrapper):
 		"""
 		s = str(s)
 
-		"""We check if the string contains newlines, and if it does, check if the
-		cursor is positioned at the end of the terminal. If it is, we add 1
-		for each newline char to the counters, which will store the number of newlines."""
+		"""
+		We check if the string contains newlines, and if it does, check if the
+		cursor is positioned at the end of the terminal. If it is, we call each
+		trigger with the number of newlines in the string.
+		"""
 
-		if (count := sum(s.count(c) for c in "\n\v\f") or Stdout.always_check) and Term.SUPPORTED:
+		if (
+			(count := sum(s.count(c) for c in "\n\v\f") or Stdout.always_check)
+			and Term.SUPPORTED	# only check if terminal is supported
+			and Stdout.triggers	# only if we have triggers
+		):
 			sys.stdout = self.original	# using original stdout temporarily to prevent recursion... Hacky!
 			c_pos, t_size, offset = (
 				Term.get_pos()[1],
@@ -375,7 +381,7 @@ class Stdout(TextIOWrapper):
 			del triggers[0]
 		Stdout.triggers.append(func)
 		if Term.SUPPORTED:
-			out("\v"+Term.move_vert(-1))	# HACK: doing this to trigger the Stdout detector
+			out("\v" + Term.move_vert(-1))	# HACK: doing this to trigger the Stdout detector
 		return func
 
 
