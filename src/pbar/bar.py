@@ -350,6 +350,21 @@ class PBar:
 		return bar_shape + bar_content + bar_text
 
 
+	def _redraw_with_offset(self, count: int):
+		if not self._is_on_screen and self._redraw_on_scroll:
+			return
+
+		pos, size, formatset = self._old_values
+		self._print_str(
+			self._gen_cleared_bar(
+				(pos[0], pos[1] - count),
+				size,
+				formatset
+			)
+		)
+		self.draw()
+
+
 	def _print_str(self, bar_string: str):
 		"""Prints string to stream"""
 		if not self.enabled or NEVER_DRAW:
@@ -373,19 +388,6 @@ class PBar:
 
 
 
-	def _redraw_with_offset(self, count: int):
-		if not self._is_on_screen and self._redraw_on_scroll:
-			return
-
-		pos, size, formatset = self._old_values
-		self._print_str(
-			self._gen_cleared_bar(
-				(pos[0], pos[1] - count),
-				size,
-				formatset
-			)
-		)
-		self.draw()
 
 
 
