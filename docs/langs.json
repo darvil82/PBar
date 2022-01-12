@@ -59,7 +59,7 @@
 		"infoItem3_button": "Características",
 
 		"showcase1_title": "Espera, ¿Seguro que es sencillo?",
-		"showcase1_text": "Aquí tienes el código que genera una barra de carga con los valores por defecto. También muestra la muestra en la terminal. Así que bueno... ¡Debería ser sencillo!",
+		"showcase1_text": "Aquí tienes el código que genera una barra de carga con los valores por defecto. También la muestra en la terminal. Así que bueno... ¡Debería ser sencillo!",
 
 		"showcase2_title": "Vale vale, pero me interesa que sea algo útil.",
 		"showcase2_text": "Eso tiene sentido, a todo el mundo le gustan las cosas útiles, (al menos eso creo). Por eso, puedes mostrar el progreso de un conjunto de tareas de forma súper sencilla. <p><span class='whisper'>Tenga en cuenta que este decorador es una característica experimental.</span></p>",
