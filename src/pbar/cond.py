@@ -109,7 +109,7 @@ class Cond:
 			range_str = cond_value[1:-1]
 			if len(range_str) == 0:
 				raise RuntimeError("Empty range specifier")
-			cond_value = range(*map(int, range_str.split(",")))
+			cond_value = range(*map(int, range_str.split("..")))
 
 		# we use lambdas because some values may not be compatible with some operators
 		operators: dict[str, Callable] = {
