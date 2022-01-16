@@ -288,7 +288,7 @@ def is_num(obj: SupportsFloat) -> bool:
 	"""Return True if `obj` can be casted to float."""
 	try:
 		float(obj)
-	except ValueError:
+	except (ValueError, TypeError):
 		return False
 	return True
 
