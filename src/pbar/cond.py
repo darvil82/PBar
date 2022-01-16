@@ -24,7 +24,7 @@ class Cond:
 		formatset: sets.FormatSetEntry = None,
 		contentg: gen.BContentGen = None,
 		callback: Callable[["bar.PBar"], None] = None,
-		max_times: int = 1
+		times: int = 1
 	) -> None:
 		"""
 		Apply different customization options to a bar, or call a callback
@@ -38,7 +38,7 @@ class Cond:
 		@contentg: BContentGen to apply to the bar
 		@callback: The callback function that will be called with the PBar
 		object that will use this Cond.
-		@max_times: The maximum number of times the condition will be checked.
+		@times: The maximum number of times the condition will be checked.
 		`-1` (or any negative number) will make the condition check infinitely.
 
 		---
@@ -51,7 +51,7 @@ class Cond:
 
 		- Note: The "custom" operator `<-` stands for the attribute key containing the value.
 		If the property of the bar is a number, a range object can be specified to check for with the
-		`{start[, end][, step]}` syntax.
+		`{start[..end][..step]}` syntax.
 
 		---
 
@@ -63,14 +63,14 @@ class Cond:
 
 		>>> Cond("etime >= 10", callback=myFunction)
 
-		>>> Cond("percentage <- {25, 36}", ColorSet.RED, max_times=1)	# only check once if the percentage is between 25 and 35
+		>>> Cond("percentage <- {25..36}", ColorSet.RED, times=1)	# only check once if the percentage is between 25 and 35
 		"""
 		vs = self._chk_cond(condition)
 		self._attribute, self._operator, self._value = vs
 		self.new_sets = (colorset, charset, formatset)
 		self.contentg = contentg
 		self.callback = callback
-		self.max_times = max_times
+		self.times = times
 
 
 	@staticmethod
@@ -90,7 +90,7 @@ class Cond:
 		"""Returns `Cond('attrib operator value', newSets)`"""
 		return (
 			f"{self.__class__.__name__}('{self._attribute} {self._operator} "
-			f"{self._value}', {self.new_sets}, {self.callback}, {self.contentg}, {self.max_times})"
+			f"{self._value}', {self.new_sets}, {self.callback}, {self.contentg}, {self.times})"
 		)
 
 
@@ -131,7 +131,7 @@ class Cond:
 
 	def chk_and_apply(self, bar_obj: "bar.PBar") -> None:
 		"""Apply the new sets and run the callback if the condition succeeds"""
-		if not self.test(bar_obj) or self.max_times == 0:
+		if not self.test(bar_obj) or self.times == 0:
 			return
 
 		if self.new_sets[0]:	bar_obj.colorset = self.new_sets[0]
@@ -142,6 +142,6 @@ class Cond:
 
 		if self.callback:	self.callback(bar_obj)
 
-		# subtract 1 from max_times after each successful check
-		if self.max_times > 0:
-			self.max_times -= 1
+		# subtract 1 from `times` after each successful check
+		if self.times > 0:
+			self.times -= 1
