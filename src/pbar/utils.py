@@ -293,10 +293,12 @@ def is_num(obj: SupportsFloat) -> bool:
 	return True
 
 
-def out(*obj, end: str = "", sep = ""):
+def out(*obj, end: str = "", sep: str = "", file=None):
 	"""Print to stdout."""
-	sys.stdout.write(sep.join(str(x) for x in obj) + end)
-	sys.stdout.flush()
+	if file is None:
+		file = sys.stdout
+	file.write(sep.join(str(x) for x in obj) + end)
+	file.flush()
 
 
 def map_dict(dictionary: dict, func: Callable) -> dict:
@@ -346,22 +348,17 @@ class Stdout(TextIOWrapper):
 			and Term.SUPPORTED	# only check if terminal is supported
 			and Stdout.triggers	# only if we have triggers
 		):
-			sys.stdout = self.original	# using original stdout temporarily to prevent recursion... Hacky!
 			c_pos, t_size, offset = (
-				Term.get_pos()[1],
+				Term.get_pos(file=self.original)[1],
 				Term.get_size()[1],
 				max(Stdout.scroll_offset, 0) + (1 if not Stdout.always_check else 0)
 			)
 			if c_pos >= t_size - offset:
 				if offset:
-					out(
-						"\v"*offset
-						+ Term.move_vert(-offset)
-					)
+					out("\v"*offset + Term.move_vert(-offset), file=self.original)
 				for t in Stdout.triggers:
 					# we take into account the possible exceeding of the the max size
 					t(count + (c_pos - (t_size - offset)))
-			sys.stdout = self
 
 		self.original.write(s)
 
@@ -406,18 +403,18 @@ class Term:
 	@staticmethod
 	def get_size() -> tuple[int, int]:
 		"""Get size of the terminal. Columns and rows."""
-		if not Term.SUPPORTED:
-			return (0, 0)
-		return tuple(get_terminal_size())
+		return (0, 0) if not Term.SUPPORTED else tuple(get_terminal_size())
 
 
 	# Thanks to https://stackoverflow.com/a/69582478/14546524
 	@staticmethod
-	def get_pos() -> tuple[int, int]:
+	def get_pos(*, file=None) -> tuple[int, int]:
 		"""
 		Get the cursor position on the terminal.
 		Returns (-1, -1) if not supported.
 		"""
+		if file is None:
+			file = sys.stdout
 		if not Term.SUPPORTED:
 			return (-1, -1)
 		if sys.platform == "win32":
