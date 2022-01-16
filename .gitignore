@@ -128,10 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-
-
-# stuff
+# other stuff
 shit*
+crap*
 buildpkg.sh
 
 # vscode

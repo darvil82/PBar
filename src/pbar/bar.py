@@ -16,10 +16,6 @@ DEBUG = False
 
 # we override stdout so we can keep track of the number of newlines
 sys.stdout = utils.Stdout(sys.stdout)
-def recover_stdout():
-	"""Recovers the stdout to the original one."""
-	sys.stdout = sys.stdout.original
-
 
 
 
