@@ -290,8 +290,6 @@ class PBar:
 		if not self._is_on_screen:
 			return ""
 
-		parsed_colorset = sets.ColorSet(sets.ColorSet.EMPTY).parsed_values()
-
 		bar_shape = gen.rect(
 			position,
 			(size[0] + 4, size[1] + 2),
@@ -302,7 +300,7 @@ class PBar:
 		bar_text = gen.b_text(
 			(position[0] + 2, position[1]),
 			(size[0], size[1] + 2),
-			parsed_colorset,
+			sets.ColorSet(sets.ColorSet.EMPTY).parsed_values(),
 			formatset.empty_values()
 		)
 
