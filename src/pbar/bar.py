@@ -236,6 +236,13 @@ class PBar:
 
 
 	@property
+	def rtime(self) -> float:
+		"""Time remaining to reach 100% of the progress of the bar."""
+		if (perc := self.percentage) in (0, 100): return 0
+		return round(self.etime / perc * (100 - perc), 2)
+
+
+	@property
 	def conditions(self) -> list[cond.Cond]:
 		"""Conditions for the bar."""
 		return self._conditions
@@ -354,6 +361,7 @@ class PBar:
 				formatset
 			)
 		)
+		self.draw()
 
 
 	def _print_str(self, bar_string: str):

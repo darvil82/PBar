@@ -346,7 +346,7 @@ class FormatSet(_BaseSet):
 	}
 
 	DESCRIPTIVE: FormatSetEntry = {
-		"right": "E. Time: <etime>s.",
+		"right": "Time R.: <rtime>s.",
 		"title": "<text>",
 		"subtitle": "<prange1> of <prange2>",
 		"inside": "<percentage>%",
@@ -371,13 +371,18 @@ class FormatSet(_BaseSet):
 		"subtitle": "Elapsed <etime> seconds"
 	}
 
+	R_TIME: FormatSetEntry = {
+		"title": "<text>",
+		"subtitle": "<rtime> seconds remaining"
+	}
+
 	TITLE_SUBTITLE: FormatSetEntry = {
 		"title": "<text> (<prange1>/<prange2>)",
-		"subtitle": "<percentage>%, (<etime>s)",
+		"subtitle": "<percentage>%, (<rtime>s)",
 	}
 
 	CLASSIC: FormatSetEntry = {
-		"right": "<text>: <percentage>% (<prange1>/<prange2>) [<etime>s]"
+		"right": "<text>: <percentage>% (<prange1>/<prange2>) [<rtime>s]"
 	}
 
 	PLACEHOLDER: FormatSetEntry = {
@@ -412,6 +417,7 @@ class FormatSet(_BaseSet):
 			"prange1": bar_obj._range[0],
 			"prange2": bar_obj._range[1],
 			"etime": bar_obj.etime,
+			"rtime": bar_obj.rtime,
 			"text": FormatSet._rm_poison_chars(bar_obj.text) if bar_obj.text else ""
 		}
 
