@@ -94,7 +94,7 @@ def try_all_sets():
 				print(f"{cname:<15}{chrname:<15}{fname}")
 				b.formatset = fvalue
 				b.draw()
-				sleep(.01)
+				sleep(.1)
 	animate(b)
 
 
@@ -139,10 +139,10 @@ def try_relative_positioning():
 
 def main():
 	with pbar.Term.SeqMgr(hide_cursor=True, new_buffer=True, home_cursor=True):
-		try_relative_positioning()
-		default()
-		modify_size_and_pos()
-		fully_random()
+		# try_relative_positioning()
+		# default()
+		# modify_size_and_pos()
+		# fully_random()
 		try_all_sets()
 		condtionals()
 		task_wr(pbar.PBar(), something="Something", another_thing="Another thing")

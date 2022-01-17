@@ -463,4 +463,4 @@ class FormatSet(_BaseSet):
 
 	def empty_values(self) -> "FormatSet":
 		"""Convert all values in the FormatSet to strings with spaces of the same size."""
-		return FormatSet(self.map_values(lambda val: " "*len(val)))
+		return FormatSet(self.map_values(lambda val: "/"*len(val)))
