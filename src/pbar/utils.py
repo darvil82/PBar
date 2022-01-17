@@ -358,7 +358,7 @@ class Stdout(TextIOWrapper):
 			c_pos, t_size, offset = (
 				Term.get_pos(file=self.original)[1],
 				Term.get_size()[1],
-				max(Stdout.scroll_offset, 0) + (1 if not Stdout.always_check else 0)
+				max(Stdout.scroll_offset, 0) + 1
 			)
 			if c_pos >= t_size - offset:
 				if offset:
@@ -441,8 +441,8 @@ class Term:
 			termios.tcsetattr(sys.stdin, termios.TCSAFLUSH, _)
 		try:
 			_ = ""
-			sys.stdout.write("\x1b[6n")
-			sys.stdout.flush()
+			file.write("\x1b[6n")
+			file.flush()
 			while not (_ := _ + sys.stdin.read(1)).endswith('R'):
 				pass
 			res = re.match(r".*\[(?P<y>\d*);(?P<x>\d*)R", _)

@@ -377,9 +377,9 @@ class PBar:
 
 		if DEBUG:
 			content = (
-				Term.style_format("<lime>|START BAR =>")
+				Term.style_format("<lime>|START BAR ->")
 				+ content.replace("\x1b", Term.style_format("<orange>ESC"))
-				+ Term.style_format("<lime>|\<= END BAR")
+				+ Term.style_format("<lime>|\<- END BAR")
 				+ "\n"*4
 			)
 

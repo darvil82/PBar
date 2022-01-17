@@ -1,3 +1,4 @@
+import sys
 from typing import Callable, Optional
 
 from . import sets, utils, bar
@@ -155,7 +156,7 @@ def get_computed_position(
 			if value.startswith("c"):
 				value = term_size[index]//2 + int(value[1:]) if value[1:] else term_size[index]//2
 			elif value.startswith("r"):
-				cursor_pos = Term.get_pos()
+				cursor_pos = Term.get_pos(file=sys.stdout.original)
 				value = cursor_pos[index] + int(value[1:]) if value[1:] else cursor_pos[index]
 			else:
 				raise ValueError("Invalid position value")
