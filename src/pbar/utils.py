@@ -330,6 +330,7 @@ class Stdout(TextIOWrapper):
 	triggers: list[Callable] = []
 	scroll_offset: int = 0
 	always_check: bool = False
+	enabled: bool = True
 
 	def __init__(self, stdout: TextIOWrapper) -> None:
 		super().__init__(stdout, encoding=stdout.encoding)
@@ -352,6 +353,7 @@ class Stdout(TextIOWrapper):
 			(count := sum(s.count(c) for c in "\n\v\f") or Stdout.always_check)
 			and Term.SUPPORTED	# only check if terminal is supported
 			and Stdout.triggers	# only if we have triggers
+			and Stdout.enabled	# only if enabled
 		):
 			c_pos, t_size, offset = (
 				Term.get_pos(file=self.original)[1],
@@ -379,6 +381,8 @@ class Stdout(TextIOWrapper):
 
 		Returns the index of the trigger in the Stdout triggers property.
 		"""
+		if not Stdout.enabled:
+			return func
 		if len(triggers := Stdout.triggers) >= 1000:	# prevent memory overflow
 			del triggers[0]
 		Stdout.triggers.append(func)
