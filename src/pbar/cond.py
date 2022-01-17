@@ -1,4 +1,4 @@
-from shlex import split as strSplit
+from shlex import split as str_split
 from typing import Callable
 
 from . import bar, sets, utils, gen
@@ -29,7 +29,6 @@ class Cond:
 		"""
 		Apply different customization options to a bar, or call a callback
 		if the condition supplied succeeds.
-		Text comparisons are case insensitive.
 
 		@condition: string of the form `attrib operator value`
 		@colorset: ColorSetEntry to apply to the bar
@@ -39,10 +38,11 @@ class Cond:
 		@callback: The callback function that will be called with the PBar
 		object that will use this Cond.
 		@times: The maximum number of times the condition will be checked.
-		`-1` (or any negative number) will make the condition check infinitely.
+		`-1` (or any negative number) will make the condition be checked any number of times.
 
 		---
 
+		#### The condition format
 		The condition string must be composed of three values separated by spaces:
 
 		1. Attribute key (Formatting keys for `pbar.FormatSet`)
@@ -77,7 +77,7 @@ class Cond:
 	def _chk_cond(cond: str):
 		"""Check types and if the operator supplied is valid"""
 		utils.chk_inst_of(cond, str, name="condition")
-		splitted = strSplit(cond)	# splits with strings in mind ('test "a b c" hey' > ["test", "a b c", "hey"])
+		splitted = str_split(cond)	# splits with strings in mind ('test "a b c" hey' > ["test", "a b c", "hey"])
 		utils.chk_seq_of_len(splitted, 3, "condition")
 
 		if splitted[1] not in _OPERATORS.values():
@@ -106,10 +106,9 @@ class Cond:
 			and cond_value.startswith("{") and cond_value.endswith("}")
 			and utils.is_num(bar_value)
 		):
-			range_str = cond_value[1:-1]
-			if len(range_str) == 0:
-				raise RuntimeError("Empty range specifier")
-			cond_value = range(*map(int, range_str.split("..")))
+			range_splitted = cond_value[1:-1].split("..")
+			utils.chk_seq_of_len(range_splitted, range(1, 4), "Cond_range")
+			cond_value = range(*map(int, range_splitted))
 
 		# we use lambdas because some values may not be compatible with some operators
 		operators: dict[str, Callable] = {

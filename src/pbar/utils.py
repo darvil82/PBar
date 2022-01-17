@@ -4,12 +4,13 @@ from time import sleep
 from dataclasses import dataclass
 import sys, re
 if sys.platform == "win32":
-    import ctypes
-    from ctypes import wintypes
+	import ctypes
+	from ctypes import wintypes
 else:
-    import termios
+	import termios
 from typing import (
 	Callable,
+	Sequence,
 	SupportsFloat,
 	TypeVar,
 	Optional,
@@ -250,21 +251,26 @@ def convert_color(clr: Color, conversion: str) -> Union[str, tuple]:
 		return ""
 
 
-def chk_seq_of_len(obj: Any, length: int, name: str = None) -> bool:
+def chk_seq_of_len(obj: Any, length: Union[int, range], name: str = None) -> bool:
 	"""
 	Check if an object is a Sequence and has the length specified.
 	If fails, raises exception (`Sequence obj | name must have len items`).
 	"""
-	chk_inst_of(obj, tuple, list)
-	if len(obj) != length:
-		raise ValueError(
-			Term.style_format(
-				(name or f"Sequence <orange>{obj!r}<reset>")
-				+ f" must have <lime>{length}<reset> items, "
-				+ f"not <red>{len(obj)}<reset>"
-			)
+	chk_inst_of(obj, Sequence)
+	obj_len, is_range = len(obj), isinstance(length, range)
+	is_valid = obj_len in length if is_range else obj_len == length
+
+	if is_valid:
+		return True
+
+	name = name or f"Sequence {obj!r}"
+	raise ValueError(
+		Term.color("orange") + name + Term.RESET
+		+ Term.style_format(
+			f" must have <lime>{length if not is_range else f'{length.start} to {length.stop - 1}'}<reset> items, "
+			+ f"not <red>{obj_len}<reset>"
 		)
-	return True
+	)
 
 
 def chk_inst_of(obj: Any, *typ: Any, name: str = None) -> bool:
@@ -272,16 +278,15 @@ def chk_inst_of(obj: Any, *typ: Any, name: str = None) -> bool:
 	Check if an object is an instance of any of the other objects specified.
 	If fails, raises exception (`Value | name must be *typ, not obj`).
 	"""
-	if not typ:
-		raise ValueError("No type/s were supplied to check against")
+	if isinstance(obj, typ):
+		return True
 
-	if not isinstance(obj, typ):
-		raise TypeError(Term.style_format(
-			(name or f"Value <orange>{obj!r}<reset>")
-			+ f" must be {' or '.join(Term.style_format(f'<lime>{x.__name__}<reset>') for x in typ)}"
-			+ f", not <red>{obj.__class__.__name__}<reset>"
-		))
-	return True
+	name = name or f"Value {obj!r}"
+	raise TypeError(Term.style_format(
+		Term.color("orange") + name + Term.RESET
+		+ f" must be {' or '.join(Term.style_format(f'<lime>{x.__name__}<reset>') for x in typ)}"
+		+ f", not <red>{obj.__class__.__name__}<reset>"
+	))
 
 
 def is_num(obj: SupportsFloat) -> bool:

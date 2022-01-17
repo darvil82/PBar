@@ -173,13 +173,6 @@ class PBar:
 		self._time = epochTime()	# Just set _time to the current time.
 
 
-	def prange_from_file(self, fp: IO[str]):
-		"""Modify `prange` with the number of lines of a file."""
-		utils.chk_inst_of(fp, TextIOWrapper, name="fp")
-		self.prange = (0, len(fp.readlines()))
-		fp.seek(0)
-
-
 	@property
 	def prange(self) -> tuple[int, int]:
 		"""Range for the progress of the bar."""
