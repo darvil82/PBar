@@ -250,7 +250,7 @@ class PBar:
 	@staticmethod
 	def _get_range(range: tuple[SupportsInt, SupportsInt]) -> tuple[int, int]:
 		"""Return a capped range"""
-		utils.chk_seq_of_len(range, 2)
+		utils.chk_seq_of_len(range, 2, "prange")
 		start, stop = map(int, range)
 		return (utils.cap_value(start, stop, 0),
 				utils.cap_value(stop, min=1))
@@ -317,20 +317,25 @@ class PBar:
 		bar_shape = gen.b_shape(
 			position,
 			(size[0] + 4, size[1] + 2),
-			self._charset, parsed_colorset
+			self._charset,
+			parsed_colorset
 		)
 
 		bar_content = gen.BContentGenMgr(
-			self.contentg, self.inverted,
+			self.contentg,
+			self.inverted,
 			(position[0] + 2, position[1] + 1),
 			size,
-			self._charset, parsed_colorset, self._range
+			self._charset,
+			parsed_colorset,
+			self._range
 		)()
 
 		bar_text = gen.b_text(
 			(position[0] + 2, position[1]),
 			(size[0], size[1] + 2),
-			parsed_colorset, self._formatset.parsed_values(self)
+			parsed_colorset,
+			self._formatset.parsed_values(self)
 		)
 
 		self._is_on_screen = True
@@ -371,7 +376,7 @@ class PBar:
 				+ "\n"*4
 			)
 
-		utils.out(content)
+		utils.out(content, file=sys.stdout.original)
 
 
 

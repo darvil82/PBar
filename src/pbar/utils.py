@@ -256,7 +256,7 @@ def chk_seq_of_len(obj: Any, length: Union[int, range], name: str = None) -> boo
 	Check if an object is a Sequence and has the length specified.
 	If fails, raises exception (`Sequence obj | name must have len items`).
 	"""
-	chk_inst_of(obj, Sequence)
+	chk_inst_of(obj, tuple, list, name=name)
 	obj_len, is_range = len(obj), isinstance(length, range)
 	is_valid = obj_len in length if is_range else obj_len == length
 
