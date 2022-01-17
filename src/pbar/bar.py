@@ -293,7 +293,7 @@ class PBar:
 		bar_shape = gen.rect(
 			position,
 			(size[0] + 4, size[1] + 2),
-			"/",
+			" ",
 			None
 		)
 
@@ -354,7 +354,6 @@ class PBar:
 				formatset
 			)
 		)
-		self.draw()
 
 
 	def _print_str(self, bar_string: str):

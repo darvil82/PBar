@@ -363,7 +363,7 @@ class Stdout(TextIOWrapper):
 					out("\v"*offset + Term.move_vert(-offset), file=self.original)
 				for t in Stdout.triggers:
 					# we take into account the possible exceeding of the the max size
-					t(count + (c_pos - (t_size - offset)))
+					t(count + (c_pos - (t_size - offset)) - 1)
 
 		self.original.write(s)
 
