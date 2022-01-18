@@ -1,3 +1,5 @@
+from curses import endwin
+import time
 from typing import Callable, Optional, Union
 from . import utils, bar
 from . utils import Term
@@ -413,17 +415,19 @@ class FormatSet(_BaseSet):
 	@staticmethod
 	def get_bar_attr(bar_obj: "bar.PBar", string: str):
 		attrs = {
-			"percentage": bar_obj.percentage,
-			"prange1": bar_obj._range[0],
-			"prange2": bar_obj._range[1],
-			"etime": bar_obj.etime,
-			"rtime": bar_obj.rtime,
-			"text": FormatSet._rm_poison_chars(bar_obj.text) if bar_obj.text else ""
+			"percentage": lambda: bar_obj.percentage,
+			"prange1": lambda: bar_obj._range[0],
+			"prange2": lambda: bar_obj._range[1],
+			"etime": lambda: bar_obj.etime,
+			"etimef": lambda: time.strftime("%M:%S", time.gmtime(bar_obj.etime)),
+			"rtime": lambda: bar_obj.rtime,
+			"rtimef": lambda: time.strftime("%M:%S", time.gmtime(bar_obj.rtime)),
+			"text": lambda: FormatSet._rm_poison_chars(bar_obj.text) if bar_obj.text else ""
 		}
 
 		if string not in attrs:	raise UnknownFormattingKeyError(string)
 
-		return attrs[string]
+		return attrs[string]()
 
 
 	@staticmethod
