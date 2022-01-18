@@ -380,11 +380,12 @@ class FormatSet(_BaseSet):
 
 	TITLE_SUBTITLE: FormatSetEntry = {
 		"title": "<text> (<prange1>/<prange2>)",
-		"subtitle": "<percentage>%, (<rtime>s)",
+		"subtitle": "<percentage>% (<rtimef>)",
 	}
 
-	CLASSIC: FormatSetEntry = {
-		"right": "<text>: <percentage>% (<prange1>/<prange2>) [<rtime>s]"
+	TQDM: FormatSetEntry = {
+		"left": "<percentage>%: <text>",
+		"right": "<prange1>/<prange2> [<etimef>\<<rtimef>]"
 	}
 
 	PLACEHOLDER: FormatSetEntry = {
