@@ -1,4 +1,3 @@
-from curses import endwin
 import time
 from typing import Callable, Optional, Union
 from . import utils, bar
