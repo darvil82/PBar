@@ -94,7 +94,7 @@ def try_all_sets():
 				print(f"{cname:<15}{chrname:<15}{fname}")
 				b.formatset = fvalue
 				b.draw()
-				sleep(.05)
+				sleep(.01)
 	animate(b)
 
 
