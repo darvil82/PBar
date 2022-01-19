@@ -1,6 +1,6 @@
 <a href="https://darvil82.github.io/PBar/"><img width=50% src="https://user-images.githubusercontent.com/48654552/136713737-aebdd652-061b-428a-b750-2faa29cd60b3.png"><br></a>
 
-<a href="https://github.com/DarviL82/PBar/pulls"> <img src="https://img.shields.io/badge/contributions-welcome-brightgreen?style=flat-square"> </a> <img src="https://img.shields.io/pypi/dm/pbar2?style=flat-square"> <br>
+<a href="https://github.com/DarviL82/PBar/pulls"> <img src="https://img.shields.io/badge/contributions-welcome-brightgreen?style=flat-square"> </a> <img src="https://img.shields.io/pypi/dw/pbar2?style=flat-square"> <br>
 <a href="https://pypi.org/project/PBar2/"> <img src="https://img.shields.io/pypi/v/pbar2?style=flat-square"> </a>
 <a href="https://aur.archlinux.org/packages/python-pbar/"> <img src="https://img.shields.io/aur/version/python-pbar?style=flat-square"> </a>
 <img src="https://img.shields.io/pypi/pyversions/pbar2?style=flat-square">
