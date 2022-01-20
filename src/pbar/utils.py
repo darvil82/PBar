@@ -10,7 +10,6 @@ else:
 	import termios
 from typing import (
 	Callable,
-	Sequence,
 	SupportsFloat,
 	TypeVar,
 	Optional,
@@ -327,7 +326,7 @@ class Stdout(TextIOWrapper):
 	A class that may override stdout.
 	Keeps track of the number of newlines sent.
 	"""
-	triggers: list[Callable] = []
+	triggers: list[Callable[[int], None]] = []
 	scroll_offset: int = 0
 	always_check: bool = False
 	enabled: bool = True
