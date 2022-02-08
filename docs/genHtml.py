@@ -38,8 +38,9 @@ HTML_CONTENT = """\
 	</div>
 
 	<div class="banner">
+		<video autoplay muted loop src="images/anim.mp4"></video>
 		<h1 class="banner-title">PBar</h1>
-    <span class="banner-subtitle">{bannerSubtitle}</span>
+		<span class="banner-subtitle">{bannerSubtitle}</span>
 	</div>
 
 	<div class="info">
@@ -97,11 +98,11 @@ HTML_CONTENT = """\
 			<code>
 <span class="func">@</span><span class="obj">pbar</span>.<span class="func">task_wrapper</span>
 <span class="kw">def</span><span class="func"> my_task</span>(<span class="var">my_bar</span>):
-    <span class="func">get_data</span>()
-    <span class="func">process_stuff</span>()
-    <span class="func">show_data</span>()
-    <span class="func">useless_function</span>()
-    <span class="func">another_function</span>()
+	<span class="func">get_data</span>()
+	<span class="func">process_stuff</span>()
+	<span class="func">show_data</span>()
+	<span class="func">useless_function</span>()
+	<span class="func">another_function</span>()
 			</code>
 		</div>
 	</div>
@@ -112,8 +113,8 @@ HTML_CONTENT = """\
 		<div class="show code left">
 			<code style="min-height: 150px;">
 <span class="kw">for</span><span class="var"> value</span> <span class="kw">in</span> <span class="obj">pbar</span>.<span class="func">iter</span>(<span class="obj">range</span>(<span class="num">10</span>)):
-    <span class="func">print</span>(<span class="kw">f</span><span class="str">"Value: </span><span class="kw">{{</span><span class="var">value</span><span class="kw">}}</span><span class="str">"</span>)
-    <span class="com"># more stuff!</span>
+	<span class="func">print</span>(<span class="kw">f</span><span class="str">"Value: </span><span class="kw">{{</span><span class="var">value</span><span class="kw">}}</span><span class="str">"</span>)
+	<span class="com"># more stuff!</span>
 			</code>
 		</div>
 		<div class="show content right">
@@ -129,18 +130,18 @@ HTML_CONTENT = """\
 		</div>
 		<code>	<!-- turture -->
 <span class="var">conds</span> <span class="op">=</span> (
-    <span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage >= 50"</span>, </span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.YELLOW, <span class="obj">pbar</span>.<span class="obj">CharSet</span>.BRICKS),
-    <span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage == 100"</span>, </span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.GREEN),
-    <span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"text <- error"</span>, <span class="obj">pbar</span>.<span class="obj">ColorSet</span>.RED, <span class="var">formatset</span><span class="op">=</span><span class="obj">pbar</span>.<span class="obj">FormatSet</span>.DESCRIPTIVE)
+	<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage >= 50"</span>, </span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.YELLOW, <span class="obj">pbar</span>.<span class="obj">CharSet</span>.BRICKS),
+	<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage == 100"</span>, </span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.GREEN),
+	<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"text <- error"</span>, <span class="obj">pbar</span>.<span class="obj">ColorSet</span>.RED, <span class="var">formatset</span><span class="op">=</span><span class="obj">pbar</span>.<span class="obj">FormatSet</span>.DESCRIPTIVE)
 )
 
 <span class="var">my_bar</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>(<span class="var">conditions</span><span class="op">=</span><span class="var">conds</span>)
 
 <span class="kw">try</span>:
-    <span class="obj">pbar</span>.<span class="func">animate</span>(<span class="var">my_bar</span>, <span class="obj">range</span>(<span class="num">50</span>))
+	<span class="obj">pbar</span>.<span class="func">animate</span>(<span class="var">my_bar</span>, <span class="obj">range</span>(<span class="num">50</span>))
 <span class="kw">except</span> <span class="obj">KeyboardInterrupt</span>:
-    <span class="var">my_bar</span>.<span class="var">text</span> <span class="op">=</span> <span class="str">"Error!"</span>
-    <span class="var">my_bar</span>.<span class="func">draw</span>()
+	<span class="var">my_bar</span>.<span class="var">text</span> <span class="op">=</span> <span class="str">"Error!"</span>
+	<span class="var">my_bar</span>.<span class="func">draw</span>()
 		</code>
 
 		<video width="100%" autoplay loop muted>

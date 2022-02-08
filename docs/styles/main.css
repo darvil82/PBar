@@ -36,10 +36,10 @@ body {
 }
 
 body.preload * {
-  -webkit-animation-duration: 0ms !important;
-          animation-duration: 0ms !important;
-  -webkit-transition: 0ms !important;
-  transition: 0ms !important;
+  -webkit-animation-duration: 0ms;
+          animation-duration: 0ms;
+  -webkit-transition: 0ms;
+  transition: 0ms;
 }
 
 span {
@@ -182,6 +182,36 @@ a.button:hover, a.button:focus-visible {
   }
 }
 
+@-webkit-keyframes bg-video {
+  0% {
+    -webkit-transform: translate(-5%) scale(1.1);
+            transform: translate(-5%) scale(1.1);
+  }
+  50% {
+    -webkit-transform: translate(5%) scale(1.1);
+            transform: translate(5%) scale(1.1);
+  }
+  100% {
+    -webkit-transform: translate(0%) scale(1.1);
+            transform: translate(0%) scale(1.1);
+  }
+}
+
+@keyframes bg-video {
+  0% {
+    -webkit-transform: translate(-5%) scale(1.1);
+            transform: translate(-5%) scale(1.1);
+  }
+  50% {
+    -webkit-transform: translate(5%) scale(1.1);
+            transform: translate(5%) scale(1.1);
+  }
+  100% {
+    -webkit-transform: translate(0%) scale(1.1);
+            transform: translate(0%) scale(1.1);
+  }
+}
+
 .banner {
   --bg-opacity: 0.1;
   display: -webkit-box;
@@ -197,12 +227,8 @@ a.button:hover, a.button:focus-visible {
   height: 70vh;
   font-size: 15vh;
   padding: 0 10%;
-  background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, var(--bg-opacity))), to(rgba(0, 0, 0, var(--bg-opacity)))), url("../images/anim.gif");
-  background-image: linear-gradient(rgba(0, 0, 0, var(--bg-opacity)), rgba(0, 0, 0, var(--bg-opacity))), url("../images/anim.gif");
   background-size: 250vh;
   background-position-y: 50%;
-  -webkit-animation: bg-move 20s infinite alternate ease-in-out;
-          animation: bg-move 20s infinite alternate ease-in-out;
   overflow: hidden;
   -webkit-user-select: none;
      -moz-user-select: none;
@@ -216,8 +242,8 @@ a.button:hover, a.button:focus-visible {
   position: absolute;
   inset: 0;
   content: "";
-  -webkit-backdrop-filter: blur(10px);
-          backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(15px);
+          backdrop-filter: blur(15px);
   z-index: 0;
 }
 
@@ -256,6 +282,19 @@ a.button:hover, a.button:focus-visible {
   font-weight: bold;
 }
 
+.banner video {
+  position: absolute;
+  z-index: -1;
+  -o-object-fit: cover;
+     object-fit: cover;
+  -o-object-position: center;
+     object-position: center;
+  left: 0;
+  width: 100%;
+  -webkit-animation: bg-video 20s infinite alternate ease-in-out;
+          animation: bg-video 20s infinite alternate ease-in-out;
+}
+
 .info {
   /* Contains the info-items */
   min-height: 30vh;
@@ -264,7 +303,7 @@ a.button:hover, a.button:focus-visible {
   display: flex;
   -ms-flex-pack: distribute;
       justify-content: space-around;
-  font-size: 1.25em;
+  font-size: 1.8vmin;
   color: white;
 }
 
@@ -281,7 +320,6 @@ a.button:hover, a.button:focus-visible {
           align-items: flex-start;
   border-left: 5px solid var(--color);
   width: 100%;
-  font-size: 0.9em;
   position: relative;
   margin: 1.5em;
   padding: .75em;
@@ -349,16 +387,13 @@ a.button:hover, a.button:focus-visible {
   --color: rgb(132, 123, 218);
 }
 
-video, code {
+/* Code blocks */
+code {
   border: 3px solid #dadada;
   border-radius: 1vh;
   -webkit-box-shadow: 0 0 20px 1px rgba(0, 0, 0, 0.5);
           box-shadow: 0 0 20px 1px rgba(0, 0, 0, 0.5);
   background-color: #222222;
-}
-
-/* Code blocks */
-code {
   font-family: monospace;
   display: block;
   color: white;
@@ -441,6 +476,14 @@ code > .special:hover {
   -webkit-transition: background-position 1s;
   transition: background-position 1s;
   /* Different gradients used for the showcase sections */
+}
+
+.showcase video, .showcase code {
+  border: 3px solid #dadada;
+  border-radius: 1vh;
+  -webkit-box-shadow: 0 0 20px 1px rgba(0, 0, 0, 0.5);
+          box-shadow: 0 0 20px 1px rgba(0, 0, 0, 0.5);
+  background-color: #222222;
 }
 
 .showcase .show-title {
@@ -693,6 +736,8 @@ span.whisper {
     -webkit-box-direction: normal;
         -ms-flex-direction: column;
             flex-direction: column;
+    height: auto;
+    font-size: 2vw;
   }
   .info .info-item {
     max-width: -webkit-fit-content;

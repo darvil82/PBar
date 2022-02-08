@@ -51,12 +51,12 @@ function addLink(element, url, target="_blank") {
 
 	for (let i in spans) {
 		const span = spans[i]
-		if (span.innerHTML in PBAR_INFO) {
+		if (span.textContent in PBAR_INFO) {
 			/* if the content of the element
 			matches a key of wiki_pages, add a link to it with the value of
 			the object */
-			addLink(span, WIKI_URL+PBAR_INFO[span.innerHTML][0])
-			addTooltip(span, PBAR_INFO[span.innerHTML][1])
+			addLink(span, WIKI_URL+PBAR_INFO[span.textContent][0])
+			addTooltip(span, PBAR_INFO[span.textContent][1])
 		}
 	}
 })();
