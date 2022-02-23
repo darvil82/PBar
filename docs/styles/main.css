@@ -151,10 +151,10 @@ a.button {
   margin: 0.5em 0;
   font-weight: bold;
   text-decoration: none;
-  -webkit-transition: background-color 0.25s, color 0.25s, -webkit-box-shadow 1s;
-  transition: background-color 0.25s, color 0.25s, -webkit-box-shadow 1s;
-  transition: background-color 0.25s, box-shadow 1s, color 0.25s;
-  transition: background-color 0.25s, box-shadow 1s, color 0.25s, -webkit-box-shadow 1s;
+  -webkit-transition: background-color 0.25s, color 0.25s, -webkit-box-shadow 1s;
+  transition: background-color 0.25s, color 0.25s, -webkit-box-shadow 1s;
+  transition: background-color 0.25s, box-shadow 1s, color 0.25s;
+  transition: background-color 0.25s, box-shadow 1s, color 0.25s, -webkit-box-shadow 1s;
 }
 
 a.button:hover, a.button:focus-visible {
@@ -421,7 +421,7 @@ code > .special:hover {
   font-weight: bold;
   -webkit-text-decoration: underline solid 2px;
           text-decoration: underline solid 2px;
-  text-shadow: 0 0 2em currentColor, 0 0 0.25em currentColor;
+  text-shadow: 0 0 2em currentColor, 0 0 0.25em currentColor;
 }
 
 /* syntax highlighting */
@@ -573,8 +573,8 @@ code > .special:hover {
   margin-bottom: 20px;
   -webkit-transition: all .5s;
   transition: all .5s;
-  outline: 3px solid #ebebeb;
-  background-color: white;
+  outline: 3px solid #ddd;
+  background-color: #eee;
   color: black;
   overflow: hidden;
   position: relative;
@@ -737,7 +737,7 @@ span.whisper {
         -ms-flex-direction: column;
             flex-direction: column;
     height: auto;
-    font-size: 2vw;
+    font-size: 1em;
   }
   .info .info-item {
     max-width: -webkit-fit-content;

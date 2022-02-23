@@ -453,8 +453,8 @@ code {
 		margin-right: 20px;
 		margin-bottom: 20px;
 		transition: all .5s;
-		outline: 3px solid rgb(235, 235, 235);
-		background-color: white;
+		outline: 3px solid #ddd;
+		background-color: #eee;
 		color: black;
 		overflow: hidden;
 		position: relative;
@@ -631,7 +631,7 @@ span.whisper {
 	.info {
 		flex-direction: column;
 		height: auto;
-		font-size: 2vw;
+		font-size: 1em;
 
 		.info-item {
 			max-width: fit-content;

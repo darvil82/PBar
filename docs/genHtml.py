@@ -276,7 +276,7 @@ import json
 
 
 def main():
-	with open("langs.json", "r") as langsFile:	# load json file with languages
+	with open("langs.json", "r", encoding="utf8") as langsFile:	# load json file with languages
 		LANGUAGES = json.load(langsFile)
 
 	for lang, labels in LANGUAGES.items():
@@ -287,4 +287,5 @@ def main():
 			file.write(HTML_CONTENT.format(**labels))
 
 
-main()
+if __name__ == "__main__":
+	main()

@@ -20,7 +20,7 @@
 		"showcase1_text": "Here is the code that generates a progress bar with the default values. It also shows it on the terminal. So yeah... Should be easy enough!",
 
 		"showcase2_title": "Okay okay, but I want it to be something useful.",
-		"showcase2_text": "That makes sense, everyone likes useful things (at least that's what I think). Therefore, you can show the progress of a set of tasks in a super easy way. <p><span class='whisper'>Note that his decorator is an experimental feature.</span></p>",
+		"showcase2_text": "That makes sense, everyone likes useful things (at least that's what I think). Therefore, you can show the progress of a set of tasks in a super easy way. <p><span class='whisper'>Note that this decorator is an experimental feature.</span></p>",
 
 		"showcase3_title": "I am afraid of <span class='func'>@decorators</span>, is there any other option?",
 		"showcase3_text": "Of course! Who is not afraid of a decorator? They are truly terrifying (but amazing), so that's why you can still progress in more different ways, like using this neat function shown at the left.",
