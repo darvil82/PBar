@@ -37,7 +37,7 @@
 		"links_title": "Links and Download",
 		"link1_text": "PBar is available on the PyPI repository as <span class='pre'>pbar2</span>. Why 2? Is it a sequel? Yes, it is, but also because someone took the name.",
 		"link2_text": "I could not miss a version control that helps in my mediocre organization (and the loss of files). <i>Seriously, thanks git.</i> Ah yes, you can also find all the source code of the project. <span class='whisper'>pstt, it's a botch.</span>",
-		"link3_text": "It is also available on the Arch packages repository, thanks to <span style='color: green'> MithicSpirit</span>. <span class='whisper'>I don't use Arch btw.</span>"
+		"link3_text": "It is also available on the Arch packages repository, thanks to <span style='color: green'> MithicSpirit</span>. <span class='whisper'>I use Arch btw.</span>"
 	},
 
 
@@ -79,7 +79,7 @@
 		"links_title": "Enlaces y Descarga",
 		"link1_text": "PBar está disponible en los repositorios de PyPI bajo el nombre de <span class='pre'>pbar2</span>. ¿Por qué 2? ¿Es una secuela? Sí, lo es, pero también es por que alguien me cogió el nombre.",
 		"link2_text": "No podía faltar un control de versiones que ayude en mi mediocre organización (y la perdida de archivos). <i>En serio, gracias git.</i> Ah sí, también puedes encontrar todo el código fuente del proyecto. <span class='whisper'>pstt, es una chapuza.</span>",
-		"link3_text": "También está disponible en el repositorio de paquetes de Arch, gracias a <span style='color: green'>MithicSpirit</span>. <span class='whisper'>I don't use Arch btw.</span>"
+		"link3_text": "También está disponible en el repositorio de paquetes de Arch, gracias a <span style='color: green'>MithicSpirit</span>. <span class='whisper'>I use Arch btw.</span>"
 	},
 
 
@@ -121,6 +121,6 @@
 		"links_title": "Linki i pobieranie",
 		"link1_text": "PBar jest dostępny w repozytorium PyPI jako <span class='pre'>pbar2</span>. Dlaczego 2? Czy to sequel? Tak, to sequel, ale także dlatego, że ktoś zajął nazwę.",
 		"link2_text": "Nie mógłbym przegapić kontroli wersji, która pomaga w mojej miernej organizacji (i utracie plików). <i>Serio, dzięki git.</i> Ach tak, możesz również znaleźć cały kod źródłowy projektu. <span class='whisper'>pstt, jest spartaczony.</span>",
-		"link3_text": "Jest również dostępny w repozytorium pakietów Arch, dzięki <span style='color: green'> MithicSpirit</span>. <span class='whisper'>I don't use Arch btw.</span>"
+		"link3_text": "Jest również dostępny w repozytorium pakietów Arch, dzięki <span style='color: green'> MithicSpirit</span>. <span class='whisper'>I use Arch btw.</span>"
 	}
 }
