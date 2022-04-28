@@ -1,4 +1,3 @@
-from io import TextIOWrapper
 from time import time as epochTime, sleep
 import sys
 from typing import (
@@ -127,7 +126,7 @@ class PBar:
 		self.inverted = inverted
 		self.centered = centered
 
-		utils.Stdout.add_trigger(lambda c: PBar._redraw_with_offset(self, c))
+		utils.Stdout.add_trigger(self)
 		self._old_values = (*self.computed_values, self._formatset.parsed_values(self))	# This values are used when clearing the old position of the bar (when self._requiresClear is True)
 
 
@@ -350,7 +349,7 @@ class PBar:
 
 
 	def _redraw_with_offset(self, count: int):
-		if not self._is_on_screen and self._redraw_on_scroll:
+		if not self._is_on_screen or not self._redraw_on_scroll:
 			return
 
 		pos, size, formatset = self._old_values
@@ -408,35 +407,39 @@ def animate(bar: PBar, rng: range = range(100), delay: float = 0.05) -> None:
 
 def iter(
 	iterable: Iterable[T],
-	bar: Optional[PBar] = None,
+	*bars: PBar,
 	length: int = None,
 	clear: bool = True,
 	set_title: bool = False
 ) -> Generator[T, None, None]:
 	"""
 	Yield all the values of the given iterable, while stepping
-	the progress bar.
+	the progress bar/s.
 	@iterable: Iterable object to iterate.
-	@bar: PBar object to use.
+	@bars: PBar objects to use.
 	@length: Length of the object to iterate.
 	(Use this if you don't know the length of the iterable.)
 	@clear: Clear the progress bar after finishing the iteration.
 	@set_title: Set the title of the progress bar to the string representation
 	of each yielded value.
 	"""
-	if not bar:
-		bar = PBar()
+	if not bars:
+		bars = (PBar(), )
 
-	bar.prange = (0, (length or len(iterable)))
-	bar.draw()
+	for bar in bars:
+		bar.prange = (0, (length or len(iterable)))
+		bar.draw()
+
 	for x in iterable:
 		yield x
-		if set_title:
-			bar.text = str(x)
-		bar.step()
+		for bar in bars:
+			if set_title:
+				bar.text = str(x)
+			bar.step()
 
 	if clear:
-		bar.clear()
+		for bar in bars:
+			bar.clear()
 
 
 def bar_helper(bar: PBar = None) -> tuple[tuple[int, int], tuple[int, int]]:

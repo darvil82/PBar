@@ -176,6 +176,7 @@ def get_computed_position(
 		)
 
 		newpos[index] = int(value) - (c_size[index]//2 if centered else 0)
+
 	return newpos[0], newpos[1]
 
 def get_computed_size(

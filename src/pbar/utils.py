@@ -1,8 +1,14 @@
+import sys, re, weakref
+import typing
 from io import TextIOWrapper
 from os import system as runsys, get_terminal_size, isatty
 from time import sleep
 from dataclasses import dataclass
-import sys, re
+
+if typing.TYPE_CHECKING:
+	from pbar import PBar
+
+
 if sys.platform == "win32":
 	import ctypes
 	from ctypes import wintypes
@@ -326,7 +332,7 @@ class Stdout(TextIOWrapper):
 	A class that may override stdout.
 	Keeps track of the number of newlines sent.
 	"""
-	triggers: list[Callable[[int], None]] = []
+	triggers: list[weakref.ReferenceType["PBar"]] = []
 	scroll_offset: int = 0
 	always_check: bool = False
 	enabled: bool = True
@@ -362,9 +368,15 @@ class Stdout(TextIOWrapper):
 			if c_pos >= t_size - offset:
 				if offset:
 					out("\v"*offset + Term.move_vert(-offset), file=self.original)
-				for t in Stdout.triggers:
-					# we take into account the possible exceeding of the the max size
-					t(count + (c_pos - (t_size - offset)) - 1)
+
+				for bar_weakref in Stdout.triggers:
+					# we want to check if the bar is not garbage collected
+					if (bar := bar_weakref()) is None:
+						Stdout.triggers.remove(bar_weakref)
+					else:
+						# we take into account the possible exceeding of the the max size
+						bar._redraw_with_offset(count + (c_pos - (t_size - offset)) - 1)
+
 
 		self.original.write(s)
 
@@ -373,21 +385,15 @@ class Stdout(TextIOWrapper):
 		self.original.flush()
 
 	@staticmethod
-	def add_trigger(func: Callable[[int], None]) -> Callable[[int], None]:
+	def add_trigger(bar: "PBar"):
 		"""
-		Register a trigger that will be called when the terminal screen is scrolled.
-		@func: The function to be called when the buffer is scrolled.
-
-		Returns the index of the trigger in the Stdout triggers property.
+		Register a progress bar that will be redrawn when the terminal screen is scrolled.
 		"""
-		if not Stdout.enabled:
-			return func
 		if len(triggers := Stdout.triggers) >= 1000:	# prevent memory overflow
 			del triggers[0]
-		Stdout.triggers.append(func)
+		Stdout.triggers.append(weakref.ref(bar))
 		if Term.SUPPORTED:
 			out("\v" + Term.move_vert(-1))	# HACK: doing this to trigger the Stdout detector
-		return func
 
 
 
