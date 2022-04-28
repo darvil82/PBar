@@ -8,7 +8,7 @@
 
 ---
 
-### PBar is a small work in progress Python library to display customizable progress bars on the terminal easily. Contributions are welcome!
+### PBar is a small Python library to display highly customizable progress bars on the terminal easily. Contributions are welcome!
 
 
 https://user-images.githubusercontent.com/48654552/140072905-f83a1ff4-fba7-481d-925d-727caed6c3e8.mp4
