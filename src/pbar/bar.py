@@ -27,6 +27,7 @@ Conditions = Union[list[cond.Cond], cond.Cond]
 class PBar:
 	"""Object for managing a progress bar."""
 	def __init__(self,
+		*,
 		prange: tuple[int, int] = (0, 1),
 		text: str = None,
 		size: tuple[int, int] = (20, 1),
@@ -467,7 +468,7 @@ def bar_helper(bar: PBar = None) -> tuple[tuple[int, int], tuple[int, int]]:
 	bar.formatset |= {"title": f"uValues: pos{position} size{size}"}
 	bar.prange = (0, 100)
 
-	with Term.SeqMgr(hide_cursor=True, new_buffer=True):	# create a new buffer, and hide the cursor
+	with Term.terminal_manager(hide_cursor=True, new_buffer=True):	# create a new buffer, and hide the cursor
 		try:
 			while True:
 				for perc in range(100):

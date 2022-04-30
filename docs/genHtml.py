@@ -130,9 +130,9 @@ HTML_CONTENT = """\
 		</div>
 		<code>	<!-- turture -->
 <span class="var">conds</span> <span class="op">=</span> (
-	<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage >= 50"</span>, </span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.YELLOW, <span class="obj">pbar</span>.<span class="obj">CharSet</span>.BRICKS),
-	<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage == 100"</span>, </span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.GREEN),
-	<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"text <- error"</span>, <span class="obj">pbar</span>.<span class="obj">ColorSet</span>.RED, <span class="var">formatset</span><span class="op">=</span><span class="obj">pbar</span>.<span class="obj">FormatSet</span>.DESCRIPTIVE)
+	<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage >= 50"</span>, <span class="var">colorset</span><span class="op">=</span></span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.YELLOW, <span class="var">charset</span><span class="op">=</span><span class="obj">pbar</span>.<span class="obj">CharSet</span>.BRICKS),
+	<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"percentage == 100"</span>, <span class="var">colorset</span><span class="op">=</span></span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.GREEN),
+	<span class="obj">pbar</span>.<span class="obj">Cond</span>(<span class="str">"text <- error"</span>, <span class="var">colorset</span><span class="op">=</span><span class="obj">pbar</span>.<span class="obj">ColorSet</span>.RED, <span class="var">formatset</span><span class="op">=</span><span class="obj">pbar</span>.<span class="obj">FormatSet</span>.DESCRIPTIVE)
 )
 
 <span class="var">my_bar</span> <span class="op">=</span> <span class="obj">pbar</span>.<span class="obj">PBar</span>(<span class="var">conditions</span><span class="op">=</span><span class="var">conds</span>)

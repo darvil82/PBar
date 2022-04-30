@@ -413,7 +413,7 @@ class FormatSet(_BaseSet):
 
 
 	@staticmethod
-	def get_bar_attr(bar_obj: "bar.PBar", string: str):
+	def get_bar_attr(bar_obj: "bar.PBar", string: str) -> Union[int, float, str]:
 		attrs = {
 			"percentage": lambda: bar_obj.percentage,
 			"prange1": lambda: bar_obj._range[0],

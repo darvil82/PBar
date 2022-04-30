@@ -1,6 +1,4 @@
-"""
-This is a shitty test file.
-"""
+"""This is a shitty test file."""
 
 from typing import Any
 from random import choice, randint, choices
@@ -45,19 +43,17 @@ def default():
 
 @repeat_func(30)
 def fully_random():
-	b = pbar.PBar(
-		(randint(0, 200), randint(0, 200)),
-		random_string(),
-		(randint(0, term_size[0]), randint(0, term_size[1])),
-		(randint(0, term_size[0]), randint(0, term_size[1])),
-		choice(get_const_attrs(pbar.ColorSet))[1],
-		choice(get_const_attrs(pbar.CharSet))[1],
-		choice(get_const_attrs(pbar.FormatSet))[1],
+	animate(pbar.PBar(
+		prange=(randint(0, 200), randint(0, 200)),
+		text=random_string(),
+		position=(randint(0, term_size[0]), randint(0, term_size[1])),
+		size=(randint(0, term_size[0]), randint(0, term_size[1])),
+		colorset=choice(get_const_attrs(pbar.ColorSet))[1],
+		charset=choice(get_const_attrs(pbar.CharSet))[1],
+		formatset=choice(get_const_attrs(pbar.FormatSet))[1],
 		contentg=choice(pbar.ContentGens.get_gens()),
 		inverted=choice([True, False]),
-	)
-
-	animate(b)
+	))
 
 
 def modify_size_and_pos():
@@ -101,10 +97,10 @@ def try_all_sets():
 @repeat_func(30)
 def condtionals():
 	conds = (	# lol!
-		pbar.Cond(f"percentage == {randint(0, 100)}", choice(get_const_attrs(pbar.ColorSet))[1], choice(get_const_attrs(pbar.CharSet))[1], choice(get_const_attrs(pbar.FormatSet))[1]),
-		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(get_const_attrs(pbar.ColorSet))[1], choice(get_const_attrs(pbar.CharSet))[1], choice(get_const_attrs(pbar.FormatSet))[1]),
-		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(get_const_attrs(pbar.ColorSet))[1], choice(get_const_attrs(pbar.CharSet))[1], choice(get_const_attrs(pbar.FormatSet))[1], choice(pbar.ContentGens.get_gens())),
-		pbar.Cond(f"prange1 >= {randint(0, 100)}", choice(get_const_attrs(pbar.ColorSet))[1], choice(get_const_attrs(pbar.CharSet))[1], choice(get_const_attrs(pbar.FormatSet))[1]),
+		pbar.Cond(f"percentage == {randint(0, 100)}", colorset=choice(get_const_attrs(pbar.ColorSet))[1], charset=choice(get_const_attrs(pbar.CharSet))[1], formatset=choice(get_const_attrs(pbar.FormatSet))[1]),
+		pbar.Cond(f"prange1 >= {randint(0, 100)}", colorset=choice(get_const_attrs(pbar.ColorSet))[1], charset=choice(get_const_attrs(pbar.CharSet))[1], formatset=choice(get_const_attrs(pbar.FormatSet))[1]),
+		pbar.Cond(f"prange1 >= {randint(0, 100)}", colorset=choice(get_const_attrs(pbar.ColorSet))[1], charset=choice(get_const_attrs(pbar.CharSet))[1], formatset=choice(get_const_attrs(pbar.FormatSet))[1], contentg=choice(pbar.ContentGens.get_gens())),
+		pbar.Cond(f"prange1 >= {randint(0, 100)}", colorset=choice(get_const_attrs(pbar.ColorSet))[1], charset=choice(get_const_attrs(pbar.CharSet))[1], formatset=choice(get_const_attrs(pbar.FormatSet))[1]),
 		pbar.Cond(f"text == '{random_string()}'"),
 	)
 	b = pbar.PBar(size=(20, 10), conditions=conds)
@@ -114,7 +110,6 @@ def condtionals():
 @pbar.task_wrapper
 def task_wr(bar, something, another_thing):
 	print(pbar.Term.clear())
-	sleep(.25)
 	sleep(.25)
 	sleep(.25)
 	sleep(.25)
@@ -129,7 +124,7 @@ def task_wr(bar, something, another_thing):
 
 
 def try_relative_positioning():
-	with pbar.Term.SeqMgr(scroll_limit=3):
+	with pbar.Term.terminal_manager(scroll_limit=3):
 		for n in pbar.iter(range(2000), pbar.PBar(position=("r", "r1"), centered=False)):
 			print(choice(string.ascii_letters), end="")
 			if n % (term_size[0]//2) == 0:
@@ -138,7 +133,7 @@ def try_relative_positioning():
 
 
 def main():
-	with pbar.Term.SeqMgr(hide_cursor=True, new_buffer=True, home_cursor=True):
+	with pbar.Term.terminal_manager(hide_cursor=True, new_buffer=True, home_cursor=True):
 		try_relative_positioning()
 		default()
 		modify_size_and_pos()

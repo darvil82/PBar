@@ -4,6 +4,7 @@ from io import TextIOWrapper
 from os import system as runsys, get_terminal_size, isatty
 from time import sleep
 from dataclasses import dataclass
+from contextlib import contextmanager
 
 if typing.TYPE_CHECKING:
 	from pbar import PBar
@@ -573,37 +574,42 @@ class Term:
 		Stdout.always_check = always_check
 
 
-	@dataclass
-	class SeqMgr:
-		"""Context manager for alternating different terminal sequences."""
-		new_buffer: bool = False
-		hide_cursor: bool = False
-		home_cursor: bool = False
-		save_cursor: bool = False
-		margin: tuple[Optional[int], Optional[int]] = None
+	@staticmethod
+	@contextmanager
+	def terminal_manager(
+		*,
+		new_buffer: bool = False,
+		hide_cursor: bool = False,
+		home_cursor: bool = False,
+		save_cursor: bool = False,
+		margin: Optional[tuple[Optional[int], Optional[int]]] = None,
 		scroll_limit: Optional[int] = None
+	):
+		"""Context manager for alternating different terminal sequences."""
+		# ------------------ Enter ------------------
+		out(
+			(Term.BUFFER_NEW * new_buffer)
+			+ (Term.CURSOR_HIDE * hide_cursor)
+			+ (Term.CURSOR_SAVE * save_cursor)
+			+ (Term.CURSOR_HOME * home_cursor)
+			+ (Term.margin(margin[0], margin[1]) if margin else "")
+		)
+		if scroll_limit:
+			old_limit = Stdout.scroll_offset
+			Term.set_scroll_limit(scroll_limit)
 
-		def __enter__(self) -> None:
-			out(
-				(Term.BUFFER_NEW * self.new_buffer)
-				+ (Term.CURSOR_HIDE * self.hide_cursor)
-				+ (Term.CURSOR_SAVE * self.save_cursor)
-				+ (Term.CURSOR_HOME * self.home_cursor)
-				+ (Term.margin(self.margin[0], self.margin[1]) if self.margin else "")
-			)
-			if self.scroll_limit:
-				self.old_limit = Stdout.scroll_offset
-				Term.set_scroll_limit(self.scroll_limit)
+		yield
 
-		def __exit__(self, *args) -> None:
-			out(
-				(Term.BUFFER_OLD * self.new_buffer)
-				+ (Term.CURSOR_SHOW * self.hide_cursor)
-				+ (Term.CURSOR_LOAD * self.save_cursor)
-				+ (Term.margin() * bool(self.margin))
-			)
-			if self.scroll_limit:
-				Term.set_scroll_limit(self.old_limit)
+		# ------------------ Exit ------------------
+
+		out(
+			(Term.BUFFER_OLD * new_buffer)
+			+ (Term.CURSOR_SHOW * hide_cursor)
+			+ (Term.CURSOR_LOAD * save_cursor)
+			+ (Term.margin() * bool(margin))
+		)
+		if scroll_limit:
+			Term.set_scroll_limit(old_limit)
 
 
 	@staticmethod
@@ -635,6 +641,7 @@ class Term:
 		@reset: Will formatting be resetted at the end?
 		@ignore_backslashes: Ignore backslashes in the string.
 		"""
+		# i hate it too, yes
 		invert = underline = dim = sthrough = invisible = bold = italic = blink = False
 		loop_skip_chars = 0
 		end_str = ""

@@ -19,6 +19,7 @@ class Cond:
 	"""Condition manager used by a PBar object."""
 	def __init__(self,
 		condition: str,
+		*,
 		colorset: sets.ColorSetEntry = None,
 		charset: sets.CharSetEntry = None,
 		formatset: sets.FormatSetEntry = None,
@@ -96,12 +97,10 @@ class Cond:
 
 	def test(self, bar_obj: "bar.PBar") -> bool:
 		"""Check if the condition succeeds with the values of the PBar object"""
-		op = self._operator
-		cond_value = float(self._value) if utils.is_num(self._value) else self._value.lower()
-		bar_value = sets.FormatSet.get_bar_attr(bar_obj, self._attribute)
+		operator = self._operator
+		cond_value, bar_value = self._value, sets.FormatSet.get_bar_attr(bar_obj, self._attribute)
 
-		is_checking_range = False	# whether we are checking a number in a range
-		if is_checking_range := (
+		if is_checking_range := ( # whether we are checking a number in a range
 			isinstance(cond_value, str)
 			and cond_value.startswith("{") and cond_value.endswith("}")
 			and utils.is_num(bar_value)
@@ -112,25 +111,25 @@ class Cond:
 
 		# we use lambdas because some values may not be compatible with some operators
 		operators: dict[str, Callable] = {
-			_OPERATORS["EQ"]: lambda: bar_value == cond_value,
-			_OPERATORS["NE"]: lambda: bar_value != cond_value,
-			_OPERATORS["GT"]: lambda: bar_value > cond_value,
-			_OPERATORS["GE"]: lambda: bar_value >= cond_value,
-			_OPERATORS["LT"]: lambda: bar_value < cond_value,
-			_OPERATORS["LE"]: lambda: bar_value <= cond_value,
+			_OPERATORS["EQ"]: lambda: bar_value == (float(cond_value) if utils.is_num(cond_value) else cond_value),
+			_OPERATORS["NE"]: lambda: bar_value != float(cond_value),
+			_OPERATORS["GT"]: lambda: bar_value > float(cond_value),
+			_OPERATORS["GE"]: lambda: bar_value >= float(cond_value),
+			_OPERATORS["LT"]: lambda: bar_value < float(cond_value),
+			_OPERATORS["LE"]: lambda: bar_value <= float(cond_value),
 			_OPERATORS["IN"]: lambda: (
-				cond_value in bar_value
-				if not is_checking_range else
 				bar_value in cond_value
+				if is_checking_range else
+				str(cond_value) in bar_value.lower()
 			),
 		}
 
-		return operators.get(op, lambda: False)()
+		return operators.get(operator, lambda: False)()
 
 
 	def chk_and_apply(self, bar_obj: "bar.PBar") -> None:
 		"""Apply the new sets and run the callback if the condition succeeds"""
-		if not self.test(bar_obj) or self.times == 0:
+		if not self.test(bar_obj) or self.times <= 0:
 			return
 
 		if self.new_sets[0]:	bar_obj.colorset = self.new_sets[0]
